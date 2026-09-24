@@ -1,0 +1,649 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"><title>毫米波雷达基础｜第3节：FMCW雷达速度估计</title><script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']]},svg:{fontCache:'global'}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script><style>:root{--ink:#20303d;--muted:#627385;--line:#dce5ed;--paper:#fff;--soft:#f6f9fc;--blue:#1f6fb2;--blue2:#315f91;--orange:#c96d25;--shadow:0 12px 34px rgba(41,63,82,.08);}
+*{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;background:#f3f6f9;color:var(--ink);font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;line-height:1.82;font-size:16px}
+#progress{position:fixed;top:0;left:0;height:3px;background:var(--blue);width:0;z-index:50}
+.layout{display:grid;grid-template-columns:280px minmax(0,860px);gap:32px;max-width:1210px;margin:0 auto;padding:34px 24px 80px}
+.sidebar{position:sticky;top:22px;height:calc(100vh - 44px);overflow:auto;padding:18px 16px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.92);box-shadow:var(--shadow)}
+.brand{font-weight:700;color:#173c5c;margin:3px 8px 14px} .toc{display:flex;flex-direction:column;gap:2px} .toc a{text-decoration:none;color:#536779;border-radius:8px;padding:7px 9px;font-size:13px;line-height:1.4} .toc a:hover,.toc a.active{background:#edf4fa;color:#174e7e} .toc-sub{padding-left:22px!important;font-size:12.5px!important}
+.article{background:var(--paper);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:54px 68px;min-width:0}
+.hero{border-bottom:1px solid var(--line);padding-bottom:30px;margin-bottom:36px} .eyebrow{color:var(--blue);font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase} h1{font-size:35px;line-height:1.25;margin:10px 0 15px;color:#17344d} .lead{font-size:17px;color:#596d7f;max-width:720px;margin:0} .meta{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px} .chip{font-size:12px;padding:5px 9px;border-radius:999px;background:#edf4fa;color:#315f91;border:1px solid #d2e2ef}
+h2{font-size:25px;line-height:1.35;color:#183e5d;margin:54px 0 18px;padding-top:4px} h3{font-size:19px;line-height:1.4;color:#28516f;margin:34px 0 12px} p{margin:12px 0} strong{color:#193b56} code{font-family:"Cascadia Mono",Consolas,monospace;background:#f0f4f7;border:1px solid #e1e8ee;padding:.08em .34em;border-radius:5px;font-size:.92em}
+hr{border:0;border-top:1px solid var(--line);margin:42px 0} ul,ol{padding-left:1.55em} li{margin:.35em 0}
+blockquote.callout{margin:22px 0;padding:14px 18px;border-left:4px solid var(--blue);background:#f3f8fc;border-radius:0 10px 10px 0;color:#405669}
+table{width:100%;border-collapse:collapse;margin:20px 0 28px;font-size:14.5px} th,td{border:1px solid #dce5ed;padding:10px 12px;text-align:left;vertical-align:top} th{background:#eef5fa;color:#294f6d} tr:nth-child(even) td{background:#fbfcfd}
+.diagram{margin:28px 0 34px;padding:16px;border:1px solid var(--line);border-radius:16px;background:#fbfdff;overflow:hidden} .diagram svg{width:100%;height:auto;display:block} figcaption{text-align:center;color:#657889;font-size:13px;margin-top:10px} .svg-label{font:16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#415466} .svg-title{font:600 17px "Segoe UI","Microsoft YaHei",sans-serif;fill:#294f6d} .svg-accent{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#315f91} .svg-blue{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#1f6fb2} .svg-orange{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#c96d25}
+.formula-note{font-size:13px;color:var(--muted)} mjx-container{color:#172a3a} mjx-container[display="true"]{margin:1.35em 0!important;max-width:100%;overflow-x:auto;overflow-y:hidden;padding:.18em .25em .24em;text-align:center;scrollbar-width:thin;scrollbar-color:#c7d5e1 transparent} mjx-container[display="true"]>svg{display:inline-block;vertical-align:middle} mjx-container:not([display="true"]){font-size:1.01em}
+.source-panel{margin-top:52px;padding:22px;border:1px solid var(--line);background:#f8fafc;border-radius:14px;color:#526779;font-size:14px} .source-panel a{color:var(--blue)}
+.footer{margin-top:38px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:#7a8997;text-align:center}
+@media(max-width:980px){.layout{grid-template-columns:1fr;max-width:900px}.sidebar{position:relative;top:0;height:auto;max-height:340px}.article{padding:42px 34px}}
+@media(max-width:600px){body{font-size:15px}.layout{padding:12px 8px 50px}.sidebar{display:none}.article{padding:30px 20px;border-radius:12px}h1{font-size:28px}h2{font-size:22px}.diagram{padding:5px}mjx-container[display="true"]{font-size:.96em;margin:1.1em 0!important}}
+@media print{body{background:white;font-size:10.5pt}#progress,.sidebar{display:none!important}.layout{display:block;max-width:none;padding:0}.article{border:0;box-shadow:none;padding:0}.hero{margin-top:0}h2,h3{break-after:avoid-page}.diagram,table,blockquote,mjx-container[display="true"]{break-inside:avoid}mjx-container[display="true"]{overflow:visible}a{color:inherit;text-decoration:none}}
+</style></head><body><div id="progress"></div><div class="layout"><aside class="sidebar"><div class="brand">第 3 节 · FMCW雷达速度估计</div><nav class="toc"><a class="toc-sub" href="#本节学习目标">本节学习目标</a>
+<a class="toc-main" href="#1-从第-2-节继续-速度其实已经藏在-跨-chirp-相位旋转-里">1. 从第 2 节继续：速度其实已经藏在“跨 Chirp 相位旋转”里</a>
+<a class="toc-sub" href="#1-1-相位差-为什么可以叫一种离散频率">1.1 “相位差”为什么可以叫一种离散频率？</a>
+<a class="toc-main" href="#2-先理解复数序列-fft-旋转得多快-频谱峰就在哪里">2. 先理解复数序列 FFT：旋转得多快，频谱峰就在哪里</a>
+<a class="toc-sub" href="#2-1-为什么序列越长-越能分开接近的速度">2.1 为什么序列越长，越能分开接近的速度？</a>
+<a class="toc-main" href="#3-两个-chirp-能测速-但它解决的只是最简单情形">3. 两个 Chirp 能测速，但它解决的只是最简单情形</a>
+<a class="toc-main" href="#4-最大无模糊速度-为什么相位一圈会限制测速范围">4. 最大无模糊速度：为什么相位一圈会限制测速范围？</a>
+<a class="toc-sub" href="#4-1-这个公式告诉我们什么设计直觉">4.1 这个公式告诉我们什么设计直觉？</a>
+<a class="toc-sub" href="#4-2-一个数量级例子">4.2 一个数量级例子</a>
+<a class="toc-main" href="#5-为什么同距离-不同速度的多个目标必须用-doppler-fft">5. 为什么同距离、不同速度的多个目标必须用 Doppler FFT？</a>
+<a class="toc-main" href="#6-doppler-fft-到底沿哪个维度做">6. Doppler FFT 到底沿哪个维度做？</a>
+<a class="toc-sub" href="#6-1-第一次-fft-range-fft">6.1 第一次 FFT：Range FFT</a>
+<a class="toc-sub" href="#6-2-第二次-fft-doppler-fft">6.2 第二次 FFT：Doppler FFT</a>
+<a class="toc-main" href="#7-速度分辨率-为什么看得更久-才能分开更接近的速度">7. 速度分辨率：为什么看得更久，才能分开更接近的速度？</a>
+<a class="toc-sub" href="#7-1-与最大速度放在一起看">7.1 与最大速度放在一起看</a>
+<a class="toc-sub" href="#7-2-数量级例子">7.2 数量级例子</a>
+<a class="toc-main" href="#8-doppler-fft-的-bin-怎样换算成速度">8. Doppler FFT 的 bin 怎样换算成速度？</a>
+<a class="toc-main" href="#9-range-doppler-图-二维-fft-最终在表达什么">9. Range-Doppler 图：二维 FFT 最终在表达什么？</a>
+<a class="toc-main" href="#10-三组最容易混淆的概念">10. 三组最容易混淆的概念</a>
+<a class="toc-sub" href="#10-1-距离分辨率-vs-速度分辨率">10.1 距离分辨率 vs 速度分辨率</a>
+<a class="toc-sub" href="#10-2-最大距离-vs-最大速度">10.2 最大距离 vs 最大速度</a>
+<a class="toc-sub" href="#10-3-range-fft-的频率-vs-doppler-fft-的频率">10.3 Range FFT 的频率 vs Doppler FFT 的频率</a>
+<a class="toc-main" href="#11-关键公式总表">11. 关键公式总表</a>
+<a class="toc-main" href="#12-易错点与自检">12. 易错点与自检</a>
+<a class="toc-sub" href="#易错点-1-doppler-fft-直接对原始-adc-数据再做一次-fft">易错点 1：Doppler FFT 直接对原始 ADC 数据再做一次 FFT</a>
+<a class="toc-sub" href="#易错点-2-目标速度越大-range-fft-峰一定移动很多">易错点 2：目标速度越大，Range FFT 峰一定移动很多</a>
+<a class="toc-sub" href="#易错点-3-增加-chirp-数量一定提高最大速度">易错点 3：增加 Chirp 数量一定提高最大速度</a>
+<a class="toc-sub" href="#易错点-4-把单个-chirp-的时长直接当成真实-chirp-repetition-interval">易错点 4：把单个 Chirp 的时长直接当成真实 Chirp repetition interval</a>
+<a class="toc-sub" href="#易错点-5-速度的正负号是绝对固定的">易错点 5：速度的正负号是绝对固定的</a>
+<a class="toc-sub" href="#自检题">自检题</a>
+<a class="toc-main" href="#13-本节小结">13. 本节小结</a>
+<a class="toc-main" href="#来源">来源</a></nav></aside><main class="article"><header class="hero"><div class="eyebrow">毫米波雷达基础 · Lesson 03</div><h1>FMCW 雷达速度估计</h1><p class="lead">从跨 Chirp 相位旋转出发，推导最大无模糊速度与速度分辨率，并建立 Range FFT + Doppler FFT 的二维处理框架。</p><div class="meta"><span class="chip">TI Module 3 核验</span><span class="chip">Doppler FFT</span><span class="chip">5 张教学示意图</span><span class="chip">lesson_html_v1</span></div></header><blockquote class="callout">
+<p>对应 Bilibili P3《3、FMCW3：FMCW雷达速度估计》；权威核验来源为 TI 官方 <em>Intro to mmWave Sensing: FMCW Radars — Module 3: Velocity Estimation</em> 及同套官方演示文稿。</p>
+</blockquote>
+<h3 id="本节学习目标">本节学习目标</h3>
+<p>学完本节，应能回答七个问题：</p>
+<ol>
+<li>为什么“相邻 Chirp 的相位差”能够表示速度？</li>
+<li>为什么两个 Chirp 足以估计一个单目标速度，却不够分离同距离的多个不同速度目标？</li>
+<li>Doppler FFT 到底对什么数据做 FFT？</li>
+<li>为什么最大无模糊速度由 Chirp 间隔决定？</li>
+<li>为什么速度分辨率由整帧观测时间决定？</li>
+<li>Range FFT 和 Doppler FFT 分别沿哪个维度进行？</li>
+<li>Range-Doppler 图上的一个点，物理上表示什么？</li>
+</ol>
+<hr/>
+<h2 id="1-从第-2-节继续-速度其实已经藏在-跨-chirp-相位旋转-里">1. 从第 2 节继续：速度其实已经藏在“跨 Chirp 相位旋转”里</h2>
+<p>第 2 节最核心的关系是：</p>
+<p>$$
+\Delta\phi=\frac{4\pi\Delta d}{\lambda}.
+$$</p>
+<p>若目标以恒定径向速度 $v$ 运动，相邻两个 Chirp 的起始时刻相隔 $T_{\mathrm{r}}$，那么这段时间内目标的径向位移约为：</p>
+<p>$$
+\Delta d=vT_{\mathrm{r}}.
+$$</p>
+<p>代入上式：</p>
+<p>$$
+\boxed{\Delta\phi=\frac{4\pi vT_{\mathrm{r}}}{\lambda}}.
+$$</p>
+<p>因此：</p>
+<p>$$
+\boxed{v=\frac{\lambda\Delta\phi}{4\pi T_{\mathrm{r}}}}.
+$$</p>
+<p>TI 课件为了简化，常把相邻 Chirp 间隔记为 $T_{\mathrm{c}}$；工程上更稳妥的记法是 $T_{\mathrm{r}}$，因为真实雷达配置里 Chirp 之间可能还包含 idle time。</p>
+<p>这里已经出现一个极重要的直觉：</p>
+<ul>
+<li><strong>距离</strong>主要体现在单个 Chirp 内 IF 信号的频率；</li>
+<li><strong>速度</strong>主要体现在同一距离单元跨多个 Chirp 的相位变化速度。</li>
+</ul>
+<figure class="diagram"><svg role="img" viewbox="0 0 900 430"><rect fill="#fbfdff" height="428" rx="18" stroke="#dce6f0" width="898" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="450" y="45">固定 Range bin：跨 Chirp 相量持续旋转</text><circle cx="170" cy="220" fill="none" r="82" stroke="#dce5ed" stroke-width="2"></circle><circle cx="450" cy="220" fill="none" r="82" stroke="#dce5ed" stroke-width="2"></circle><circle cx="730" cy="220" fill="none" r="82" stroke="#dce5ed" stroke-width="2"></circle><line stroke="#1f6fb2" stroke-width="5" x1="170" x2="237" y1="220" y2="175"></line><line stroke="#1f6fb2" stroke-width="5" x1="450" x2="470" y1="220" y2="142"></line><line stroke="#1f6fb2" stroke-width="5" x1="730" x2="683" y1="220" y2="154"></line><text class="svg-label" text-anchor="middle" x="170" y="330">Chirp m</text><text class="svg-label" text-anchor="middle" x="450" y="330">Chirp m+1</text><text class="svg-label" text-anchor="middle" x="730" y="330">Chirp m+2</text><text class="svg-orange" x="310" y="178">+ω</text><text class="svg-orange" x="590" y="178">+ω</text><text class="svg-accent" text-anchor="middle" x="450" y="390">x[m] = A e^{j(φ₀ + mω)}</text></svg><figcaption>图 1　目标匀速运动时，同一 Range bin 的复数相位在慢时间上近似以固定角增量 ω 旋转。</figcaption></figure>
+<h3 id="1-1-相位差-为什么可以叫一种离散频率">1.1 “相位差”为什么可以叫一种离散频率？</h3>
+<p>假设某个目标在每个 Chirp 的 Range FFT 中都落在同一个 range bin，并且忽略幅度缓慢变化，则第 $m$ 个 Chirp 对应的复数峰值可近似写成：</p>
+<p>$$
+x[m]=Ae^{j(\phi_0+m\omega)},
+$$</p>
+<p>其中：</p>
+<p>$$
+\omega=\Delta\phi=\frac{4\pi vT_{\mathrm{r}}}{\lambda}.
+$$</p>
+<p>这就是一个<strong>离散时间复指数序列</strong>。</p>
+<p>每增加一个 Chirp，复相量就多转过 $\omega$ rad。于是：</p>
+<ul>
+<li>时间序列里的“每秒振荡多少次”叫频率；</li>
+<li>这里“每个 Chirp 转多少弧度”就是离散角频率。</li>
+</ul>
+<p>所以速度估计可以被转化为：</p>
+<blockquote class="callout">
+<p><strong>测量跨 Chirp 复数序列的离散频率。</strong></p>
+</blockquote>
+<p>而测频率最自然的工具，就是 FFT。</p>
+<hr/>
+<h2 id="2-先理解复数序列-fft-旋转得多快-频谱峰就在哪里">2. 先理解复数序列 FFT：旋转得多快，频谱峰就在哪里</h2>
+<p>考虑最简单的复数离散序列：</p>
+<p>$$
+x[m]=Ae^{jm\omega_0},\quad m=0,1,\ldots,N-1.
+$$</p>
+<p>其 $N$ 点 DFT 定义为：</p>
+<p>$$
+X[k]=\sum_{m=0}^{N-1}x[m]e^{-j2\pi km/N}.
+$$</p>
+<p>代入 $x[m]$：</p>
+<p>$$
+X[k]
+=A\sum_{m=0}^{N-1}
+ e^{jm(\omega_0-2\pi k/N)}.
+$$</p>
+<p>当某个 $k$ 满足：</p>
+<p>$$
+\omega_0\approx\frac{2\pi k}{N},
+$$</p>
+<p>求和中的相位差接近 0，各项就会同相叠加，于是该 bin 出现大峰值。</p>
+<p>因此：</p>
+<p>$$
+k_{\mathrm{peak}}\Longleftrightarrow \omega_0.
+$$</p>
+<figure class="diagram"><svg role="img" viewbox="0 0 900 430"><rect fill="#fbfdff" height="428" rx="18" stroke="#dce6f0" width="898" x="1" y="1"></rect><text class="svg-title" x="220" y="45">慢时间复数序列</text><text class="svg-title" x="675" y="45">Doppler FFT</text><circle cx="210" cy="215" fill="none" r="115" stroke="#dce5ed"></circle><path d="M210 215 L295 155 M210 215 L262 115 M210 215 L205 90 M210 215 L150 105" stroke="#1f6fb2" stroke-width="4"></path><circle cx="295" cy="155" fill="#1f6fb2" r="5"></circle><circle cx="262" cy="115" fill="#1f6fb2" r="5"></circle><circle cx="205" cy="90" fill="#1f6fb2" r="5"></circle><circle cx="150" cy="105" fill="#1f6fb2" r="5"></circle><line stroke="#60788f" stroke-width="3" x1="400" x2="500" y1="215" y2="215"></line><polygon fill="#60788f" points="500,215 484,206 484,224"></polygon><line stroke="#415466" stroke-width="2" x1="570" x2="820" y1="330" y2="330"></line><line stroke="#9dbbd6" stroke-width="2" x1="600" x2="600" y1="330" y2="300"></line><line stroke="#9dbbd6" stroke-width="2" x1="650" x2="650" y1="330" y2="280"></line><line stroke="#c96d25" stroke-width="8" x1="700" x2="700" y1="330" y2="115"></line><line stroke="#9dbbd6" stroke-width="2" x1="750" x2="750" y1="330" y2="285"></line><text class="svg-orange" text-anchor="middle" x="700" y="95">kpeak</text><text class="svg-label" x="695" y="375">ω ≈ 2πk/N</text></svg><figcaption>图 2　慢时间相量的旋转速率就是离散角频率，Doppler FFT 的峰位置用于估计该角频率。</figcaption></figure>
+<h3 id="2-1-为什么序列越长-越能分开接近的速度">2.1 为什么序列越长，越能分开接近的速度？</h3>
+<p>对长度为 $N$ 的离散序列，角频率分辨间隔量级为：</p>
+<p>$$
+\Delta\omega_{\mathrm{min}}\sim\frac{2\pi}{N}.
+$$</p>
+<p>因此如果两个目标对应：</p>
+<p>$$
+\omega_1,\ \omega_2,
+$$</p>
+<p>只有当二者差异足够大时，Doppler FFT 才会形成两个可分开的峰。</p>
+<p>这和第 1 节里“观察时间越长，频率分辨率越高”本质上是同一件事，只不过：</p>
+<ul>
+<li>第 1 节：在一个 Chirp 内观察 IF 正弦；</li>
+<li>第 3 节：跨多个 Chirp 观察复相量旋转。</li>
+</ul>
+<hr/>
+<h2 id="3-两个-chirp-能测速-但它解决的只是最简单情形">3. 两个 Chirp 能测速，但它解决的只是最简单情形</h2>
+<p>如果只有一个目标，而且我们已经知道它在哪个 range bin，那么两个相邻 Chirp 就足以算一次相位差：</p>
+<p>$$
+\Delta\phi=\operatorname{angle}\left(X_2X_1^*\right).
+$$</p>
+<p>这里：</p>
+<ul>
+<li>$X_1$：第 1 个 Chirp 对应 range bin 的复数值；</li>
+<li>$X_2$：第 2 个 Chirp 对应 range bin 的复数值；</li>
+<li>$X_1^*$：$X_1$ 的共轭。</li>
+</ul>
+<p>因为：</p>
+<p>$$
+X_2X_1^*
+=|X_1||X_2|e^{j(\phi_2-\phi_1)},
+$$</p>
+<p>所以取角度就得到：</p>
+<p>$$
+\Delta\phi=\phi_2-\phi_1.
+$$</p>
+<p>再由：</p>
+<p>$$
+v=\frac{\lambda\Delta\phi}{4\pi T_{\mathrm{r}}}
+$$</p>
+<p>即可估计速度。</p>
+<p>这就是“两个 Chirp 测速”的核心。</p>
+<p>但这个方法有两个明显限制：</p>
+<ol>
+<li>相位只在 $[-\pi,\pi)$ 或等价 $2\pi$ 区间内观测，因此存在速度模糊；</li>
+<li>如果同一个 range bin 内叠加了多个不同速度目标，那么一个复数值里已经混入多个旋转相量，单个相位差无法把它们拆开。</li>
+</ol>
+<p>因此真正通用的速度处理要进入 <strong>Doppler FFT</strong>。</p>
+<hr/>
+<h2 id="4-最大无模糊速度-为什么相位一圈会限制测速范围">4. 最大无模糊速度：为什么相位一圈会限制测速范围？</h2>
+<p>由：</p>
+<p>$$
+\omega=\frac{4\pi vT_{\mathrm{r}}}{\lambda}
+$$</p>
+<p>可知速度越大，相邻 Chirp 的相位变化越大。</p>
+<p>然而离散复指数：</p>
+<p>$$
+e^{j\omega m}
+$$</p>
+<p>对角频率是 $2\pi$ 周期的。也就是说：</p>
+<p>$$
+\omega
+$$</p>
+<p>和</p>
+<p>$$
+\omega+2\pi
+$$</p>
+<p>产生完全相同的采样序列。</p>
+<p>因此为了让正负速度不发生混叠，通常要求：</p>
+<p>$$
+|\omega|&lt;\pi.
+$$</p>
+<p>代入速度关系：</p>
+<p>$$
+\left|\frac{4\pi vT_{\mathrm{r}}}{\lambda}\right|&lt;\pi.
+$$</p>
+<p>两边除以 $\pi$：</p>
+<p>$$
+\frac{4|v|T_{\mathrm{r}}}{\lambda}&lt;1.
+$$</p>
+<p>于是：</p>
+<p>$$
+|v|&lt;\frac{\lambda}{4T_{\mathrm{r}}}.
+$$</p>
+<p>因此最大无模糊速度为：</p>
+<p>$$
+\boxed{v_{\mathrm{max}}=\frac{\lambda}{4T_{\mathrm{r}}}}.
+$$</p>
+<figure class="diagram"><svg role="img" viewbox="0 0 900 430"><rect fill="#fbfdff" height="428" rx="18" stroke="#dce6f0" width="898" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="450" y="45">相位 Nyquist 区间与速度混叠</text><line stroke="#415466" stroke-width="3" x1="100" x2="800" y1="215" y2="215"></line><line stroke="#1f6fb2" stroke-width="3" x1="250" x2="250" y1="160" y2="270"></line><line stroke="#1f6fb2" stroke-width="3" x1="650" x2="650" y1="160" y2="270"></line><text class="svg-label" text-anchor="middle" x="250" y="300">−π</text><text class="svg-label" text-anchor="middle" x="650" y="300">+π</text><rect fill="#eef5fb" height="60" rx="12" stroke="#9dbbd6" width="400" x="250" y="185"></rect><text class="svg-accent" text-anchor="middle" x="450" y="220">无模糊区间</text><path d="M700 145 C790 110,805 260,700 285" fill="none" stroke="#c96d25" stroke-width="4"></path><polygon fill="#c96d25" points="700,285 714,275 716,292"></polygon><text class="svg-orange" x="735" y="95">ω &gt; π</text><text class="svg-orange" x="690" y="350">wrap 回负频率侧</text><text class="svg-label" text-anchor="middle" x="450" y="390">|ω| &lt; π  ⇒  |v| &lt; λ/(4Tr)</text></svg><figcaption>图 3　慢时间角频率超出 ±π rad/chirp 后会与区间内另一角频率产生相同采样，形成速度模糊。</figcaption></figure>
+<h3 id="4-1-这个公式告诉我们什么设计直觉">4.1 这个公式告诉我们什么设计直觉？</h3>
+<p>$$
+v_{\mathrm{max}}=\frac{\lambda}{4T_{\mathrm{r}}}
+$$</p>
+<p>说明：</p>
+<ul>
+<li>$T_{\mathrm{r}}$ 越小，相邻 Chirp 越密，最大无模糊速度越高；</li>
+<li>$T_{\mathrm{r}}$ 越大，目标在两 Chirp 之间移动得更多，更容易跨过相位的 $\pm\pi$ 边界；</li>
+<li>载频越高、波长越短，同样速度引起的相位旋转越快，因此若其他参数不变，无模糊速度范围反而更紧。</li>
+</ul>
+<h3 id="4-2-一个数量级例子">4.2 一个数量级例子</h3>
+<p>以 77 GHz 为例：</p>
+<p>$$
+\lambda\approx3.896\,\mathrm{mm}.
+$$</p>
+<p>若：</p>
+<p>$$
+T_{\mathrm{r}}=50\,\mu\mathrm{s},
+$$</p>
+<p>则：</p>
+<p>$$
+v_{\mathrm{max}}
+=\frac{3.896\times10^{-3}}{4\times50\times10^{-6}}
+\approx19.5\ \mathrm{m\,s^{-1}}.
+$$</p>
+<p>这只是教学例子，用于理解参数数量级，不是 TI Module 3 的固定配置。</p>
+<hr/>
+<h2 id="5-为什么同距离-不同速度的多个目标必须用-doppler-fft">5. 为什么同距离、不同速度的多个目标必须用 Doppler FFT？</h2>
+<p>假设两个目标距离相同，因此它们在 Range FFT 中落入同一个 range bin；但速度不同：</p>
+<p>$$
+v_1\neq v_2.
+$$</p>
+<p>第 $m$ 个 Chirp 上，这个 range bin 的复数值会近似变成：</p>
+<p>$$
+x[m]
+=A_1e^{jm\omega_1}
++A_2e^{jm\omega_2}.
+$$</p>
+<p>其中：</p>
+<p>$$
+\omega_i=\frac{4\pi v_iT_{\mathrm{r}}}{\lambda}.
+$$</p>
+<p>你现在拿到的不是“一个相量”，而是<strong>两个旋转速度不同的相量叠加</strong>。</p>
+<p>如果只看两个 Chirp 并算一个总相位差，得到的只是混合结果，不能分别求出 $v_1$ 和 $v_2$。</p>
+<p>但如果连续记录 $N$ 个 Chirp：</p>
+<p>$$
+x[0],x[1],\ldots,x[N-1],
+$$</p>
+<p>对这串复数做 FFT：</p>
+<p>$$
+X_{\mathrm{D}}[k]=\sum_{m=0}^{N-1}x[m]e^{-j2\pi km/N},
+$$</p>
+<p>就会在对应 $\omega_1$、$\omega_2$ 的位置形成两个峰。</p>
+<p>这就是：</p>
+<p><strong>Doppler FFT</strong>。</p>
+<figure class="diagram"><svg role="img" viewbox="0 0 900 430"><rect fill="#fbfdff" height="428" rx="18" stroke="#dce6f0" width="898" x="1" y="1"></rect><text class="svg-title" x="230" y="45">同一 range bin：两个速度分量叠加</text><text class="svg-title" x="700" y="45">Doppler FFT 分离</text><path d="M80 230 C120 120,160 120,200 230 S280 340,320 230 S400 120,440 230" fill="none" stroke="#1f6fb2" stroke-width="4"></path><path d="M80 230 C100 185,120 185,140 230 S180 275,200 230 S240 185,260 230 S300 275,320 230 S360 185,380 230 S420 275,440 230" fill="none" opacity=".85" stroke="#c96d25" stroke-width="3"></path><text class="svg-label" text-anchor="middle" x="260" y="365">x[m] = A₁e^{jmω₁}+A₂e^{jmω₂}</text><line stroke="#415466" stroke-width="2" x1="560" x2="830" y1="330" y2="330"></line><path d="M590 330 L620 320 L650 120 L680 320 L705 330" fill="rgba(31,111,178,.10)" stroke="#1f6fb2" stroke-width="3"></path><path d="M705 330 L735 320 L765 155 L795 320 L820 330" fill="rgba(201,109,37,.10)" stroke="#c96d25" stroke-width="3"></path><text class="svg-blue" text-anchor="middle" x="650" y="100">v₁</text><text class="svg-orange" text-anchor="middle" x="765" y="135">v₂</text></svg><figcaption>图 4　多个同距目标在单个 range bin 内叠加；沿 Chirp 维做 Doppler FFT 后，不同相位旋转速率形成不同速度峰。</figcaption></figure>
+<hr/>
+<h2 id="6-doppler-fft-到底沿哪个维度做">6. Doppler FFT 到底沿哪个维度做？</h2>
+<p>这是整个 FMCW 处理中最容易混淆、但也最重要的一点。</p>
+<p>假设一帧里发射 $N$ 个 Chirp，每个 Chirp 采集 $M$ 个 ADC 样本。</p>
+<p>可以把原始数据想成一个矩阵：</p>
+<p>$$
+\mathbf{X}\in\mathbb{C}^{N\times M}.
+$$</p>
+<p>其中：</p>
+<ul>
+<li>横向：一个 Chirp 内的 ADC sample，叫 <strong>fast time</strong>；</li>
+<li>纵向：Chirp index，叫 <strong>slow time</strong>。</li>
+</ul>
+<h3 id="6-1-第一次-fft-range-fft">6.1 第一次 FFT：Range FFT</h3>
+<p>对每一行，也就是每个 Chirp 内部，沿 fast time 做 FFT：</p>
+<p>$$
+\text{ADC samples}
+\xrightarrow{\text{Range FFT}}
+\text{range bins}.
+$$</p>
+<p>这一步把 IF frequency 映射成距离。</p>
+<h3 id="6-2-第二次-fft-doppler-fft">6.2 第二次 FFT：Doppler FFT</h3>
+<p>完成 Range FFT 后，固定某一个 range bin，沿所有 Chirp 读取：</p>
+<p>$$
+X[0,r],X[1,r],\ldots,X[N-1,r].
+$$</p>
+<p>然后沿 slow time 做 FFT：</p>
+<p>$$
+\text{phase evolution across chirps}
+\xrightarrow{\text{Doppler FFT}}
+\text{velocity bins}.
+$$</p>
+<p>因此完整逻辑是：</p>
+<p>$$
+\begin{aligned}
+\text{fast time} &amp;\xrightarrow{\text{Range FFT}} \text{range},\\
+\text{slow time} &amp;\xrightarrow{\text{Doppler FFT}} \text{velocity}.
+\end{aligned}
+$$</p>
+<figure class="diagram"><svg role="img" viewbox="0 0 900 500"><rect fill="#fbfdff" height="498" rx="18" stroke="#dce6f0" width="898" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="450" y="40">FMCW 二维 FFT：fast time → range，slow time → velocity</text><g transform="translate(145,95)"><rect fill="#fff" height="300" stroke="#9dbbd6" width="430" x="0" y="0"></rect><g stroke="#dce6f0"><line x1="0" x2="430" y1="50" y2="50"></line><line x1="0" x2="430" y1="100" y2="100"></line><line x1="0" x2="430" y1="150" y2="150"></line><line x1="0" x2="430" y1="200" y2="200"></line><line x1="0" x2="430" y1="250" y2="250"></line><line x1="70" x2="70" y1="0" y2="300"></line><line x1="140" x2="140" y1="0" y2="300"></line><line x1="210" x2="210" y1="0" y2="300"></line><line x1="280" x2="280" y1="0" y2="300"></line><line x1="350" x2="350" y1="0" y2="300"></line></g><rect fill="#eef5fb" height="300" opacity=".85" width="70" x="210" y="0"></rect><circle cx="245" cy="35" fill="#1f6fb2" r="9"></circle><circle cx="245" cy="85" fill="#315f91" r="9"></circle><circle cx="245" cy="135" fill="#1f6fb2" r="9"></circle><circle cx="245" cy="185" fill="#315f91" r="9"></circle><circle cx="245" cy="235" fill="#1f6fb2" r="9"></circle><circle cx="245" cy="285" fill="#315f91" r="9"></circle></g><line stroke="#1f6fb2" stroke-width="4" x1="145" x2="575" y1="430" y2="430"></line><polygon fill="#1f6fb2" points="575,430 558,421 558,439"></polygon><text class="svg-blue" text-anchor="middle" x="360" y="465">fast time / ADC samples → Range FFT</text><line stroke="#c96d25" stroke-width="4" x1="105" x2="105" y1="395" y2="95"></line><polygon fill="#c96d25" points="105,95 96,112 114,112"></polygon><text class="svg-orange" text-anchor="middle" transform="rotate(-90 55 250)" x="55" y="250">slow time / chirp index → Doppler FFT</text><text class="svg-label" x="690" y="180">固定一个 range bin</text><text class="svg-label" x="690" y="220">取整列复数序列</text><text class="svg-accent" x="690" y="260">→ velocity bins</text></svg><figcaption>图 5　Range FFT 沿每个 Chirp 内部的 fast time 进行；Doppler FFT 则固定 range bin，沿 Chirp index 的 slow time 进行。</figcaption></figure>
+<hr/>
+<h2 id="7-速度分辨率-为什么看得更久-才能分开更接近的速度">7. 速度分辨率：为什么看得更久，才能分开更接近的速度？</h2>
+<p>对长度为 $N$ 的慢时间序列，Doppler FFT 的角频率分辨能力约为：</p>
+<p>$$
+\Delta\omega_{\mathrm{min}}\approx\frac{2\pi}{N}.
+$$</p>
+<p>而速度与角频率关系：</p>
+<p>$$
+\omega=\frac{4\pi vT_{\mathrm{r}}}{\lambda}.
+$$</p>
+<p>若两个目标的速度相差 $\Delta v$，对应角频率差：</p>
+<p>$$
+\Delta\omega
+=\frac{4\pi\Delta vT_{\mathrm{r}}}{\lambda}.
+$$</p>
+<p>为了分开两个 Doppler 峰，需要：</p>
+<p>$$
+\frac{4\pi\Delta vT_{\mathrm{r}}}{\lambda}
+\gtrsim
+\frac{2\pi}{N}.
+$$</p>
+<p>约去 $2\pi$：</p>
+<p>$$
+\frac{2\Delta vT_{\mathrm{r}}}{\lambda}
+\gtrsim
+\frac1N.
+$$</p>
+<p>得到：</p>
+<p>$$
+\Delta v\gtrsim\frac{\lambda}{2NT_{\mathrm{r}}}.
+$$</p>
+<p>因此速度分辨率常写作：</p>
+<p>$$
+v_{\mathrm{res}}=\frac{\lambda}{2NT_{\mathrm{r}}}.
+$$</p>
+<p>如果定义慢时间总观察时长：</p>
+<p>$$
+T_{\mathrm{f}}=NT_{\mathrm{r}},
+$$</p>
+<p>则：</p>
+<p>$$
+\boxed{v_{\mathrm{res}}=\frac{\lambda}{2T_{\mathrm{f}}}}.
+$$</p>
+<p>这就是 TI Module 3 给出的关键结论：</p>
+<blockquote class="callout">
+<p><strong>速度分辨率取决于整帧观察时间，而不是单个 Chirp 的带宽。</strong></p>
+</blockquote>
+<h3 id="7-1-与最大速度放在一起看">7.1 与最大速度放在一起看</h3>
+<p>$$
+v_{\mathrm{max}}=\frac{\lambda}{4T_{\mathrm{r}}}
+$$</p>
+<p>$$
+v_{\mathrm{res}}=\frac{\lambda}{2NT_{\mathrm{r}}}=\frac{\lambda}{2T_{\mathrm{f}}}
+$$</p>
+<p>于是参数职责非常清楚：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>主要影响</th>
+<th>直觉</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$T_{\mathrm{r}}$</td>
+<td>最大无模糊速度</td>
+<td>Chirp 越密，越不容易发生相位混叠</td>
+</tr>
+<tr>
+<td>$N$</td>
+<td>速度分辨率</td>
+<td>Chirp 越多，慢时间观察越长</td>
+</tr>
+<tr>
+<td>$T_{\mathrm{f}}=NT_{\mathrm{r}}$</td>
+<td>速度分辨率</td>
+<td>看得越久，越能分开接近的速度</td>
+</tr>
+<tr>
+<td>$\lambda$</td>
+<td>两者都影响</td>
+<td>波长决定速度映射到相位旋转的尺度</td>
+</tr>
+</tbody>
+</table>
+<h3 id="7-2-数量级例子">7.2 数量级例子</h3>
+<p>继续使用：</p>
+<p>$$
+\lambda=3.896\,\mathrm{mm},\quad T_{\mathrm{r}}=50\,\mu\mathrm{s},
+$$</p>
+<p>若一帧有：</p>
+<p>$$
+N=128
+$$</p>
+<p>个 Chirp，则：</p>
+<p>$$
+T_{\mathrm{f}}=128\times50\,\mu\mathrm{s}=6.4\,\mathrm{ms}.
+$$</p>
+<p>速度分辨率约为：</p>
+<p>$$
+v_{\mathrm{res}}
+=\frac{3.896\times10^{-3}}{2\times128\times50\times10^{-6}}
+\approx0.304\ \mathrm{m\,s^{-1}}.
+$$</p>
+<p>这再次说明：</p>
+<ul>
+<li>想让 $v_{\mathrm{max}}$ 更大，优先缩短 Chirp 间隔；</li>
+<li>想让 $v_{\mathrm{res}}$ 更细，优先延长总观察时间。</li>
+</ul>
+<hr/>
+<h2 id="8-doppler-fft-的-bin-怎样换算成速度">8. Doppler FFT 的 bin 怎样换算成速度？</h2>
+<p>对 $N$ 点 Doppler FFT，离散角频率 bin 为：</p>
+<p>$$
+\omega_k=\frac{2\pi k}{N}.
+$$</p>
+<p>代入：</p>
+<p>$$
+v=\frac{\lambda\omega}{4\pi T_{\mathrm{r}}},
+$$</p>
+<p>得到：</p>
+<p>$$
+\boxed{v_k=\frac{\lambda k}{2NT_{\mathrm{r}}}}.
+$$</p>
+<p>不过 FFT 原始输出索引通常是：</p>
+<p>$$
+k=0,1,\ldots,N-1,
+$$</p>
+<p>其中后半部分实际上表示负频率。</p>
+<p>做 <code>fftshift</code> 后，可以把索引理解为近似：</p>
+<p>$$
+k=-\frac N2,\ldots,-1,0,1,\ldots,\frac N2-1.
+$$</p>
+<p>于是速度轴自然变成：</p>
+<p>$$
+-v_{\mathrm{max}}\ \text{到}\ +v_{\mathrm{max}}.
+$$</p>
+<blockquote class="callout">
+<p><strong>符号约定提醒</strong>：TI 课件示意中“远离雷达”和“靠近雷达”对应相反的相位旋转方向。具体哪一侧显示为正速度，取决于系统的混频、FFT 和坐标符号约定。工程实现时应以本系统定义为准，不要只凭图形方向死记正负号。</p>
+</blockquote>
+<hr/>
+<h2 id="9-range-doppler-图-二维-fft-最终在表达什么">9. Range-Doppler 图：二维 FFT 最终在表达什么？</h2>
+<p>完成两次 FFT 后，每一个二维 bin 都对应：</p>
+<p>$$
+(\text{range bin},\ \text{Doppler bin}).
+$$</p>
+<p>也就是：</p>
+<p>$$
+(\text{距离},\ \text{径向速度}).
+$$</p>
+<p>假设两个目标：</p>
+<ul>
+<li>距离相同；</li>
+<li>速度不同。</li>
+</ul>
+<p>单个 Chirp 的 Range FFT 中，它们可能仍然叠成一个距离峰。</p>
+<p>但在多个 Chirp 上，由于二者相位旋转速率不同，Doppler FFT 会把它们分成两个速度峰。</p>
+<p>所以二维 Range-Doppler 处理解决的是：</p>
+<blockquote class="callout">
+<p><strong>同一个距离单元内，是否存在多个不同径向速度的目标？</strong></p>
+</blockquote>
+<p>这正是第 1 节结尾留下的问题，现在得到了完整回答。</p>
+<hr/>
+<h2 id="10-三组最容易混淆的概念">10. 三组最容易混淆的概念</h2>
+<h3 id="10-1-距离分辨率-vs-速度分辨率">10.1 距离分辨率 vs 速度分辨率</h3>
+<p>距离分辨率：</p>
+<p>$$
+d_{\mathrm{res}}=\frac{c}{2B}.
+$$</p>
+<p>速度分辨率：</p>
+<p>$$
+v_{\mathrm{res}}=\frac{\lambda}{2T_{\mathrm{f}}}.
+$$</p>
+<p>所以：</p>
+<ul>
+<li>距离分辨率主要看 <strong>Chirp bandwidth</strong>；</li>
+<li>速度分辨率主要看 <strong>frame observation time</strong>。</li>
+</ul>
+<p>二者不是同一种“FFT 分辨率参数”。</p>
+<h3 id="10-2-最大距离-vs-最大速度">10.2 最大距离 vs 最大速度</h3>
+<p>最大距离主要受 IF bandwidth / ADC sampling 等限制；</p>
+<p>最大无模糊速度主要受：</p>
+<p>$$
+T_{\mathrm{r}}
+$$</p>
+<p>限制。</p>
+<p>一个决定“能看多远”，一个决定“能看多快”。</p>
+<h3 id="10-3-range-fft-的频率-vs-doppler-fft-的频率">10.3 Range FFT 的频率 vs Doppler FFT 的频率</h3>
+<p>Range FFT 的 frequency：</p>
+<ul>
+<li>单位常为 Hz；</li>
+<li>来自一个 Chirp 内的 IF 振荡；</li>
+<li>映射到距离。</li>
+</ul>
+<p>Doppler FFT 的 frequency：</p>
+<ul>
+<li>原始离散量是 rad/chirp 或 cycles/chirp；</li>
+<li>来自跨 Chirp 的复相位旋转；</li>
+<li>映射到速度。</li>
+</ul>
+<p>这两个“频率”物理来源完全不同。</p>
+<hr/>
+<h2 id="11-关键公式总表">11. 关键公式总表</h2>
+<table>
+<thead>
+<tr>
+<th>关系</th>
+<th>公式</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>相邻 Chirp 位移</td>
+<td>$\Delta d=vT_{\mathrm{r}}$</td>
+<td>速度先转成 Chirp 间位移</td>
+</tr>
+<tr>
+<td>跨 Chirp 相位差</td>
+<td>$\omega=4\pi vT_{\mathrm{r}}/\lambda$</td>
+<td>速度转成慢时间角频率</td>
+</tr>
+<tr>
+<td>速度估计</td>
+<td>$v=\lambda\omega/(4\pi T_{\mathrm{r}})$</td>
+<td>从相位旋转率反推速度</td>
+</tr>
+<tr>
+<td>最大无模糊速度</td>
+<td>$v_{\mathrm{max}}=\lambda/(4T_{\mathrm{r}})$</td>
+<td>由 $|\omega|&lt;\pi$ 得到</td>
+</tr>
+<tr>
+<td>Doppler 角频率分辨率</td>
+<td>$\Delta\omega\approx2\pi/N$</td>
+<td>慢时间 FFT 的离散分辨能力</td>
+</tr>
+<tr>
+<td>速度分辨率</td>
+<td>$v_{\mathrm{res}}=\lambda/(2NT_{\mathrm{r}})$</td>
+<td>$N$ 个 Chirp 的速度分辨能力</td>
+</tr>
+<tr>
+<td>速度分辨率</td>
+<td>$v_{\mathrm{res}}=\lambda/(2T_{\mathrm{f}})$</td>
+<td>用总 frame time 表示</td>
+</tr>
+<tr>
+<td>Doppler bin 映射</td>
+<td>$v_k=\lambda k/(2NT_{\mathrm{r}})$</td>
+<td>FFT bin 映射到有符号速度</td>
+</tr>
+</tbody>
+</table>
+<hr/>
+<h2 id="12-易错点与自检">12. 易错点与自检</h2>
+<h3 id="易错点-1-doppler-fft-直接对原始-adc-数据再做一次-fft">易错点 1：Doppler FFT 直接对原始 ADC 数据再做一次 FFT</h3>
+<p>不准确。标准二维处理通常是先对每个 Chirp 做 Range FFT，然后固定某个 range bin，沿 Chirp 维对复数值做 Doppler FFT。</p>
+<h3 id="易错点-2-目标速度越大-range-fft-峰一定移动很多">易错点 2：目标速度越大，Range FFT 峰一定移动很多</h3>
+<p>不一定。课程这一阶段的核心近似是：相邻 Chirp 中目标仍位于近似相同 range bin，但复数相位持续旋转。速度主要从跨 Chirp 相位变化提取。</p>
+<h3 id="易错点-3-增加-chirp-数量一定提高最大速度">易错点 3：增加 Chirp 数量一定提高最大速度</h3>
+<p>错误。若 $T_{\mathrm{r}}$ 不变，增加 $N$ 主要延长观察时间，从而改善速度分辨率；最大无模糊速度仍主要由 $T_{\mathrm{r}}$ 决定。</p>
+<h3 id="易错点-4-把单个-chirp-的时长直接当成真实-chirp-repetition-interval">易错点 4：把单个 Chirp 的时长直接当成真实 Chirp repetition interval</h3>
+<p>真实系统可能有 idle time。速度公式中的时间间隔应对应连续 Chirp 的实际采样时刻间隔。</p>
+<h3 id="易错点-5-速度的正负号是绝对固定的">易错点 5：速度的正负号是绝对固定的</h3>
+<p>不是。物理上靠近/远离对应相反 Doppler 方向，但实现里的正负号取决于信号模型和 FFT 约定。</p>
+<h3 id="自检题">自检题</h3>
+<ol>
+<li>为什么同一目标在连续 Chirp 的同一 range bin 上会形成旋转复相量？</li>
+<li>为什么 $|\omega|&lt;\pi$ 才能无模糊区分正负速度？</li>
+<li>若 $T_{\mathrm{r}}$ 减半，$v_{\mathrm{max}}$ 怎样变化？</li>
+<li>若 $T_{\mathrm{r}}$ 不变而 Chirp 数 $N$ 翻倍，$v_{\mathrm{res}}$ 怎样变化？</li>
+<li>两个目标同距不同速时，为什么两 Chirp 的单相位差方法失效？</li>
+<li>Range FFT 与 Doppler FFT 分别沿 fast time 还是 slow time？</li>
+</ol>
+<p><strong>答案要点：</strong>1）目标运动使传播相位逐 Chirp 改变；2）离散复指数对 $2\pi$ 周期，超出 Nyquist 区间会混叠；3）翻倍；4）减半，分辨能力提高；5）同一 bin 内是多个旋转相量叠加；6）Range FFT 沿 fast time，Doppler FFT 沿 slow time。</p>
+<hr/>
+<h2 id="13-本节小结">13. 本节小结</h2>
+<p>前两节已经建立：</p>
+<p>$$
+\text{距离}\rightarrow\text{IF frequency}\rightarrow\text{Range FFT}
+$$</p>
+<p>以及：</p>
+<p>$$
+\text{微位移}\rightarrow\text{phase change}.
+$$</p>
+<p>第 3 节把二者连接成完整的速度处理链：</p>
+<p>$$
+\begin{aligned}
+v
+&amp;\longrightarrow \Delta\phi_{\mathrm{chirp}}\\
+&amp;\longrightarrow x[m]=A e^{j m\omega}\\
+&amp;\xrightarrow{\text{Doppler FFT}} v_k.
+\end{aligned}
+$$</p>
+<p>最重要的三条关系是：</p>
+<p>$$
+v=\frac{\lambda\omega}{4\pi T_{\mathrm{r}}}
+$$</p>
+<p>$$
+v_{\mathrm{max}}=\frac{\lambda}{4T_{\mathrm{r}}}
+$$</p>
+<p>$$
+v_{\mathrm{res}}=\frac{\lambda}{2T_{\mathrm{f}}}
+$$</p>
+<p>它们分别回答：</p>
+<ul>
+<li>速度怎样从相位旋转得到；</li>
+<li>最快能无模糊测到多快；</li>
+<li>两个接近的速度最小要差多少才能分开。</li>
+</ul>
+<p>到了这里，FMCW 的二维处理框架已经完整出现：</p>
+<ul>
+<li>Chirp 内：Range FFT → 距离；</li>
+<li>Chirp 间：Doppler FFT → 速度。</li>
+</ul>
+<p>下一节将进入系统设计，把距离分辨率、最大距离、最大速度、速度分辨率这些要求一起映射回 Chirp 和 frame 参数，真正回答“一个 FMCW 雷达波形该怎么设计”。</p>
+<hr/>
+<h2 id="来源">来源</h2>
+<ol>
+<li>Bilibili：《毫米波雷达基础知识》，BV1du4m1g7bv，P3“3、FMCW3：FMCW雷达速度估计”。</li>
+<li>Texas Instruments: <em>Intro to mmWave Sensing: FMCW Radars — Module 3: Velocity Estimation</em>.</li>
+<li>Texas Instruments: <em>Introduction to mmWave Sensing: FMCW Radars</em> 配套演示文稿，Module 3 对应约 PDF 第 32–42 页。</li>
+</ol><section class="source-panel"><strong>来源追溯</strong><br>主线资料：Bilibili《毫米波雷达基础知识》P3“FMCW3：FMCW雷达速度估计”，并以 Texas Instruments 官方 <em>Intro to mmWave Sensing: FMCW Radars — Module 3: Velocity Estimation</em> 与同套官方 70 页讲义约第 32–42 页核验。fast/slow time、FFT bin 映射及真实 chirp repetition interval 等为教学补充。</section><div class="footer">学习笔记项目 · ChatGPT-AgentDock / Codex 协作产物 · 2026-09-22</div></main></div><script>const bar=document.getElementById('progress');const links=[...document.querySelectorAll('.toc a')];
+function update(){const d=document.documentElement;const m=d.scrollHeight-d.clientHeight;bar.style.width=(m?d.scrollTop/m*100:0)+'%';}
+window.addEventListener('scroll',update,{passive:true});update();
+const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+e.target.id));}})},{rootMargin:'-15% 0px -72% 0px'});
+document.querySelectorAll('h2[id],h3[id]').forEach(h=>obs.observe(h));
+</script></body></html>

@@ -1,0 +1,819 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"><title>毫米波雷达基础｜第6节：FMCW雷达检测与跟踪</title><script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']]},svg:{fontCache:'global'}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script><style>:root{--ink:#20303d;--muted:#627385;--line:#dce5ed;--paper:#fff;--soft:#f6f9fc;--blue:#1f6fb2;--blue2:#315f91;--orange:#c96d25;--shadow:0 12px 34px rgba(41,63,82,.08);}
+*{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;background:#f3f6f9;color:var(--ink);font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;line-height:1.82;font-size:16px}
+#progress{position:fixed;top:0;left:0;height:3px;background:var(--blue);width:0;z-index:50}
+.layout{display:grid;grid-template-columns:280px minmax(0,860px);gap:32px;max-width:1210px;margin:0 auto;padding:34px 24px 80px}
+.sidebar{position:sticky;top:22px;height:calc(100vh - 44px);overflow:auto;padding:18px 16px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.92);box-shadow:var(--shadow)}
+.brand{font-weight:700;color:#173c5c;margin:3px 8px 14px} .toc{display:flex;flex-direction:column;gap:2px} .toc a{text-decoration:none;color:#536779;border-radius:8px;padding:7px 9px;font-size:13px;line-height:1.4} .toc a:hover,.toc a.active{background:#edf4fa;color:#174e7e} .toc-sub{padding-left:22px!important;font-size:12.5px!important}
+.article{background:var(--paper);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:54px 68px;min-width:0}
+.hero{border-bottom:1px solid var(--line);padding-bottom:30px;margin-bottom:36px} .eyebrow{color:var(--blue);font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase} h1{font-size:35px;line-height:1.25;margin:10px 0 15px;color:#17344d} .lead{font-size:17px;color:#596d7f;max-width:720px;margin:0} .meta{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px} .chip{font-size:12px;padding:5px 9px;border-radius:999px;background:#edf4fa;color:#315f91;border:1px solid #d2e2ef}
+h2{font-size:25px;line-height:1.35;color:#183e5d;margin:54px 0 18px;padding-top:4px} h3{font-size:19px;line-height:1.4;color:#28516f;margin:34px 0 12px} p{margin:12px 0} strong{color:#193b56} code{font-family:"Cascadia Mono",Consolas,monospace;background:#f0f4f7;border:1px solid #e1e8ee;padding:.08em .34em;border-radius:5px;font-size:.92em}
+hr{border:0;border-top:1px solid var(--line);margin:42px 0} ul,ol{padding-left:1.55em} li{margin:.35em 0}
+blockquote.callout{margin:22px 0;padding:14px 18px;border-left:4px solid var(--blue);background:#f3f8fc;border-radius:0 10px 10px 0;color:#405669}
+table{width:100%;border-collapse:collapse;margin:20px 0 28px;font-size:14.5px} th,td{border:1px solid #dce5ed;padding:10px 12px;text-align:left;vertical-align:top} th{background:#eef5fa;color:#294f6d} tr:nth-child(even) td{background:#fbfcfd}
+.diagram{margin:28px 0 34px;padding:16px;border:1px solid var(--line);border-radius:16px;background:#fbfdff;overflow:hidden} .diagram svg{width:100%;height:auto;display:block} figcaption{text-align:center;color:#657889;font-size:13px;margin-top:10px} .svg-label{font:16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#415466} .svg-title{font:600 17px "Segoe UI","Microsoft YaHei",sans-serif;fill:#294f6d} .svg-accent{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#315f91} .svg-blue{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#1f6fb2} .svg-orange{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#c96d25}
+.formula-note{font-size:13px;color:var(--muted)} mjx-container{color:#172a3a} mjx-container[display="true"]{margin:1.35em 0!important;max-width:100%;overflow-x:auto;overflow-y:hidden;padding:.18em .25em .24em;text-align:center;scrollbar-width:thin;scrollbar-color:#c7d5e1 transparent} mjx-container[display="true"]>svg{display:inline-block;vertical-align:middle} mjx-container:not([display="true"]){font-size:1.01em}
+.source-panel{margin-top:52px;padding:22px;border:1px solid var(--line);background:#f8fafc;border-radius:14px;color:#526779;font-size:14px} .source-panel a{color:var(--blue)}
+.footer{margin-top:38px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:#7a8997;text-align:center}
+@media(max-width:980px){.layout{grid-template-columns:1fr;max-width:900px}.sidebar{position:relative;top:0;height:auto;max-height:340px}.article{padding:42px 34px}}
+@media(max-width:600px){body{font-size:15px}.layout{padding:12px 8px 50px}.sidebar{display:none}.article{padding:30px 20px;border-radius:12px}h1{font-size:28px}h2{font-size:22px}.diagram{padding:5px}mjx-container[display="true"]{font-size:.96em;margin:1.1em 0!important}}
+@media print{body{background:white;font-size:10.5pt}#progress,.sidebar{display:none!important}.layout{display:block;max-width:none;padding:0}.article{border:0;box-shadow:none;padding:0}.hero{margin-top:0}h2,h3{break-after:avoid-page}.diagram,table,blockquote,mjx-container[display="true"]{break-inside:avoid}mjx-container[display="true"]{overflow:visible}a{color:inherit;text-decoration:none}}
+</style></head><body><div id="progress"></div><div class="layout"><aside class="sidebar"><div class="brand">第 6 节 · FMCW雷达检测与跟踪</div><nav class="toc"><a class="toc-sub" href="#本节学习目标">本节学习目标</a>
+<a class="toc-main" href="#1-从-测出参数-到-认为这里有一个目标">1. 从“测出参数”到“认为这里有一个目标”</a>
+<a class="toc-main" href="#2-detection-matrix-检测到底在哪张-图-上做">2. Detection Matrix：检测到底在哪张“图”上做？</a>
+<a class="toc-sub" href="#2-1-非相干检测-是什么意思">2.1 “非相干检测”是什么意思？</a>
+<a class="toc-main" href="#3-为什么不能直接使用一个固定阈值">3. 为什么不能直接使用一个固定阈值？</a>
+<a class="toc-main" href="#4-cfar-constant-false-alarm-rate-的核心结构">4. CFAR：Constant False Alarm Rate 的核心结构</a>
+<a class="toc-sub" href="#4-1-为什么要有-guard-cells">4.1 为什么要有 Guard Cells？</a>
+<a class="toc-sub" href="#4-2-training-cells-做什么">4.2 Training Cells 做什么？</a>
+<a class="toc-main" href="#5-恒虚警率-到底恒在哪里">5. “恒虚警率”到底恒在哪里？</a>
+<a class="toc-main" href="#6-range-cfar-与-doppler-cfar-二维图上怎么检测">6. Range-CFAR 与 Doppler-CFAR：二维图上怎么检测？</a>
+<a class="toc-sub" href="#6-1-为什么还需要-peak-grouping">6.1 为什么还需要 Peak Grouping？</a>
+<a class="toc-main" href="#7-cfar-输出的还不是-车-或-人-而是-detection-points">7. CFAR 输出的还不是“车”或“人”，而是 Detection Points</a>
+<a class="toc-sub" href="#7-1-一个真实目标为什么会产生多个点">7.1 一个真实目标为什么会产生多个点？</a>
+<a class="toc-main" href="#8-detection-clustering-tracking-三者到底有什么区别">8. Detection、Clustering、Tracking 三者到底有什么区别？</a>
+<a class="toc-sub" href="#8-1-detection">8.1 Detection</a>
+<a class="toc-sub" href="#8-2-clustering">8.2 Clustering</a>
+<a class="toc-sub" href="#8-3-tracking">8.3 Tracking</a>
+<a class="toc-main" href="#9-为什么-tracking-不能只做-最近点连线">9. 为什么 Tracking 不能只做“最近点连线”？</a>
+<a class="toc-main" href="#10-kalman-filter-先预测-再用新量测纠正">10. Kalman Filter：先预测，再用新量测纠正</a>
+<a class="toc-sub" href="#10-1-为什么还要预测协方差">10.1 为什么还要预测协方差？</a>
+<a class="toc-main" href="#11-新一帧量测来了以后-kalman-filter-怎么更新">11. 新一帧量测来了以后，Kalman Filter 怎么更新？</a>
+<a class="toc-main" href="#12-为什么-ti-gtrack-用-ekf-而不是最简单的线性-kf">12. 为什么 TI GTRACK 用 EKF，而不是最简单的线性 KF？</a>
+<a class="toc-main" href="#13-gating-先问-这个点有资格属于这条轨迹吗">13. Gating：先问“这个点有资格属于这条轨迹吗？”</a>
+<a class="toc-sub" href="#13-1-为什么不用普通欧氏距离">13.1 为什么不用普通欧氏距离？</a>
+<a class="toc-sub" href="#13-2-gate-太小和太大分别会怎样">13.2 Gate 太小和太大分别会怎样？</a>
+<a class="toc-main" href="#14-association-门内有多个点-究竟选谁">14. Association：门内有多个点，究竟选谁？</a>
+<a class="toc-sub" href="#14-1-为什么-association-是多目标跟踪最难的一步之一">14.1 为什么 association 是多目标跟踪最难的一步之一？</a>
+<a class="toc-main" href="#15-track-lifecycle-轨迹不能-一看到就永久存在">15. Track Lifecycle：轨迹不能“一看到就永久存在”</a>
+<a class="toc-sub" href="#15-1-为什么允许-暂时没检测到但-track-还活着">15.1 为什么允许“暂时没检测到但 track 还活着”？</a>
+<a class="toc-main" href="#16-一个完整的-检测与跟踪-帧循环">16. 一个完整的“检测与跟踪”帧循环</a>
+<a class="toc-sub" href="#每一帧内">每一帧内</a>
+<a class="toc-sub" href="#跨帧高层处理">跨帧高层处理</a>
+<a class="toc-main" href="#17-detection-和-tracking-的参数为什么必须一起调">17. Detection 和 Tracking 的参数为什么必须一起调？</a>
+<a class="toc-sub" href="#17-1-cfar-太激进">17.1 CFAR 太激进</a>
+<a class="toc-sub" href="#17-2-cfar-太保守">17.2 CFAR 太保守</a>
+<a class="toc-sub" href="#17-3-tracker-gate-太宽">17.3 Tracker gate 太宽</a>
+<a class="toc-sub" href="#17-4-tracker-gate-太窄">17.4 Tracker gate 太窄</a>
+<a class="toc-main" href="#18-五个最容易混淆的概念">18. 五个最容易混淆的概念</a>
+<a class="toc-sub" href="#18-1-fft-peak-detection">18.1 FFT Peak ≠ Detection</a>
+<a class="toc-sub" href="#18-2-detection-point-real-object">18.2 Detection Point ≠ Real Object</a>
+<a class="toc-sub" href="#18-3-cluster-track">18.3 Cluster ≠ Track</a>
+<a class="toc-sub" href="#18-4-track-prediction-凭空猜测">18.4 Track Prediction ≠ 凭空猜测</a>
+<a class="toc-sub" href="#18-5-cfar-的-constant-阈值恒定">18.5 CFAR 的 “Constant” ≠ 阈值恒定</a>
+<a class="toc-main" href="#19-自检题">19. 自检题</a>
+<a class="toc-main" href="#20-本节小结-从-频谱-走到-真实目标">20. 本节小结：从“频谱”走到“真实目标”</a>
+<a class="toc-main" href="#来源">来源</a></nav></aside><main class="article"><header class="hero"><div class="eyebrow">毫米波雷达基础 · Lesson 06</div><h1>FMCW 雷达检测与跟踪</h1><p class="lead">从 Range-Doppler 能量图上的“亮点”出发，理解 CFAR 如何决定哪些点值得报告，以及点云怎样通过预测、门控、关联和 EKF 变成连续的目标航迹。</p><div class="meta"><span class="chip">P6 主线核验</span><span class="chip">TI SDK / CFAR / GTRACK</span><span class="chip">5 张教学示意图</span><span class="chip">lesson_html_v1</span></div></header><blockquote class="callout">
+<p>对应 Bilibili P6《6、FMCW雷达检测与跟踪》。P6 只有约 2 分 10 秒，本节以其“从参数估计走向目标检测与连续跟踪”的主线为入口，并用 TI mmWave SDK 的典型处理链、CFAR DPU、Tracker / GTRACK 与交通监控参考设计做权威扩展。注意：TI 官方入门 FMCW 课程只有 Module 1–5，本节不是“TI Module 6”。</p>
+</blockquote>
+<h3 id="本节学习目标">本节学习目标</h3>
+<p>学完本节，应能回答九个问题：</p>
+<ol>
+<li>前五节已经能得到 Range / Velocity / Angle，为什么还不等于“检测出目标”？</li>
+<li>为什么固定阈值很难适应真实雷达噪声和杂波，CFAR 又是怎么解决的？</li>
+<li>CUT、Guard Cells、Training Cells 分别做什么？</li>
+<li>CFAR 阈值为什么必须在“漏检”和“虚警”之间权衡？</li>
+<li>检测点、点云、聚类对象、Track 四者有什么区别？</li>
+<li>Tracking 与 Detection 的本质区别是什么？</li>
+<li>Kalman Filter 为什么适合把多帧噪声量测融合成稳定轨迹？</li>
+<li>Gating / Association 为什么是多目标跟踪里最容易出错的一环？</li>
+<li>一帧又一帧的 FMCW 数据最终怎样变成带 ID 的连续目标航迹？</li>
+</ol>
+<hr/>
+<h2 id="1-从-测出参数-到-认为这里有一个目标">1. 从“测出参数”到“认为这里有一个目标”</h2>
+<p>前五节建立了 FMCW 的三维参数估计框架：</p>
+<p>$$
+\text{fast time}\rightarrow\text{Range FFT}\rightarrow R,
+$$</p>
+<p>$$
+\text{slow time}\rightarrow\text{Doppler FFT}\rightarrow v,
+$$</p>
+<p>$$
+\text{antenna index}\rightarrow\text{Angle FFT}\rightarrow\theta.
+$$</p>
+<p>但这三个 FFT 的输出，本质上首先只是很多<strong>频谱 bin 的复数值或能量值</strong>。</p>
+<p>例如一张 Range-Doppler heatmap 里，可能同时存在：</p>
+<ul>
+<li>真实目标峰；</li>
+<li>热噪声；</li>
+<li>静态杂波；</li>
+<li>多径反射；</li>
+<li>旁瓣；</li>
+<li>偶然的随机高点。</li>
+</ul>
+<p>所以“某个 bin 很亮”并不自动等价于：</p>
+<blockquote class="callout">
+<p>这里一定有一个真实物体。</p>
+</blockquote>
+<p>从这里开始，问题从<strong>参数估计</strong>变成了<strong>统计检测</strong>。</p>
+<p>TI mmWave SDK 的典型处理链也正是在 Range FFT、Doppler FFT 之后接入 detection，再得到 point cloud，并继续做 clustering / tracking / classification。</p>
+<figure class="diagram"><svg role="img" viewbox="0 0 980 430"><rect fill="#fbfdff" height="428" rx="18" stroke="#dce6f0" width="978" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="490" y="42">从原始 ADC 到带 ID 的目标航迹</text><g class="svg-label"><rect fill="#eef5fb" height="70" rx="12" stroke="#9dbbd6" width="105" x="35" y="145"></rect><text text-anchor="middle" x="87" y="185">ADC</text><rect fill="#eef5fb" height="70" rx="12" stroke="#9dbbd6" width="125" x="175" y="145"></rect><text text-anchor="middle" x="237" y="175">Range /</text><text text-anchor="middle" x="237" y="198">Doppler FFT</text><rect fill="#fff4ea" height="70" rx="12" stroke="#d8aa80" width="115" x="335" y="145"></rect><text text-anchor="middle" x="392" y="185">CFAR</text><rect fill="#eef5fb" height="70" rx="12" stroke="#9dbbd6" width="115" x="485" y="145"></rect><text text-anchor="middle" x="542" y="185">AoA</text><rect fill="#fff" height="70" rx="12" stroke="#9dbbd6" width="115" x="635" y="145"></rect><text text-anchor="middle" x="692" y="175">Point</text><text text-anchor="middle" x="692" y="198">Cloud</text><rect fill="#f7f9fb" height="70" rx="12" stroke="#9dbbd6" width="150" x="785" y="110"></rect><text text-anchor="middle" x="860" y="150">Clustering /</text><text text-anchor="middle" x="860" y="173">Association</text><rect fill="#fff4ea" height="70" rx="12" stroke="#d8aa80" width="150" x="785" y="225"></rect><text text-anchor="middle" x="860" y="255">EKF Tracking</text><text text-anchor="middle" x="860" y="280">Track ID + State</text></g><g fill="none" stroke="#60788f" stroke-width="3"><path d="M140 180 H175"></path><path d="M300 180 H335"></path><path d="M450 180 H485"></path><path d="M600 180 H635"></path><path d="M750 180 H785"></path><path d="M860 180 V225"></path></g><text class="svg-accent" text-anchor="middle" x="490" y="355">前 5 节解决“参数在哪里”　→　第 6 节解决“哪些点是真目标、是不是同一个目标”</text></svg><figcaption>图 1　TI mmWave SDK 的典型思想：低层 FFT 与 AoA 产生候选点，CFAR 完成检测，点云再进入聚类、关联和跨帧跟踪。</figcaption></figure>
+<hr/>
+<h2 id="2-detection-matrix-检测到底在哪张-图-上做">2. Detection Matrix：检测到底在哪张“图”上做？</h2>
+<p>在典型 FMCW 处理中，可以先把每个 Range-Doppler bin 的能量整理成二维矩阵：</p>
+<p>$$
+D[r,k],
+$$</p>
+<p>其中：</p>
+<ul>
+<li>$r$：range bin；</li>
+<li>$k$：Doppler bin；</li>
+<li>$D[r,k]$：该 bin 的检测统计量，例如多个 RX 非相干叠加后的幅度/功率。</li>
+</ul>
+<p>这通常就是所谓：</p>
+<p><strong>Detection Matrix（检测矩阵）</strong>。</p>
+<p>或者 Range-Doppler detection matrix。</p>
+<p>TI 的 CFAR DPU 就可以直接在 Range / Doppler detection matrix 上进行目标检测。</p>
+<h3 id="2-1-非相干检测-是什么意思">2.1 “非相干检测”是什么意思？</h3>
+<p>如果不同 RX 通道的复数相位还没有对齐，不能直接把复数相量简单相加。</p>
+<p>一种常见做法是先对每个通道取幅度或功率，再累加：</p>
+<p>$$
+D[r,k]
+=\sum_{m=1}^{N_{\mathrm{RX}}}
+|X_m[r,k]|^2.
+$$</p>
+<p>这样不依赖不同 RX 的相位是否同相，称为一种非相干组合思路。</p>
+<p>之后，CFAR 主要关心的是：</p>
+<blockquote class="callout">
+<p>当前这个 bin 的能量，是否显著高于它周围的局部背景？</p>
+</blockquote>
+<hr/>
+<h2 id="3-为什么不能直接使用一个固定阈值">3. 为什么不能直接使用一个固定阈值？</h2>
+<p>最直观的检测规则是：</p>
+<p>$$
+D[r,k]&gt;T
+\Rightarrow
+\text{target}.
+$$</p>
+<p>如果阈值 $T$ 固定，看起来非常简单。</p>
+<p>但真实雷达背景不是固定不变的：</p>
+<ul>
+<li>近距离可能有强静态杂波；</li>
+<li>远距离噪声底可能不同；</li>
+<li>不同方向的天线增益不同；</li>
+<li>多径与旁瓣会形成局部抬升；</li>
+<li>环境变化会让噪声/杂波底变化。</li>
+</ul>
+<p>如果阈值太低：</p>
+<p>$$
+\text{false alarms}\uparrow.
+$$</p>
+<p>如果阈值太高：</p>
+<p>$$
+\text{missed detections}\uparrow.
+$$</p>
+<p>所以更合理的思想是：</p>
+<blockquote class="callout">
+<p><strong>不要问“是否超过一个全局固定阈值”，而要问“是否显著高于自己附近的局部背景”。</strong></p>
+</blockquote>
+<p>这就是 CFAR。</p>
+<hr/>
+<h2 id="4-cfar-constant-false-alarm-rate-的核心结构">4. CFAR：Constant False Alarm Rate 的核心结构</h2>
+<p>CFAR 全称：</p>
+<p><strong>Constant False Alarm Rate（CFAR，恒虚警率）</strong>。</p>
+<p>中文常译为恒虚警率检测。</p>
+<p>最基础的一维 CFAR 窗口包含三类单元：</p>
+<ol>
+<li><strong>CUT（Cell Under Test）</strong>：当前要判断的 bin；</li>
+<li><strong>Guard Cells</strong>：CUT 两侧保护单元；</li>
+<li><strong>Training / Reference Cells</strong>：更外侧用于估计噪声底的参考单元。</li>
+</ol>
+<figure class="diagram"><svg role="img" viewbox="0 0 980 430"><rect fill="#fbfdff" height="428" rx="18" stroke="#dce6f0" width="978" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="490" y="42">CA-CFAR：用局部背景生成自适应阈值</text><g transform="translate(85,130)"><rect fill="#dfeaf4" height="65" rx="7" stroke="#9dbbd6" width="52" x="0" y="80"></rect><rect fill="#dfeaf4" height="65" rx="7" stroke="#9dbbd6" width="52" x="62" y="80"></rect><rect fill="#dfeaf4" height="65" rx="7" stroke="#9dbbd6" width="52" x="124" y="80"></rect><rect fill="#dfeaf4" height="65" rx="7" stroke="#9dbbd6" width="52" x="186" y="80"></rect><rect fill="#fff4ea" height="65" rx="7" stroke="#9dbbd6" width="52" x="248" y="80"></rect><rect fill="#fff4ea" height="65" rx="7" stroke="#9dbbd6" width="52" x="310" y="80"></rect><rect fill="#e8f1fb" height="65" rx="7" stroke="#9dbbd6" width="52" x="372" y="80"></rect><rect fill="#fff4ea" height="65" rx="7" stroke="#9dbbd6" width="52" x="434" y="80"></rect><rect fill="#fff4ea" height="65" rx="7" stroke="#9dbbd6" width="52" x="496" y="80"></rect><rect fill="#dfeaf4" height="65" rx="7" stroke="#9dbbd6" width="52" x="558" y="80"></rect><rect fill="#dfeaf4" height="65" rx="7" stroke="#9dbbd6" width="52" x="620" y="80"></rect><rect fill="#dfeaf4" height="65" rx="7" stroke="#9dbbd6" width="52" x="682" y="80"></rect><rect fill="#dfeaf4" height="65" rx="7" stroke="#9dbbd6" width="52" x="744" y="80"></rect><rect fill="#cfe4f6" height="115" rx="7" stroke="#1f6fb2" stroke-width="3" width="52" x="372" y="30"></rect><text class="svg-accent" text-anchor="middle" x="398" y="65">CUT</text><text class="svg-label" text-anchor="middle" x="105" y="180">Training Cells</text><text class="svg-orange" text-anchor="middle" x="294" y="180">Guard</text><text class="svg-orange" text-anchor="middle" x="502" y="180">Guard</text><text class="svg-label" text-anchor="middle" x="690" y="180">Training Cells</text></g><text class="svg-accent" text-anchor="middle" x="490" y="340">P̂ₙ = reference cells 平均　→　T = α P̂ₙ　→　PCUT &gt; T ?</text><text class="svg-label" text-anchor="middle" x="490" y="385">Guard Cells 防止目标主峰/旁瓣污染局部噪声估计</text></svg><figcaption>图 2　CFAR 窗口围绕 CUT 滑动；保护单元隔离目标能量，参考单元估计局部背景并生成自适应阈值。</figcaption></figure>
+<h3 id="4-1-为什么要有-guard-cells">4.1 为什么要有 Guard Cells？</h3>
+<p>一个真实目标的能量通常不会只占一个完美的 FFT bin。</p>
+<p>受窗函数、频谱泄漏、有限 FFT 分辨率影响，目标峰周围常常也会有较大能量。</p>
+<p>如果把这些邻近高能量 bin 直接拿去估计“噪声”，会造成：</p>
+<p>$$
+\hat P_{\mathrm{n}}\uparrow
+\Rightarrow
+T\uparrow
+\Rightarrow
+\text{目标反而被自己抬高的阈值淹没}.
+$$</p>
+<p>所以先空出一圈 Guard Cells，避免目标能量污染噪声估计。</p>
+<h3 id="4-2-training-cells-做什么">4.2 Training Cells 做什么？</h3>
+<p>把左右两侧的参考单元取平均：</p>
+<p>$$
+\hat P_{\mathrm{n}}
+=\frac1N\sum_{i=1}^{N}P_i,
+$$</p>
+<p>得到局部噪声/杂波功率估计：</p>
+<p>$$
+\hat P_{\mathrm{n}}.
+$$</p>
+<p>然后阈值设为：</p>
+<p>$$
+\boxed{T=\alpha\hat P_{\mathrm{n}}}.
+$$</p>
+<p>若：</p>
+<p>$$
+P_{\mathrm{CUT}}&gt;T,
+$$</p>
+<p>则判为候选检测点。</p>
+<p>这就是最经典的：</p>
+<p><strong>CA-CFAR（Cell Averaging CFAR）</strong>。</p>
+<p>Cell Averaging CFAR。</p>
+<hr/>
+<h2 id="5-恒虚警率-到底恒在哪里">5. “恒虚警率”到底恒在哪里？</h2>
+<p>CFAR 不是说：</p>
+<blockquote class="callout">
+<p>每一帧一定产生固定数量的虚警。</p>
+</blockquote>
+<p>它更准确的意思是：</p>
+<blockquote class="callout">
+<p>根据局部噪声水平动态改变检测阈值，使在给定统计噪声模型下，虚警概率 $P_{\mathrm{fa}}$ 尽量维持在目标水平附近。</p>
+</blockquote>
+<p>在经典 CA-CFAR 教学模型中，若参考单元为独立指数分布的功率噪声，参考单元数量为 $N$，则常见阈值系数关系为：</p>
+<p>$$
+\boxed{
+\alpha
+=N\left(P_{\mathrm{fa}}^{-1/N}-1\right)
+}
+$$</p>
+<p>于是：</p>
+<p>$$
+T=\alpha\hat P_{\mathrm{n}}.
+$$</p>
+<p>这个公式非常有直觉价值：</p>
+<ul>
+<li>希望 $P_{\mathrm{fa}}$ 更低 → $\alpha$ 更大 → 阈值更高；</li>
+<li>阈值更高 → 虚警减少，但弱目标更容易漏检。</li>
+</ul>
+<p>因此检测始终存在：</p>
+<blockquote class="callout">
+<p><strong>检测权衡</strong>：提高阈值通常能降低虚警率，但也可能降低弱目标的检测概率。</p>
+</blockquote>
+<p>的权衡。</p>
+<blockquote class="callout">
+<p><strong>边界提醒</strong>：这是标准 CA-CFAR 理论模型，用于理解阈值设计。TI SDK 的实际 CFAR DPU 还支持不同 averaging mode、threshold scaling 和工程配置，不应把这一条公式当成所有实现的唯一代码形式。</p>
+</blockquote>
+<hr/>
+<h2 id="6-range-cfar-与-doppler-cfar-二维图上怎么检测">6. Range-CFAR 与 Doppler-CFAR：二维图上怎么检测？</h2>
+<p>Range-Doppler detection matrix 是二维的：</p>
+<p>$$
+D[r,k].
+$$</p>
+<p>TI 的 CFAR processing 支持在 Range 和 Doppler 方向执行 CFAR。</p>
+<p>一种常见理解是：</p>
+<ol>
+<li>固定 Doppler bin，沿 range 方向做 CFAR；</li>
+<li>固定 range bin，沿 Doppler 方向做 CFAR；</li>
+<li>只保留满足两个方向检测条件的候选点；</li>
+<li>再进行 peak grouping / FOV filtering 等后处理。</li>
+</ol>
+<figure class="diagram"><svg role="img" viewbox="0 0 980 500"><rect fill="#fbfdff" height="498" rx="18" stroke="#dce6f0" width="978" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="490" y="42">二维 Detection Matrix：Range / Doppler 双向检测</text><g transform="translate(170,90)"><rect fill="#fff" height="320" stroke="#9dbbd6" width="480" x="0" y="0"></rect><g stroke="#e4ebf2"><line x1="0" x2="480" y1="40" y2="40"></line><line x1="0" x2="480" y1="80" y2="80"></line><line x1="0" x2="480" y1="120" y2="120"></line><line x1="0" x2="480" y1="160" y2="160"></line><line x1="0" x2="480" y1="200" y2="200"></line><line x1="0" x2="480" y1="240" y2="240"></line><line x1="0" x2="480" y1="280" y2="280"></line><line x1="60" x2="60" y1="0" y2="320"></line><line x1="120" x2="120" y1="0" y2="320"></line><line x1="180" x2="180" y1="0" y2="320"></line><line x1="240" x2="240" y1="0" y2="320"></line><line x1="300" x2="300" y1="0" y2="320"></line><line x1="360" x2="360" y1="0" y2="320"></line><line x1="420" x2="420" y1="0" y2="320"></line></g><rect fill="#fff4ea" height="55" rx="9" stroke="#c96d25" stroke-width="3" width="70" x="235" y="135"></rect><circle cx="270" cy="162" fill="#c96d25" r="10"></circle><line stroke="#1f6fb2" stroke-dasharray="10 8" stroke-width="4" x1="50" x2="430" y1="162" y2="162"></line><line stroke="#315f91" stroke-dasharray="10 8" stroke-width="4" x1="270" x2="270" y1="35" y2="285"></line></g><text class="svg-blue" text-anchor="middle" x="410" y="445">Range-CFAR</text><text class="svg-accent" x="720" y="250">Doppler-CFAR</text><text class="svg-label" x="765" y="320">两个方向通过</text><text class="svg-label" x="765" y="350">+ peak grouping</text><text class="svg-orange" x="765" y="380">→ detection list</text></svg><figcaption>图 3　在二维 Range-Doppler detection matrix 中，可分别沿 Range 与 Doppler 方向进行局部 CFAR，并结合峰值分组减少重复检测。</figcaption></figure>
+<h3 id="6-1-为什么还需要-peak-grouping">6.1 为什么还需要 Peak Grouping？</h3>
+<p>一个真实目标可能让邻近几个 bin 都过阈值。</p>
+<p>如果全部输出，会出现：</p>
+<blockquote class="callout">
+<p>一个物体 → 好几个“检测点”。</p>
+</blockquote>
+<p>Peak Grouping 的思想是：</p>
+<ul>
+<li>比较邻域；</li>
+<li>只保留局部峰值；</li>
+<li>减少重复检测。</li>
+</ul>
+<p>这和图像里的局部极大值抑制很相似。</p>
+<hr/>
+<h2 id="7-cfar-输出的还不是-车-或-人-而是-detection-points">7. CFAR 输出的还不是“车”或“人”，而是 Detection Points</h2>
+<p>经过 CFAR 后，典型输出会包含：</p>
+<ul>
+<li>range index / range；</li>
+<li>Doppler index / radial velocity；</li>
+<li>SNR；</li>
+<li>noise estimate；</li>
+<li>后续 AoA 处理还可得到 azimuth / elevation。</li>
+</ul>
+<p>于是一个点可以表示为：</p>
+<p>$$
+\boldsymbol{z}_i
+=\begin{bmatrix}
+R_i\\
+v_{r,i}\\
+\theta_i\\
+\mathrm{SNR}_i
+\end{bmatrix}.
+$$</p>
+<p>如果进一步转到笛卡尔坐标：</p>
+<p>$$
+x_i=R_i\sin\theta_i,
+$$</p>
+<p>$$
+y_i=R_i\cos\theta_i,
+$$</p>
+<p>那么每帧会得到一批点：</p>
+<p>$$
+\mathcal{P}_t=\{\boldsymbol{p}_1,\boldsymbol{p}_2,\ldots,\boldsymbol{p}_M\}
+$$</p>
+<p>这就是点云。</p>
+<h3 id="7-1-一个真实目标为什么会产生多个点">7.1 一个真实目标为什么会产生多个点？</h3>
+<p>例如一辆车不是一个理想点散射体。</p>
+<p>车头、轮胎、保险杠、车身边缘等都可能形成反射。</p>
+<p>所以：</p>
+<blockquote class="callout">
+<p><strong>注意</strong>：一个真实物体通常不等于一个雷达点。</p>
+</blockquote>
+<p>而更常见的是：</p>
+<blockquote class="callout">
+<p>更常见的情况是：一个真实物体对应一组空间和速度上相关的反射点。</p>
+</blockquote>
+<p>这正是后续 clustering / group tracking 存在的原因。</p>
+<hr/>
+<h2 id="8-detection-clustering-tracking-三者到底有什么区别">8. Detection、Clustering、Tracking 三者到底有什么区别？</h2>
+<p>这三个词经常被混在一起。</p>
+<h3 id="8-1-detection">8.1 Detection</h3>
+<p>回答：</p>
+<blockquote class="callout">
+<p><strong>这一帧哪些位置存在显著反射？</strong></p>
+</blockquote>
+<p>输出是 detection points / point cloud。</p>
+<h3 id="8-2-clustering">8.2 Clustering</h3>
+<p>回答：</p>
+<blockquote class="callout">
+<p><strong>这一帧里，哪些点大概率属于同一个真实物体？</strong></p>
+</blockquote>
+<p>例如把一辆车上的多个反射点聚成一组。</p>
+<h3 id="8-3-tracking">8.3 Tracking</h3>
+<p>回答：</p>
+<blockquote class="callout">
+<p><strong>这一帧的这个对象，和上一帧的哪个对象是同一个？下一帧它大概会在哪里？</strong></p>
+</blockquote>
+<p>输出不再只是散点，而是带身份的航迹：</p>
+<blockquote class="callout">
+<p><strong>Track 的核心信息</strong>：Track ID + 状态估计 + 跨帧历史。</p>
+</blockquote>
+<p>所以：</p>
+<blockquote class="callout">
+<p><strong>Detection</strong>：回答当前帧是否存在显著目标量测。</p>
+<p><strong>Tracking</strong>：回答目标跨帧的身份与运动状态如何保持连续。</p>
+</blockquote>
+<hr/>
+<h2 id="9-为什么-tracking-不能只做-最近点连线">9. 为什么 Tracking 不能只做“最近点连线”？</h2>
+<p>假设一辆车在第 $t$ 帧的位置是：</p>
+<p>$$
+(x_t,y_t).
+$$</p>
+<p>到第 $t+1$ 帧，附近可能同时出现：</p>
+<ul>
+<li>真实车的新检测点；</li>
+<li>另一辆车的点；</li>
+<li>虚警点；</li>
+<li>多径点；</li>
+<li>本车某一帧完全漏检。</li>
+</ul>
+<p>如果简单采用：</p>
+<blockquote class="callout">
+<p>永远连接欧氏距离最近的点，</p>
+</blockquote>
+<p>就很容易发生：</p>
+<ul>
+<li>track swap：两目标交会时 ID 交换；</li>
+<li>track jump：航迹突然跳到杂波点；</li>
+<li>track fragmentation：一次漏检就断轨；</li>
+<li>ghost track：虚警点连续几帧被误认为新目标。</li>
+</ul>
+<p>所以 tracking 必须利用：</p>
+<ol>
+<li><strong>运动模型预测</strong>；</li>
+<li><strong>不确定度</strong>；</li>
+<li><strong>门控 gating</strong>；</li>
+<li><strong>数据关联 association</strong>；</li>
+<li><strong>航迹生命周期管理</strong>。</li>
+</ol>
+<hr/>
+<h2 id="10-kalman-filter-先预测-再用新量测纠正">10. Kalman Filter：先预测，再用新量测纠正</h2>
+<p>为了建立 tracking 的数学直觉，先看最简单的二维 constant-velocity 模型。</p>
+<p>定义状态：</p>
+<p>$$
+\boldsymbol{x}_k=
+\begin{bmatrix}
+x_k\\
+y_k\\
+v_{x,k}\\
+v_{y,k}
+\end{bmatrix}.
+$$</p>
+<p>若相邻两帧时间间隔为 $\Delta t$，理想匀速状态转移：</p>
+<p>$$
+\boldsymbol{x}_{k|k-1}
+=\mathbf{F}\boldsymbol{x}_{k-1|k-1},
+$$</p>
+<p>其中：</p>
+<p>$$
+\mathbf{F}=
+\begin{bmatrix}
+1&amp;0&amp;\Delta t&amp;0\\
+0&amp;1&amp;0&amp;\Delta t\\
+0&amp;0&amp;1&amp;0\\
+0&amp;0&amp;0&amp;1
+\end{bmatrix}.
+$$</p>
+<p>这一步叫：</p>
+<p><strong>Prediction（预测）</strong>。</p>
+<h3 id="10-1-为什么还要预测协方差">10.1 为什么还要预测协方差？</h3>
+<p>状态预测不可能绝对准确。</p>
+<p>用协方差矩阵：</p>
+<p>$$
+\mathbf{P}
+$$</p>
+<p>表示我们对状态不确定性的估计。</p>
+<p>预测：</p>
+<p>$$
+
+\mathbf{P}_{k|k-1}
+=\mathbf{F}\mathbf{P}_{k-1|k-1}\mathbf{F}^{\mathsf{T}}+\mathbf{Q}
+
+$$</p>
+<p>其中：</p>
+<p>$$
+\mathbf{Q}
+$$</p>
+<p>表示过程噪声，例如真实车辆可能加速、转弯，而不是严格匀速。</p>
+<hr/>
+<h2 id="11-新一帧量测来了以后-kalman-filter-怎么更新">11. 新一帧量测来了以后，Kalman Filter 怎么更新？</h2>
+<p>若量测是位置：</p>
+<p>$$
+\boldsymbol{z}_k=
+\begin{bmatrix}
+x_{\mathrm{meas}}\\
+y_{\mathrm{meas}}
+\end{bmatrix},
+$$</p>
+<p>量测模型：</p>
+<p>$$
+\boldsymbol{z}_k
+=\mathbf{H}\boldsymbol{x}_k+\boldsymbol{v}_k,
+$$</p>
+<p>其中：</p>
+<p>$$
+\mathbf{H}=
+\begin{bmatrix}
+1&amp;0&amp;0&amp;0\\
+0&amp;1&amp;0&amp;0
+\end{bmatrix}.
+$$</p>
+<p>预测量测：</p>
+<p>$$
+\hat{\boldsymbol{z}}_k
+=\mathbf{H}\boldsymbol{x}_{k|k-1}.
+$$</p>
+<p>新量测与预测之间的差：</p>
+<p>$$
+
+\boldsymbol{y}_k
+=\boldsymbol{z}_k-\hat{\boldsymbol{z}}_k
+
+$$</p>
+<p>叫 innovation / residual。</p>
+<p>Kalman gain：</p>
+<p>$$
+\boxed{
+\mathbf{K}_k
+=\mathbf{P}_{k|k-1}\mathbf{H}^{\mathsf{T}}
+\left(
+\mathbf{H}\mathbf{P}_{k|k-1}\mathbf{H}^{\mathsf{T}}+\mathbf{R}
+\right)^{-1}
+}
+$$</p>
+<p>更新状态：</p>
+<p>$$
+\boxed{
+\boldsymbol{x}_{k|k}
+=\boldsymbol{x}_{k|k-1}+\mathbf{K}_k\boldsymbol{y}_k
+}
+$$</p>
+<p>更新协方差：</p>
+<p>$$
+
+\mathbf{P}_{k|k}
+=(\mathbf{I}-\mathbf{K}_k\mathbf{H})\mathbf{P}_{k|k-1}
+
+$$</p>
+<p>这套机制本质上在做：</p>
+<blockquote class="callout">
+<p><strong>相信模型多少，和相信当前量测多少之间，按不确定度自动加权。</strong></p>
+</blockquote>
+<hr/>
+<h2 id="12-为什么-ti-gtrack-用-ekf-而不是最简单的线性-kf">12. 为什么 TI GTRACK 用 EKF，而不是最简单的线性 KF？</h2>
+<p>真实雷达点云天然更接近极坐标量测：</p>
+<p>$$
+\boldsymbol{z}=
+\begin{bmatrix}
+R\\
+\theta\\
+v_{\mathrm{r}}
+\end{bmatrix}.
+$$</p>
+<p>而跟踪状态常希望在笛卡尔坐标表示：</p>
+<p>$$
+\boldsymbol{x}=
+\begin{bmatrix}
+x&amp;y&amp;v_x&amp;v_y&amp;\cdots\end{bmatrix}^{\mathsf{T}}.
+$$</p>
+<p>二者关系是非线性的，例如：</p>
+<p>$$
+R=\sqrt{x^2+y^2},
+$$</p>
+<p>$$
+\theta=\operatorname{atan2}(x,y),
+$$</p>
+<p>$$
+v_{\mathrm{r}}
+=\frac{xv_x+yv_y}{\sqrt{x^2+y^2}}
+$$</p>
+<p>（具体坐标轴定义可因系统而变）。</p>
+<p>所以测量函数写成：</p>
+<p>$$
+\boldsymbol{z}=h(\boldsymbol{x})+\boldsymbol{v}.
+$$</p>
+<p>这时要在线性化点附近计算 Jacobian：</p>
+<p>$$
+\mathbf{H}_k
+=\left.\frac{\partial h}{\partial\boldsymbol{x}}\right|_{\boldsymbol{x}_{k|k-1}},
+$$</p>
+<p>再进入 Kalman 更新。</p>
+<p>这就是 Extended Kalman Filter：</p>
+<p><strong>Extended Kalman Filter（EKF）</strong>。</p>
+<p>TI 的 GTRACK / Group Tracker 正是基于 EKF 的多点群目标跟踪框架。</p>
+<hr/>
+<h2 id="13-gating-先问-这个点有资格属于这条轨迹吗">13. Gating：先问“这个点有资格属于这条轨迹吗？”</h2>
+<p>预测得到某条 track 在下一帧的预期位置后，不应该拿全场所有检测点都来竞争。</p>
+<p>首先建立一个 gate。</p>
+<p>最简单可以理解为椭圆区域：</p>
+<p>$$
+(\boldsymbol{z}-\hat{\boldsymbol{z}})^{\mathsf{T}}
+\mathbf{S}^{-1}
+(\boldsymbol{z}-\hat{\boldsymbol{z}})
+\le\gamma,
+$$</p>
+<p>其中：</p>
+<p>$$
+\mathbf{S}
+=\mathbf{H}\mathbf{P}\mathbf{H}^{\mathsf{T}}+\mathbf{R}
+$$</p>
+<p>是 innovation covariance。</p>
+<p>左边本质上是 Mahalanobis distance。</p>
+<figure class="diagram"><svg role="img" viewbox="0 0 980 450"><rect fill="#fbfdff" height="448" rx="18" stroke="#dce6f0" width="978" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="490" y="42">Tracking Gate：只让“统计上合理”的点参与关联</text><ellipse cx="470" cy="235" fill="#eef5fb" rx="230" ry="105" stroke="#1f6fb2" stroke-width="3"></ellipse><circle cx="470" cy="235" fill="#315f91" r="12"></circle><text class="svg-accent" text-anchor="middle" x="470" y="215">predicted track</text><circle cx="365" cy="215" fill="#c96d25" r="9"></circle><circle cx="520" cy="280" fill="#c96d25" r="9"></circle><circle cx="590" cy="210" fill="#c96d25" r="9"></circle><circle cx="175" cy="120" fill="#9aa9b6" r="9"></circle><circle cx="760" cy="330" fill="#9aa9b6" r="9"></circle><text class="svg-label" text-anchor="middle" x="450" y="365">门内 measurements → scoring / assignment</text><text class="svg-label" text-anchor="middle" x="760" y="365">门外直接排除</text><text class="svg-accent" text-anchor="middle" x="490" y="410">d² = (z−ẑ)ᵀ S⁻¹ (z−ẑ) ≤ γ</text></svg><figcaption>图 4　Gating 使用预测状态与不确定度建立候选区域；门外点不参与该轨迹的关联，能显著减少错误匹配。</figcaption></figure>
+<h3 id="13-1-为什么不用普通欧氏距离">13.1 为什么不用普通欧氏距离？</h3>
+<p>因为预测不确定度往往不是一个完美圆形。</p>
+<p>例如：</p>
+<ul>
+<li>车辆沿前进方向的位置不确定度可能更大；</li>
+<li>横向不确定度可能更小。</li>
+</ul>
+<p>协方差矩阵能自然形成有方向性的椭圆 gate。</p>
+<h3 id="13-2-gate-太小和太大分别会怎样">13.2 Gate 太小和太大分别会怎样？</h3>
+<p>Gate 太小：</p>
+<ul>
+<li>真实点稍有噪声就进不来；</li>
+<li>容易断轨。</li>
+</ul>
+<p>Gate 太大：</p>
+<ul>
+<li>太多邻近目标点进入候选；</li>
+<li>容易误关联 / 串轨。</li>
+</ul>
+<p>因此 gating 本身也是跟踪系统的重要调参项。</p>
+<hr/>
+<h2 id="14-association-门内有多个点-究竟选谁">14. Association：门内有多个点，究竟选谁？</h2>
+<p>假设 Track A 的 gate 里同时有三个检测点：</p>
+<p>$$
+z_1,z_2,z_3.
+$$</p>
+<p>这时就进入 data association。</p>
+<p>最基础的思路可以是：</p>
+<ul>
+<li>最近邻；</li>
+<li>最小 Mahalanobis distance；</li>
+<li>根据位置、速度、SNR 等计算 score；</li>
+<li>多条 track 对多个 measurement 进行 assignment。</li>
+</ul>
+<p>TI Group Tracker 的文档把这一过程描述为：</p>
+<ul>
+<li>gating；</li>
+<li>scoring / bidding；</li>
+<li>assignment。</li>
+</ul>
+<p>如果一个点不属于任何现有 track，它就可能进入：</p>
+<p><strong>Allocation（新航迹分配/发起）</strong>。</p>
+<p>流程，成为新目标候选。</p>
+<h3 id="14-1-为什么-association-是多目标跟踪最难的一步之一">14.1 为什么 association 是多目标跟踪最难的一步之一？</h3>
+<p>当两个目标：</p>
+<ul>
+<li>很靠近；</li>
+<li>交叉；</li>
+<li>遮挡；</li>
+<li>速度相似；</li>
+</ul>
+<p>就很容易出现：</p>
+<p>$$
+\text{measurement-to-track ambiguity}.
+$$</p>
+<p>高级系统还会使用 JPDA、MHT 等更复杂方法，但本节只建立 gating + scoring + assignment 的基本骨架。</p>
+<hr/>
+<h2 id="15-track-lifecycle-轨迹不能-一看到就永久存在">15. Track Lifecycle：轨迹不能“一看到就永久存在”</h2>
+<p>一个检测点出现一帧，可能只是虚警。</p>
+<p>因此实际 tracker 通常不会：</p>
+<blockquote class="callout">
+<p>看到一次 → 立刻认定是永久真实目标。</p>
+</blockquote>
+<p>更常见的是状态机思想：</p>
+<ol>
+<li><strong>FREE</strong>：没有航迹；</li>
+<li><strong>DETECT / TENTATIVE</strong>：连续出现若干次，正在确认；</li>
+<li><strong>ACTIVE / CONFIRMED</strong>：已经确认的稳定轨迹；</li>
+<li>若连续多帧无匹配，再释放回 FREE。</li>
+</ol>
+<p>TI 的 group tracker / reference design 也使用类似生命周期参数。</p>
+<figure class="diagram"><svg role="img" viewbox="0 0 980 430"><rect fill="#fbfdff" height="428" rx="18" stroke="#dce6f0" width="978" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="490" y="42">Track Lifecycle：确认、维持、短暂丢失与释放</text><rect fill="#f7f9fb" height="80" rx="14" stroke="#9dbbd6" width="145" x="55" y="155"></rect><text class="svg-title" text-anchor="middle" x="127" y="188">Unassigned</text><text class="svg-label" text-anchor="middle" x="127" y="215">detections</text><rect fill="#eef5fb" height="80" rx="14" stroke="#9dbbd6" width="150" x="270" y="155"></rect><text class="svg-title" text-anchor="middle" x="345" y="188">Tentative</text><text class="svg-label" text-anchor="middle" x="345" y="215">/ DETECT</text><rect fill="#fff4ea" height="80" rx="14" stroke="#d8aa80" width="150" x="500" y="155"></rect><text class="svg-title" text-anchor="middle" x="575" y="188">ACTIVE</text><text class="svg-label" text-anchor="middle" x="575" y="215">confirmed track</text><rect fill="#f7f9fb" height="80" rx="14" stroke="#9dbbd6" width="170" x="730" y="155"></rect><text class="svg-title" text-anchor="middle" x="815" y="188">Coast / Miss</text><text class="svg-label" text-anchor="middle" x="815" y="215">temporary retention</text><g fill="none" stroke="#60788f" stroke-width="4"><path d="M200 195 H270"></path><path d="M420 195 H500"></path><path d="M650 195 H730"></path><path d="M815 235 C815 320 575 320 575 235"></path></g><text class="svg-label" x="235" y="178">enough evidence</text><text class="svg-label" x="450" y="178">confirm</text><text class="svg-label" x="685" y="178">miss</text><text class="svg-label" x="690" y="345">measurement returns → ACTIVE</text><path d="M900 195 H945" stroke="#c96d25" stroke-width="4"></path><text class="svg-orange" x="835" y="285">too many misses → FREE / delete</text></svg><figcaption>图 5　轨迹需要经历发起、确认、维持和释放；允许少量连续漏检能减少断轨，但保留过久又可能形成幽灵航迹。</figcaption></figure>
+<h3 id="15-1-为什么允许-暂时没检测到但-track-还活着">15.1 为什么允许“暂时没检测到但 track 还活着”？</h3>
+<p>因为真实目标可能短暂：</p>
+<ul>
+<li>被遮挡；</li>
+<li>RCS 变小；</li>
+<li>落在 CFAR 阈值下；</li>
+<li>发生瞬时干扰。</li>
+</ul>
+<p>如果一帧没点就立即删轨，航迹会非常碎。</p>
+<p>所以 tracker 常允许：</p>
+<p>$$
+\text{coast / retention for several frames}.
+$$</p>
+<p>但保留太久又会形成 ghost track。</p>
+<p>这又是一个典型权衡。</p>
+<hr/>
+<h2 id="16-一个完整的-检测与跟踪-帧循环">16. 一个完整的“检测与跟踪”帧循环</h2>
+<p>现在可以把整套流程串起来。</p>
+<h3 id="每一帧内">每一帧内</h3>
+<ol>
+<li>ADC sampling；</li>
+<li>Range FFT；</li>
+<li>Doppler FFT；</li>
+<li>形成 detection matrix；</li>
+<li>CFAR 检测候选点；</li>
+<li>peak grouping / FOV filtering；</li>
+<li>AoA estimation；</li>
+<li>输出 point cloud：</li>
+</ol>
+<p>$$
+\{R,\theta,v_{\mathrm{r}},\mathrm{SNR}\}.
+$$</p>
+<h3 id="跨帧高层处理">跨帧高层处理</h3>
+<ol start="9">
+<li>预测现有 tracks；</li>
+<li>gating；</li>
+<li>measurement-to-track association；</li>
+<li>未关联点进行 allocation / clustering；</li>
+<li>EKF update；</li>
+<li>track lifecycle maintenance；</li>
+<li>输出带 ID 的目标列表。</li>
+</ol>
+<p>因此最终数据从：</p>
+<p>$$
+\text{raw ADC}
+$$</p>
+<p>一路变成：</p>
+<blockquote class="callout">
+<p><strong>最终目标级输出</strong>：Track ID + 状态向量（位置/速度）+ 置信信息/历史。</p>
+</blockquote>
+<p>这才是应用真正想要的“目标”。</p>
+<hr/>
+<h2 id="17-detection-和-tracking-的参数为什么必须一起调">17. Detection 和 Tracking 的参数为什么必须一起调？</h2>
+<p>很多人会把 CFAR 和 tracker 当成完全独立模块。</p>
+<p>实际上二者强耦合。</p>
+<h3 id="17-1-cfar-太激进">17.1 CFAR 太激进</h3>
+<p>阈值过低：</p>
+<p>$$
+\text{false detections}\uparrow
+$$</p>
+<p>会造成：</p>
+<ul>
+<li>tracker association 压力增大；</li>
+<li>ghost tracks 增多；</li>
+<li>CPU / 内存负担增加。</li>
+</ul>
+<h3 id="17-2-cfar-太保守">17.2 CFAR 太保守</h3>
+<p>阈值过高：</p>
+<p>$$
+\text{missed detections}\uparrow
+$$</p>
+<p>会造成：</p>
+<ul>
+<li>track 频繁进入 coast；</li>
+<li>航迹碎裂；</li>
+<li>弱小目标难以发起新轨迹。</li>
+</ul>
+<h3 id="17-3-tracker-gate-太宽">17.3 Tracker gate 太宽</h3>
+<p>容易：</p>
+<ul>
+<li>串轨；</li>
+<li>把邻近目标点吸进错误 track。</li>
+</ul>
+<h3 id="17-4-tracker-gate-太窄">17.4 Tracker gate 太窄</h3>
+<p>容易：</p>
+<ul>
+<li>漏关联；</li>
+<li>断轨。</li>
+</ul>
+<p>所以工程上不是分别追求：</p>
+<blockquote class="callout">
+<p>“CFAR 检得最多”</p>
+</blockquote>
+<p>和</p>
+<blockquote class="callout">
+<p>“tracker 保留得最久”，</p>
+</blockquote>
+<p>而是整体优化：</p>
+<blockquote class="callout">
+<p><strong>整体优化链</strong>：Detection quality → Association quality → Track stability。</p>
+</blockquote>
+<hr/>
+<h2 id="18-五个最容易混淆的概念">18. 五个最容易混淆的概念</h2>
+<h3 id="18-1-fft-peak-detection">18.1 FFT Peak ≠ Detection</h3>
+<p>FFT 峰只是频谱高点。</p>
+<p>Detection 是在统计阈值规则下判断“这个峰是否显著到可以报告”。</p>
+<h3 id="18-2-detection-point-real-object">18.2 Detection Point ≠ Real Object</h3>
+<p>一辆车可能对应多个 detection points。</p>
+<h3 id="18-3-cluster-track">18.3 Cluster ≠ Track</h3>
+<p>Cluster 是一帧内把点归组；Track 是跨帧保持身份和状态。</p>
+<h3 id="18-4-track-prediction-凭空猜测">18.4 Track Prediction ≠ 凭空猜测</h3>
+<p>Prediction 来自：</p>
+<ul>
+<li>上一帧状态；</li>
+<li>运动模型；</li>
+<li>过程噪声统计。</li>
+</ul>
+<p>并且下一帧量测会再进行更新。</p>
+<h3 id="18-5-cfar-的-constant-阈值恒定">18.5 CFAR 的 “Constant” ≠ 阈值恒定</h3>
+<p>恰恰相反，CFAR 的阈值通常随局部背景变化：</p>
+<p>$$
+T=\alpha\hat P_{\mathrm{n}}.
+$$</p>
+<p>“恒”的目标是虚警率，而不是阈值数值。</p>
+<hr/>
+<h2 id="19-自检题">19. 自检题</h2>
+<ol>
+<li>为什么 Range-Doppler 图里一个高能量 bin 还不能直接叫“目标”？</li>
+<li>CA-CFAR 中 Guard Cells 的作用是什么？</li>
+<li>为什么 CFAR 阈值要随局部噪声底变化？</li>
+<li>Detection point 与 track 的最大区别是什么？</li>
+<li>Kalman Filter 的 prediction 和 update 分别解决什么问题？</li>
+<li>为什么 gating 常用 Mahalanobis distance，而不只是欧氏距离？</li>
+<li>一帧漏检为什么不一定立刻删除 track？</li>
+<li>CFAR 阈值过低会怎样影响 tracker？</li>
+</ol>
+<p><strong>答案要点：</strong>1）可能是噪声/杂波/旁瓣；2）防止目标峰能量污染噪声估计；3）为了在不同背景下维持近似恒定虚警性能；4）point 是单帧量测，track 是跨帧带身份和状态的目标；5）prediction 用运动模型外推，update 用新量测纠正；6）Mahalanobis distance 会考虑不确定度大小和方向；7）真实目标可能短暂遮挡或低于阈值；8）虚警点增多，关联压力和 ghost tracks 都会上升。</p>
+<hr/>
+<h2 id="20-本节小结-从-频谱-走到-真实目标">20. 本节小结：从“频谱”走到“真实目标”</h2>
+<p>前五节主要回答：</p>
+<blockquote class="callout">
+<p>前五节主要回答：<strong>目标参数是多少？</strong></p>
+</blockquote>
+<p>第六节开始回答：</p>
+<blockquote class="callout">
+<p>第六节开始回答：<strong>这里到底有没有目标？它是不是上一帧那个目标？</strong></p>
+</blockquote>
+<p>完整链路可以浓缩为：</p>
+<p>$$
+\begin{aligned}
+\mathrm{ADC}
+&amp;\longrightarrow \text{Range--Doppler processing}\\
+&amp;\longrightarrow \mathrm{CFAR}\ \text{detection}\\
+&amp;\longrightarrow \text{AoA + point cloud}\\
+&amp;\longrightarrow \text{association}\\
+&amp;\longrightarrow \mathrm{EKF}\ \text{tracking}.
+\end{aligned}
+$$</p>
+<p>检测层最核心的思想：</p>
+<p>$$
+
+T=\alpha\hat P_{\mathrm{n}}
+
+$$</p>
+<p>也就是用局部背景自适应阈值判断候选目标。</p>
+<p>跟踪层最核心的思想：</p>
+<p>$$
+\mathrm{Predict}\rightarrow\mathrm{Associate}\rightarrow\mathrm{Update}\rightarrow\mathrm{Maintain}
+$$</p>
+<p>到这里，FMCW 雷达从“信号处理”真正进入了“目标级感知”：</p>
+<ul>
+<li>FFT 告诉你能量在哪里；</li>
+<li>CFAR 告诉你哪些点值得报告；</li>
+<li>AoA 把点投到空间；</li>
+<li>聚类把多个散射点组织成候选物体；</li>
+<li>Tracker 把不同帧里的量测连接成有身份、有速度、有历史的目标航迹。</li>
+</ul>
+<hr/>
+<h2 id="来源">来源</h2>
+<ol>
+<li>Bilibili：《毫米波雷达基础知识》，BV1du4m1g7bv，P6“FMCW雷达检测与跟踪”。</li>
+<li>Texas Instruments: <em>MMWAVE SDK User Guide</em>, “Typical mmWave Radar Processing Chain”.</li>
+<li>Texas Instruments MMWAVE-L-SDK: <em>CFARPROC</em> documentation.</li>
+<li>Texas Instruments MMWAVE-L-SDK: <em>Trackerproc / GTRACK</em> documentation.</li>
+<li>Texas Instruments: <em>Traffic Monitoring Object Detection and Tracking Reference Design Using mmWave Radar Sensor (TIDEP-0090)</em>.</li>
+</ol><section class="source-panel"><strong>来源追溯</strong><br>主线资料：Bilibili《毫米波雷达基础知识》P6“FMCW雷达检测与跟踪”。P6 约 2:10，并非 TI 官方 FMCW Module 6；本节检测/跟踪细节由 TI mmWave SDK Typical Processing Chain、CFARPROC、Trackerproc / GTRACK 与 TIDEP-0090 参考设计补充核验。CA-CFAR 闭式阈值关系和线性 Kalman Filter 推导属于明确标注的标准理论教学补充。</section><div class="footer">学习笔记项目 · ChatGPT-AgentDock / Codex 协作产物 · 2026-09-22</div></main></div><script>const bar=document.getElementById('progress');const links=[...document.querySelectorAll('.toc a')];
+function update(){const d=document.documentElement;const m=d.scrollHeight-d.clientHeight;bar.style.width=(m?d.scrollTop/m*100:0)+'%';}
+window.addEventListener('scroll',update,{passive:true});update();
+const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+e.target.id));}})},{rootMargin:'-15% 0px -72% 0px'});
+document.querySelectorAll('h2[id],h3[id]').forEach(h=>obs.observe(h));
+</script></body></html>

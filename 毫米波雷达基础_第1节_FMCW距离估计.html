@@ -1,0 +1,600 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>毫米波雷达基础｜第1节：FMCW距离估计</title>
+<script>
+window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$','$$'], ['\\[','\\]']]}, svg: {fontCache: 'global'}};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<style>:root{--ink:#20303d;--muted:#627385;--line:#dce5ed;--paper:#fff;--soft:#f6f9fc;--blue:#1f6fb2;--blue2:#315f91;--orange:#c96d25;--shadow:0 12px 34px rgba(41,63,82,.08);}
+*{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;background:#f3f6f9;color:var(--ink);font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;line-height:1.82;font-size:16px}
+#progress{position:fixed;top:0;left:0;height:3px;background:var(--blue);width:0;z-index:50}
+.layout{display:grid;grid-template-columns:280px minmax(0,860px);gap:32px;max-width:1210px;margin:0 auto;padding:34px 24px 80px}
+.sidebar{position:sticky;top:22px;height:calc(100vh - 44px);overflow:auto;padding:18px 16px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.92);box-shadow:var(--shadow)}
+.brand{font-weight:700;color:#173c5c;margin:3px 8px 14px} .toc{display:flex;flex-direction:column;gap:2px} .toc a{text-decoration:none;color:#536779;border-radius:8px;padding:7px 9px;font-size:13px;line-height:1.4} .toc a:hover,.toc a.active{background:#edf4fa;color:#174e7e} .toc-sub{padding-left:22px!important;font-size:12.5px!important}
+.article{background:var(--paper);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:54px 68px;min-width:0}
+.hero{border-bottom:1px solid var(--line);padding-bottom:30px;margin-bottom:36px} .eyebrow{color:var(--blue);font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase} h1{font-size:35px;line-height:1.25;margin:10px 0 15px;color:#17344d} .lead{font-size:17px;color:#596d7f;max-width:720px;margin:0} .meta{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px} .chip{font-size:12px;padding:5px 9px;border-radius:999px;background:#edf4fa;color:#315f91;border:1px solid #d2e2ef}
+h2{font-size:25px;line-height:1.35;color:#183e5d;margin:54px 0 18px;padding-top:4px} h3{font-size:19px;line-height:1.4;color:#28516f;margin:34px 0 12px} p{margin:12px 0} strong{color:#193b56} code{font-family:"Cascadia Mono",Consolas,monospace;background:#f0f4f7;border:1px solid #e1e8ee;padding:.08em .34em;border-radius:5px;font-size:.92em}
+hr{border:0;border-top:1px solid var(--line);margin:42px 0} ul,ol{padding-left:1.55em} li{margin:.35em 0}
+blockquote.callout{margin:22px 0;padding:14px 18px;border-left:4px solid var(--blue);background:#f3f8fc;border-radius:0 10px 10px 0;color:#405669}
+table{width:100%;border-collapse:collapse;margin:20px 0 28px;font-size:14.5px} th,td{border:1px solid #dce5ed;padding:10px 12px;text-align:left;vertical-align:top} th{background:#eef5fa;color:#294f6d} tr:nth-child(even) td{background:#fbfcfd}
+.diagram{margin:28px 0 34px;padding:16px;border:1px solid var(--line);border-radius:16px;background:#fbfdff;overflow:hidden} .diagram svg{width:100%;height:auto;display:block} figcaption{text-align:center;color:#657889;font-size:13px;margin-top:10px} .svg-label{font:16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#415466} .svg-title{font:600 17px "Segoe UI","Microsoft YaHei",sans-serif;fill:#294f6d} .svg-accent{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#315f91} .svg-blue{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#1f6fb2} .svg-orange{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#c96d25}
+.formula-note{font-size:13px;color:var(--muted)} mjx-container{color:#172a3a} mjx-container[display="true"]{margin:1.35em 0!important;max-width:100%;overflow-x:auto;overflow-y:hidden;padding:.18em .25em .24em;text-align:center;scrollbar-width:thin;scrollbar-color:#c7d5e1 transparent} mjx-container[display="true"]>svg{display:inline-block;vertical-align:middle} mjx-container:not([display="true"]){font-size:1.01em}
+.source-panel{margin-top:52px;padding:22px;border:1px solid var(--line);background:#f8fafc;border-radius:14px;color:#526779;font-size:14px} .source-panel a{color:var(--blue)}
+.footer{margin-top:38px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:#7a8997;text-align:center}
+@media(max-width:980px){.layout{grid-template-columns:1fr;max-width:900px}.sidebar{position:relative;top:0;height:auto;max-height:340px}.article{padding:42px 34px}}
+@media(max-width:600px){body{font-size:15px}.layout{padding:12px 8px 50px}.sidebar{display:none}.article{padding:30px 20px;border-radius:12px}h1{font-size:28px}h2{font-size:22px}.diagram{padding:5px}mjx-container[display="true"]{font-size:.96em;margin:1.1em 0!important}}
+@media print{body{background:white;font-size:10.5pt}#progress,.sidebar{display:none!important}.layout{display:block;max-width:none;padding:0}.article{border:0;box-shadow:none;padding:0}.hero{margin-top:0}h2,h3{break-after:avoid-page}.diagram,table,blockquote,mjx-container[display="true"]{break-inside:avoid}mjx-container[display="true"]{overflow:visible}a{color:inherit;text-decoration:none}}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div class="layout">
+<aside class="sidebar"><div class="brand">第 1 节 · FMCW 距离估计</div><nav class="toc"><a class="toc-sub" href="#本节学习目标">本节学习目标</a>
+<a class="toc-main" href="#1-先建立整体图景-毫米波雷达与-fmcw">1. 先建立整体图景：毫米波雷达与 FMCW</a>
+<a class="toc-main" href="#2-chirp-fmcw-雷达的基本发射信号">2. Chirp：FMCW 雷达的基本发射信号</a>
+<a class="toc-sub" href="#2-1-什么是-chirp">2.1 什么是 Chirp</a>
+<a class="toc-main" href="#3-fmcw-怎样把距离编码成-if-频率">3. FMCW 怎样把距离编码成 IF 频率</a>
+<a class="toc-sub" href="#3-1-1tx-1rx-的最基本链路">3.1 1TX-1RX 的最基本链路</a>
+<a class="toc-sub" href="#3-2-mixer-为什么能得到-差频">3.2 Mixer 为什么能得到“差频”</a>
+<a class="toc-sub" href="#3-3-为什么静止目标会产生恒定-if-频率">3.3 为什么静止目标会产生恒定 IF 频率</a>
+<a class="toc-sub" href="#3-4-从相位角度再看一遍">3.4 从相位角度再看一遍</a>
+<a class="toc-main" href="#4-为什么做-fft-就能看到目标距离">4. 为什么做 FFT 就能看到目标距离</a>
+<a class="toc-sub" href="#4-1-单目标-一个距离对应一个-if-tone">4.1 单目标：一个距离对应一个 IF tone</a>
+<a class="toc-sub" href="#4-2-多目标-多个距离对应多个-if-tone">4.2 多目标：多个距离对应多个 IF tone</a>
+<a class="toc-sub" href="#4-3-观测时间为什么影响频率分辨能力">4.3 观测时间为什么影响频率分辨能力</a>
+<a class="toc-sub" href="#4-4-补充-fft-bin-与距离轴">4.4 补充：FFT bin 与距离轴</a>
+<a class="toc-main" href="#5-距离分辨率-两个目标究竟能靠多近">5. 距离分辨率：两个目标究竟能靠多近</a>
+<a class="toc-sub" href="#5-1-什么叫距离分辨率">5.1 什么叫距离分辨率</a>
+<a class="toc-sub" href="#5-2-从-if-频率差开始推导">5.2 从 IF 频率差开始推导</a>
+<a class="toc-sub" href="#5-3-典型数值">5.3 典型数值</a>
+<a class="toc-sub" href="#5-4-最容易混淆的问题-为什么-t-mathrm-c-更长-距离分辨率却不一定更好">5.4 最容易混淆的问题：为什么 $T_{\mathrm{c}}$ 更长，距离分辨率却不一定更好？</a>
+<a class="toc-main" href="#6-最大距离-为什么又与斜率和-adc-有关">6. 最大距离：为什么又与斜率和 ADC 有关</a>
+<a class="toc-sub" href="#6-1-同带宽时-长-chirp-与短-chirp的系统权衡">6.1 同带宽时，长 Chirp 与短 Chirp的系统权衡</a>
+<a class="toc-sub" href="#6-2-补充-真实系统中的-f-mathrm-s-需要更谨慎理解">6.2 补充：真实系统中的 $F_{\mathrm{s}}$ 需要更谨慎理解</a>
+<a class="toc-main" href="#7-从发射到距离谱-把整条处理链串起来">7. 从发射到距离谱：把整条处理链串起来</a>
+<a class="toc-main" href="#8-关键公式与符号总表">8. 关键公式与符号总表</a>
+<a class="toc-sub" href="#8-1-chirp-参数">8.1 Chirp 参数</a>
+<a class="toc-sub" href="#8-2-往返传播时延">8.2 往返传播时延</a>
+<a class="toc-sub" href="#8-3-if-beat-frequency">8.3 IF / beat frequency</a>
+<a class="toc-sub" href="#8-4-由-if-频率反求距离">8.4 由 IF 频率反求距离</a>
+<a class="toc-sub" href="#8-5-理想距离分辨率">8.5 理想距离分辨率</a>
+<a class="toc-sub" href="#8-6-最大距离-按本课程简化-if-bandwidth-模型">8.6 最大距离（按本课程简化 IF-bandwidth 模型）</a>
+<a class="toc-main" href="#9-易错点与自检">9. 易错点与自检</a>
+<a class="toc-sub" href="#易错点-1-t-mathrm-c-越长-距离分辨率一定越高">易错点 1：$T_{\mathrm{c}}$ 越长，距离分辨率一定越高</a>
+<a class="toc-sub" href="#易错点-2-fft-点数越大-距离分辨率就越高">易错点 2：FFT 点数越大，距离分辨率就越高</a>
+<a class="toc-sub" href="#易错点-3-77-ghz-的-高载频-直接决定-3-75-cm-距离分辨率">易错点 3：77 GHz 的“高载频”直接决定 3.75 cm 距离分辨率</a>
+<a class="toc-sub" href="#易错点-4-最大距离和距离分辨率是一回事">易错点 4：最大距离和距离分辨率是一回事</a>
+<a class="toc-sub" href="#易错点-5-目标回波仍然是几十-ghz-为什么-adc-不需要几十-ghz-采样">易错点 5：目标回波仍然是几十 GHz，为什么 ADC 不需要几十 GHz 采样？</a>
+<a class="toc-sub" href="#自检题">自检题</a>
+<a class="toc-main" href="#10-本节小结">10. 本节小结</a>
+<a class="toc-main" href="#来源">来源</a></nav></aside>
+<main class="article">
+<header class="hero">
+<div class="eyebrow">毫米波雷达基础 · Lesson 01</div>
+<h1>FMCW 雷达与距离估计</h1>
+<p class="lead">从 Chirp、传播时延和 Mixer 出发，完整理解“距离如何被编码成 IF 频率”，再推导 Range FFT、距离分辨率与最大测距的核心关系。</p>
+<div class="meta"><span class="chip">TI Module 1 核验</span><span class="chip">公式详细推导</span><span class="chip">5 张教学示意图</span><span class="chip">可打印 HTML</span></div>
+</header>
+<blockquote class="callout">
+<p>对应视频：Bilibili《毫米波雷达基础知识》P1“1、毫米波雷达简介：FMCW雷达”；权威核验来源为 TI 官方 <em>Intro to mmWave Sensing: FMCW Radars — Module 1: Range Estimation</em> 及其演示文稿。</p>
+</blockquote>
+<h3 id="本节学习目标">本节学习目标</h3>
+<p>学完本节，应能回答五个问题：</p>
+<ol>
+<li>FMCW 雷达为什么要发射频率随时间变化的 Chirp？</li>
+<li>目标距离怎样通过“回波时延”转化成 IF（Intermediate Frequency，中频/拍频）？</li>
+<li>为什么对 IF 信号做 FFT 后，频谱峰的位置就对应目标距离？</li>
+<li>为什么距离分辨率最终只与扫频带宽 $B$ 有关，而不单独由 $T_{\mathrm{c}}$ 或斜率 $S$ 决定？</li>
+<li>为什么最大距离又会受到 Chirp 斜率和 IF/ADC 带宽限制？</li>
+</ol>
+<hr/>
+<h2 id="1-先建立整体图景-毫米波雷达与-fmcw">1. 先建立整体图景：毫米波雷达与 FMCW</h2>
+<p>毫米波雷达利用毫米量级波长的电磁波进行感知。以常见 76–81 GHz 车载毫米波频段为例，波长大约只有 4 mm。雷达发射电磁波，目标将一部分能量反射回来；接收并分析回波后，可以估计目标的距离、速度和角度。</p>
+<p>TI 这套课程采用的是 FMCW（Frequency-Modulated Continuous Wave，调频连续波）体制。与“发一个短脉冲、直接测往返时间”的脉冲雷达不同，FMCW 雷达连续发射频率随时间变化的信号，再通过发射信号与延迟回波之间的频率差，把极小的传播时延变成更容易测量的低频 IF 信号。</p>
+<p>本节只讨论<strong>静止目标的距离估计</strong>。目标运动导致的多普勒和 IF 相位信息，会在后续章节进一步讨论。</p>
+<hr/>
+<h2 id="2-chirp-fmcw-雷达的基本发射信号">2. Chirp：FMCW 雷达的基本发射信号</h2>
+<h3 id="2-1-什么是-chirp">2.1 什么是 Chirp</h3>
+<p>Chirp 可以理解为“频率在一小段时间内连续扫过一个频段的正弦波”。在最基本的线性上升 Chirp 中，瞬时频率随时间线性增加：</p>
+<p>$$
+f_{\mathrm{TX}}(t)=f_{\mathrm{c}}+St
+$$</p>
+<p>其中：</p>
+<ul>
+<li>$f_{\mathrm{c}}$：Chirp 起始频率；</li>
+<li>$T_{\mathrm{c}}$：一个 Chirp 的持续时间；</li>
+<li>$B$：一个 Chirp 扫过的总带宽；</li>
+<li>$S$：Chirp 斜率（frequency slope），单位常写成 MHz/μs。</li>
+</ul>
+<p>四个量之间最重要的关系是：</p>
+<p>$$
+S=\frac{B}{T_{\mathrm{c}}}
+$$</p>
+<p>TI 课件给出的示例是：从 77 GHz 扫到 81 GHz，因此 $B=4\,\mathrm{GHz}$；Chirp 时长 $T_{\mathrm{c}}=40\,\mu\mathrm{s}$。于是：</p>
+<p>$$
+S=\frac{4\,\mathrm{GHz}}{40\,\mu\mathrm{s}}=100\,\mathrm{MHz}\,\mu\mathrm{s}^{-1}
+$$</p>
+<p>这张频率-时间图是后面所有推导的核心：<strong>只要回波相对于发射 Chirp 延迟了 $\tau$，两条平行直线在同一时刻就会出现一个固定的频率差。</strong></p>
+<p>[图 1：Chirp 的频率-时间关系，标出 <code>f_{\mathrm{c}}</code>、<code>B</code>、<code>T_{\mathrm{c}}</code>、<code>S</code>]</p>
+<hr/>
+<h2 id="3-fmcw-怎样把距离编码成-if-频率">3. FMCW 怎样把距离编码成 IF 频率</h2>
+<h3 id="3-1-1tx-1rx-的最基本链路">3.1 1TX-1RX 的最基本链路</h3>
+<p>最简单的 FMCW 雷达可以先抽象成：</p>
+<p><strong>Synthesizer → TX 天线 → 目标 → RX 天线 → Mixer → IF</strong></p>
+<p>合成器生成 Chirp，经 TX 天线发射；电磁波传播到目标后反射，再由 RX 天线接收。由于传播需要时间，RX 接收到的是一个<strong>延迟版本的 TX Chirp</strong>。</p>
+<p>若目标距离雷达为 $d$，电磁波需要走“雷达→目标→雷达”两倍距离，所以往返时延：</p>
+<p>$$
+\tau=\frac{2d}{c}
+$$</p>
+<p>其中 $c\approx3\times10^8\,\mathrm{m\,s^{-1}}$ 为光速。</p>
+<h3 id="3-2-mixer-为什么能得到-差频">3.2 Mixer 为什么能得到“差频”</h3>
+<p>Mixer（混频器）的作用可以用两个正弦相乘来理解。若输入为：</p>
+<p>$$
+x_1(t)=\sin(\omega_1 t+\phi_1),\qquad x_2(t)=\sin(\omega_2 t+\phi_2)
+$$</p>
+<p>利用三角恒等式：</p>
+<p>$$
+\sin a\sin b=\frac{1}{2}[\cos(a-b)-\cos(a+b)]
+$$</p>
+<p>乘积中同时出现“差频项”和“和频项”。经过低通滤波后，高频的和频项被滤掉，保留下来的主要是差频：</p>
+<p>$$
+\omega_{\mathrm{IF}}=\omega_1-\omega_2
+$$</p>
+<p>因此 mixer 把几十 GHz 的两个射频信号之间很小的差，搬移成 ADC/DSP 更容易处理的低频 IF 信号。</p>
+<blockquote class="callout">
+<p><strong>补充理解</strong>：实际射频 mixer、I/Q 解调、滤波链路会比这个模型更复杂，但“保留差频”是理解本节距离估计的核心。</p>
+</blockquote>
+<h3 id="3-3-为什么静止目标会产生恒定-if-频率">3.3 为什么静止目标会产生恒定 IF 频率</h3>
+<p>发射 Chirp 的瞬时频率为：</p>
+<p>$$
+f_{\mathrm{TX}}(t)=f_{\mathrm{c}}+St
+$$</p>
+<p>静止目标的回波只是延迟了 $\tau$：</p>
+<p>$$
+f_{\mathrm{RX}}(t)=f_{\mathrm{c}}+S(t-\tau)
+$$</p>
+<p>在同一个时刻，发射与接收信号的瞬时频率之差：</p>
+<p>$$
+\begin{aligned}
+f_{\mathrm{IF}}
+&amp;=f_{\mathrm{TX}}(t)-f_{\mathrm{RX}}(t)\\
+&amp;=(f_{\mathrm{c}}+St)-[f_{\mathrm{c}}+S(t-\tau)]\\
+&amp;=S\tau
+\end{aligned}
+$$</p>
+<p>由于目标静止时 $\tau$ 是常数，因此 $f_{\mathrm{IF}}$ 也是常数。把 $\tau=2d/c$ 代入：</p>
+<p>$$
+f_{\mathrm{IF}}=S\tau=\frac{2Sd}{c}
+$$</p>
+<p>于是可以反解距离：</p>
+<p>$$
+\boxed{d=\frac{c f_{\mathrm{IF}}}{2S}}
+$$</p>
+<p>这就是 FMCW 单 Chirp 测距最重要的公式。</p>
+<p><strong>物理意义非常直观：</strong>目标越远 → 往返时延越大 → TX/RX 两条 Chirp 在频率轴上的间隔越大 → IF 频率越高。</p>
+<figure class="diagram" id="fig-delay">
+<svg aria-label="TX 与延迟 RX Chirp 及 IF 频差" role="img" viewbox="0 0 900 430">
+<defs><marker id="arrow2" markerheight="8" markerwidth="8" orient="auto" refx="7" refy="4"><path d="M0,0 L8,4 L0,8 z" fill="#315f91"></path></marker></defs>
+<rect fill="#fbfdff" height="428" rx="18" stroke="#dce6f0" width="898" x="1" y="1"></rect>
+<line marker-end="url(#arrow2)" stroke="#415466" stroke-width="2" x1="90" x2="810" y1="350" y2="350"></line>
+<line marker-end="url(#arrow2)" stroke="#415466" stroke-width="2" x1="90" x2="90" y1="350" y2="60"></line>
+<line stroke="#1f6fb2" stroke-linecap="round" stroke-width="5" x1="125" x2="690" y1="305" y2="95"></line>
+<line stroke="#d2782e" stroke-linecap="round" stroke-width="5" x1="215" x2="780" y1="305" y2="95"></line>
+<line marker-end="url(#arrow2)" stroke="#315f91" stroke-width="2" x1="125" x2="215" y1="382" y2="382"></line>
+<line marker-end="url(#arrow2)" stroke="#315f91" stroke-width="2" x1="215" x2="125" y1="382" y2="382"></line>
+<line marker-end="url(#arrow2)" stroke="#315f91" stroke-width="2" x1="590" x2="590" y1="132" y2="165"></line>
+<line marker-end="url(#arrow2)" stroke="#315f91" stroke-width="2" x1="590" x2="590" y1="165" y2="132"></line>
+<circle cx="590" cy="132" fill="#1f6fb2" r="5"></circle><circle cx="590" cy="165" fill="#d2782e" r="5"></circle>
+<text class="svg-blue" x="610" y="122">TX Chirp</text><text class="svg-orange" x="625" y="205">RX Chirp</text>
+<text class="svg-accent" x="158" y="410">τ</text><text class="svg-accent" x="610" y="154">f<tspan baseline-shift="sub" font-size="13">IF</tspan>=Sτ</text>
+<text class="svg-label" x="815" y="358">时间 t</text><text class="svg-label" x="36" y="55">频率 f</text>
+</svg>
+<figcaption>图 2　静止目标使接收 Chirp 相对发射 Chirp 延迟 τ；线性斜率把时间延迟转换成固定频差 fIF=Sτ。</figcaption>
+</figure>
+<h3 id="3-4-从相位角度再看一遍">3.4 从相位角度再看一遍</h3>
+<p>为了理解为什么 IF 真的是一个固定频率 tone，可以把线性 Chirp 相位写成：</p>
+<p>$$
+\phi_{\mathrm{TX}}(t)=2\pi\left(f_{\mathrm{c}} t+\frac{1}{2}St^2\right)
+$$</p>
+<p>延迟回波相位为：</p>
+<p>$$
+\phi_{\mathrm{RX}}(t)=2\pi\left[f_{\mathrm{c}}(t-\tau)+\frac{1}{2}S(t-\tau)^2\right]
+$$</p>
+<p>两者相减：</p>
+<p>$$
+\Delta\phi(t)=2\pi\left(S\tau t+f_{\mathrm{c}}\tau-\frac{1}{2}S\tau^2\right)
+$$</p>
+<p>其中只有第一项随时间 $t$ 线性变化，因此其对应频率就是：</p>
+<p>$$
+f_{\mathrm{IF}}=S\tau
+$$</p>
+<p>这个推导也说明：IF 信号不仅有“频率”，还有“相位”。本节先用频率测距离，下一节正是继续研究 IF 相位携带的信息。</p>
+<hr/>
+<h2 id="4-为什么做-fft-就能看到目标距离">4. 为什么做 FFT 就能看到目标距离</h2>
+<h3 id="4-1-单目标-一个距离对应一个-if-tone">4.1 单目标：一个距离对应一个 IF tone</h3>
+<p>静止单目标产生近似单频 IF 信号：</p>
+<p>$$
+x_{\mathrm{IF}}(t)=A\cos(2\pi f_{\mathrm{IF}}t+\phi)
+$$</p>
+<p>Fourier Transform 把时域信号转换到频域。理想正弦在频域里表现为一个峰。因此只要找到 IF 频谱中的峰值频率 $f_{\mathrm{IF}}$，就可以通过：</p>
+<p>$$
+d=\frac{c f_{\mathrm{IF}}}{2S}
+$$</p>
+<p>把频率轴换算成距离轴。</p>
+<h3 id="4-2-多目标-多个距离对应多个-if-tone">4.2 多目标：多个距离对应多个 IF tone</h3>
+<p>若场景中有多个静止目标，每个目标具有不同距离 $d_k$，因此会产生不同 IF 频率：</p>
+<p>$$
+f_k=\frac{2S d_k}{c}
+$$</p>
+<p>接收端的 IF 信号近似为这些 tone 的叠加：</p>
+<p>$$
+x_{\mathrm{IF}}(t)=\sum_k A_k\cos(2\pi f_k t+\phi_k)
+$$</p>
+<p>做 FFT 后，每一个可分辨目标会对应一个频谱峰。把频率峰映射到距离，就得到常说的 <strong>range profile（距离像/距离谱）</strong>。</p>
+<figure class="diagram" id="fig-fft">
+<svg aria-label="多目标 IF tone 与 Range FFT 峰" role="img" viewbox="0 0 900 430">
+<rect fill="#fbfdff" height="428" rx="18" stroke="#dce6f0" width="898" x="1" y="1"></rect>
+<text class="svg-title" x="165" y="48">时域 IF：多个 tone 叠加</text><text class="svg-title" x="605" y="48">频域：Range FFT</text>
+<line stroke="#415466" stroke-width="2" x1="70" x2="425" y1="330" y2="330"></line><line stroke="#415466" stroke-width="2" x1="70" x2="70" y1="95" y2="330"></line>
+<path d="M70 220 C85 120,100 300,115 205 S145 125,160 220 S190 290,205 190 S235 125,250 230 S280 300,295 185 S325 135,340 235 S370 285,385 200 S410 145,425 225" fill="none" stroke="#1f6fb2" stroke-width="3"></path>
+<line stroke="#415466" stroke-width="2" x1="500" x2="835" y1="330" y2="330"></line><line stroke="#415466" stroke-width="2" x1="500" x2="500" y1="95" y2="330"></line>
+<path d="M500 330 L560 330 L575 325 L590 290 L605 145 L620 290 L635 325 L670 330 L690 325 L705 280 L720 105 L735 280 L750 325 L790 330 L805 315 L818 205 L830 315 L835 330" fill="rgba(31,111,178,.10)" stroke="#1f6fb2" stroke-width="3"></path>
+<line stroke="#d2782e" stroke-dasharray="5 5" x1="605" x2="605" y1="330" y2="145"></line><line stroke="#d2782e" stroke-dasharray="5 5" x1="720" x2="720" y1="330" y2="105"></line><line stroke="#d2782e" stroke-dasharray="5 5" x1="818" x2="818" y1="330" y2="205"></line>
+<text class="svg-label" x="580" y="370">d₁</text><text class="svg-label" x="705" y="370">d₂</text><text class="svg-label" x="803" y="370">d₃</text>
+<text class="svg-label" x="250" y="390">时间</text><text class="svg-label" x="650" y="390">距离 / IF 频率</text>
+<text class="svg-accent" x="445" y="214">FFT →</text>
+</svg>
+<figcaption>图 3　不同距离目标产生不同 IF 频率；Range FFT 将这些频率分量分解成多个峰，再映射为距离。</figcaption>
+</figure>
+<h3 id="4-3-观测时间为什么影响频率分辨能力">4.3 观测时间为什么影响频率分辨能力</h3>
+<p>有限时间内观察信号时，频率分辨能力不是无限的。直观上，观察时间 $T$ 越长，两个相近频率之间累积出的相位/周期差越明显。</p>
+<p>课程采用的近似判据是：</p>
+<p>$$
+\Delta f_{\mathrm{min}}\approx\frac{1}{T}
+$$</p>
+<p>也就是说，两个 tone 的频率差至少达到约 $1/T$，频谱中才比较容易把它们分开。</p>
+<p>对于单个 Chirp 的距离处理，理想化地把有效观察时间近似为 $T_{\mathrm{c}}$：</p>
+<p>$$
+\Delta f_{\mathrm{min}}\approx\frac{1}{T_{\mathrm{c}}}
+$$</p>
+<p>这条关系随后会直接导出距离分辨率。</p>
+<h3 id="4-4-补充-fft-bin-与距离轴">4.4 补充：FFT bin 与距离轴</h3>
+<p>若 ADC 以采样率 $F_{\mathrm{s}}$ 取得 $N$ 个样本，则第 $k$ 个 FFT bin 的频率约为：</p>
+<p>$$
+f_k=\frac{kF_{\mathrm{s}}}{N}
+$$</p>
+<p>换成距离：</p>
+<p>$$
+d_k=\frac{c}{2S}\frac{kF_{\mathrm{s}}}{N}
+$$</p>
+<p>因此相邻 FFT bin 的距离间隔是：</p>
+<p>$$
+\Delta d_{\mathrm{bin}}=\frac{cF_{\mathrm{s}}}{2SN}
+$$</p>
+<p>但要特别注意：<strong>FFT bin 间隔不等于物理距离分辨率。</strong>通过 zero-padding 增大 FFT 点数，可以让频谱曲线采样得更密、峰位置显示得更细，却不会凭空增加原始观测信息，因此不能突破由实际扫频带宽决定的 $c/(2B)$ 物理分辨率。</p>
+<hr/>
+<h2 id="5-距离分辨率-两个目标究竟能靠多近">5. 距离分辨率：两个目标究竟能靠多近</h2>
+<h3 id="5-1-什么叫距离分辨率">5.1 什么叫距离分辨率</h3>
+<p>距离分辨率（range resolution）描述雷达把两个距离很接近的目标区分成两个目标的能力。</p>
+<p>它不是“单个目标测得有多准”。后者属于测距精度/估计误差问题，还会受到 SNR、窗函数、标定、频率估计算法等影响。</p>
+<h3 id="5-2-从-if-频率差开始推导">5.2 从 IF 频率差开始推导</h3>
+<p>假设两个目标的距离相差 $\Delta d$。它们对应的 IF 频率差为：</p>
+<p>$$
+\Delta f_{\mathrm{IF}}=\frac{2S\Delta d}{c}
+$$</p>
+<p>要在频域中把两个 tone 分开，要求：</p>
+<p>$$
+\Delta f_{\mathrm{IF}}\gtrsim\frac{1}{T_{\mathrm{c}}}
+$$</p>
+<p>代入：</p>
+<p>$$
+\frac{2S\Delta d}{c}\gtrsim\frac{1}{T_{\mathrm{c}}}
+$$</p>
+<p>整理：</p>
+<p>$$
+\Delta d\gtrsim\frac{c}{2ST_{\mathrm{c}}}
+$$</p>
+<p>而线性 Chirp 的带宽：</p>
+<p>$$
+B=ST_{\mathrm{c}}
+$$</p>
+<p>所以：</p>
+<p>$$
+\boxed{d_{\mathrm{res}}=\frac{c}{2B}}
+$$</p>
+<p><strong>结论：在这个理想模型下，距离分辨率只取决于有效扫频带宽 $B$。带宽越大，距离分辨率越小，也就是越能分开彼此靠近的目标。</strong></p>
+<h3 id="5-3-典型数值">5.3 典型数值</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">扫频带宽 B</th>
+<th style="text-align: right;">理想距离分辨率 c/(2B)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">4 GHz</td>
+<td style="text-align: right;">3.75 cm</td>
+</tr>
+<tr>
+<td style="text-align: right;">2 GHz</td>
+<td style="text-align: right;">7.5 cm</td>
+</tr>
+<tr>
+<td style="text-align: right;">1 GHz</td>
+<td style="text-align: right;">15 cm</td>
+</tr>
+<tr>
+<td style="text-align: right;">600 MHz</td>
+<td style="text-align: right;">25 cm</td>
+</tr>
+</tbody>
+</table>
+<p>这也是毫米波 FMCW 雷达经常追求较大调频带宽的原因之一。</p>
+<h3 id="5-4-最容易混淆的问题-为什么-t-mathrm-c-更长-距离分辨率却不一定更好">5.4 最容易混淆的问题：为什么 $T_{\mathrm{c}}$ 更长，距离分辨率却不一定更好？</h3>
+<p>TI 课件专门比较了两个<strong>带宽相同</strong>但时长不同的 Chirp：</p>
+<ul>
+<li>Chirp A：带宽 $B$，时长 $T_{\mathrm{c}}$；</li>
+<li>Chirp B：带宽 $B$，时长 $T_{\mathrm{c}}/2$。</li>
+</ul>
+<p>直觉可能会说：A 的观察时间更长，因此 Fourier frequency resolution 更好，所以距离分辨率应该更好。</p>
+<p>问题在于：<strong>不能只看 $1/T_{\mathrm{c}}$，还必须同时看 Chirp slope。</strong></p>
+<p>Chirp A 的斜率：</p>
+<p>$$
+S_{\mathrm{A}}=\frac{B}{T_{\mathrm{c}}}
+$$</p>
+<p>Chirp B 的斜率：</p>
+<p>$$
+S_{\mathrm{B}}=\frac{B}{T_{\mathrm{c}}/2}=2S_{\mathrm{A}}
+$$</p>
+<p>对于相同的两个目标距离差 $\Delta d$：</p>
+<p>$$
+\Delta f_{\mathrm{A}}=\frac{2S_{\mathrm{A}}\Delta d}{c}
+$$</p>
+<p>而：</p>
+<p>$$
+\Delta f_{\mathrm{B}}=\frac{2S_{\mathrm{B}}\Delta d}{c}=2\Delta f_{\mathrm{A}}
+$$</p>
+<p>B 的观察时间只有一半，因此它自身的频率分辨门限也变成：</p>
+<p>$$
+\frac{1}{T_{\mathrm{c}}/2}=\frac{2}{T_{\mathrm{c}}}
+$$</p>
+<p>也就是说：</p>
+<ul>
+<li>A：频率分辨能力更细，但两个目标的 IF 频率间隔也更小；</li>
+<li>B：频率分辨能力更粗，但两个目标的 IF 频率间隔也恰好更大。</li>
+</ul>
+<p>两种变化严格抵消，最终都得到：</p>
+<p>$$
+d_{\mathrm{res}}=\frac{c}{2B}
+$$</p>
+<p>[图 4：同带宽不同 <code>T_{\mathrm{c}}</code> 的 Chirp A/B；展示斜率、IF 频差和频率分辨门限同步变化]</p>
+<blockquote class="callout">
+<p><strong>一句话记忆</strong>：$T_{\mathrm{c}}$ 决定“看频率有多细”，$S$ 决定“距离差被放大成多大的频差”；当 $B=ST_{\mathrm{c}}$ 固定时，两者正好互相抵消。</p>
+</blockquote>
+<hr/>
+<h2 id="6-最大距离-为什么又与斜率和-adc-有关">6. 最大距离：为什么又与斜率和 ADC 有关</h2>
+<p>距离越远，IF 频率越高：</p>
+<p>$$
+f_{\mathrm{IF}}=\frac{2Sd}{c}
+$$</p>
+<p>因此希望测到最大距离 $d_{\mathrm{max}}$ 时，接收链路必须能够通过并采样：</p>
+<p>$$
+f_{\mathrm{IF,max}}=\frac{2S d_{\mathrm{max}}}{c}
+$$</p>
+<p>TI 课件用 $F_{\mathrm{s}}$ 表示 ADC 能支持的 IF 带宽，并写成：</p>
+<p>$$
+F_{\mathrm{s}}\geq f_{\mathrm{IF,max}}
+$$</p>
+<p>于是得到：</p>
+<p>$$
+\boxed{d_{\mathrm{max}}=\frac{F_{\mathrm{s}} c}{2S}}
+$$</p>
+<p>这和距离分辨率形成一个很重要的对照：</p>
+<ul>
+<li><strong>距离分辨率</strong>：主要看 $B$；</li>
+<li><strong>最大距离</strong>：在该简化模型中看 IF/ADC 带宽 $F_{\mathrm{s}}$ 和 Chirp slope $S$。</li>
+</ul>
+<h3 id="6-1-同带宽时-长-chirp-与短-chirp的系统权衡">6.1 同带宽时，长 Chirp 与短 Chirp的系统权衡</h3>
+<p>仍然比较相同带宽 $B$ 的 A、B 两种 Chirp：</p>
+<ul>
+<li>A 的 $T_{\mathrm{c}}$ 更长，因此 $S$ 更小；</li>
+<li>B 的 $T_{\mathrm{c}}$ 更短，因此 $S$ 更大。</li>
+</ul>
+<p>对于同一个远距离目标：</p>
+<p>$$
+f_{\mathrm{IF}}\propto S
+$$</p>
+<p>所以 A 所需的 IF/ADC 带宽更低；B 则需要更高的 IF 带宽。但 B 的优势是一次测量完成得更快。</p>
+<p>因此在<strong>距离分辨率相同</strong>的前提下，仍然存在：</p>
+<p><strong>ADC/IF 带宽压力 ↔ 测量时间</strong></p>
+<p>之间的工程权衡。</p>
+<h3 id="6-2-补充-真实系统中的-f-mathrm-s-需要更谨慎理解">6.2 补充：真实系统中的 $F_{\mathrm{s}}$ 需要更谨慎理解</h3>
+<p>课件的目的在于建立直觉，所以把 $F_{\mathrm{s}}$ 直接当作可支持的 IF 带宽。实际系统中还要考虑：</p>
+<ul>
+<li>ADC 是实采样还是复采样；</li>
+<li>Nyquist 条件；</li>
+<li>模拟低通/抗混叠滤波器带宽；</li>
+<li>ADC start time；</li>
+<li>真正被 ADC 采到的有效 ramp 区间；</li>
+<li>芯片允许的有效 IF bandwidth。</li>
+</ul>
+<p>因此做具体芯片参数设计时，应使用器件文档里的“有效采样时间”和“有效扫频带宽”，而不要机械地把整个 ramp time 全部算进 $B$。</p>
+<hr/>
+<h2 id="7-从发射到距离谱-把整条处理链串起来">7. 从发射到距离谱：把整条处理链串起来</h2>
+<p>本节所有知识可以压缩成下面一条链：</p>
+<ol>
+<li><strong>Synthesizer</strong> 生成线性 FMCW Chirp；</li>
+<li><strong>TX</strong> 发射 Chirp；</li>
+<li>目标反射，<strong>RX</strong> 收到延迟 $\tau=2d/c$ 的 Chirp；</li>
+<li><strong>Mixer</strong> 比较 TX 与 RX，产生 $f_{\mathrm{IF}}=S\tau$ 的差频；</li>
+<li><strong>LPF</strong> 保留低频 IF，抑制不需要的高频分量；</li>
+<li><strong>ADC</strong> 对 IF 信号采样；</li>
+<li>对一个 Chirp 内的 ADC 样本做 <strong>Range FFT</strong>；</li>
+<li>FFT 峰值所在频率换算成距离；</li>
+<li>多个可分辨峰对应多个目标距离。</li>
+</ol>
+<figure class="diagram" id="fig-chain">
+<svg aria-label="FMCW 单 Chirp 距离处理链路" role="img" viewbox="0 0 980 300">
+<defs><marker id="arrow5" markerheight="8" markerwidth="8" orient="auto" refx="7" refy="4"><path d="M0,0 L8,4 L0,8 z" fill="#60788f"></path></marker></defs>
+<rect fill="#fbfdff" height="298" rx="18" stroke="#dce6f0" width="978" x="1" y="1"></rect>
+<g font-family="system-ui, sans-serif" font-size="15" text-anchor="middle">
+<g fill="#eef5fb" stroke="#9dbbd6"><rect height="65" rx="12" width="110" x="35" y="95"></rect><rect height="65" rx="12" width="90" x="175" y="95"></rect><rect height="65" rx="12" width="110" x="295" y="95"></rect><rect height="65" rx="12" width="95" x="435" y="95"></rect><rect height="65" rx="12" width="85" x="560" y="95"></rect><rect height="65" rx="12" width="85" x="675" y="95"></rect><rect height="65" rx="12" width="150" x="790" y="95"></rect></g>
+<g fill="#243746"><text x="90" y="122">Synthesizer</text><text x="90" y="143">生成 Chirp</text><text x="220" y="134">TX/RX</text><text x="350" y="122">传播 + 目标</text><text x="350" y="143">延迟 τ</text><text x="482" y="134">Mixer</text><text x="603" y="134">LPF</text><text x="718" y="134">ADC</text><text x="865" y="122">Range FFT</text><text x="865" y="143">峰值 → 距离</text></g>
+</g>
+<g marker-end="url(#arrow5)" stroke="#60788f" stroke-width="2"><line x1="145" x2="172" y1="128" y2="128"></line><line x1="265" x2="292" y1="128" y2="128"></line><line x1="405" x2="432" y1="128" y2="128"></line><line x1="530" x2="557" y1="128" y2="128"></line><line x1="645" x2="672" y1="128" y2="128"></line><line x1="760" x2="787" y1="128" y2="128"></line></g>
+<text class="svg-accent" text-anchor="middle" x="490" y="220">d → τ=2d/c → fIF=Sτ → FFT peak → d=cfIF/(2S)</text>
+</svg>
+<figcaption>图 5　FMCW 单 Chirp 距离估计的完整信息链：距离先变成时延，再变成 IF 频率，最后通过 Range FFT 映射回距离。</figcaption>
+</figure>
+<hr/>
+<h2 id="8-关键公式与符号总表">8. 关键公式与符号总表</h2>
+<h3 id="8-1-chirp-参数">8.1 Chirp 参数</h3>
+<p>$$
+S=\frac{B}{T_{\mathrm{c}}}
+$$</p>
+<h3 id="8-2-往返传播时延">8.2 往返传播时延</h3>
+<p>$$
+\tau=\frac{2d}{c}
+$$</p>
+<h3 id="8-3-if-beat-frequency">8.3 IF / beat frequency</h3>
+<p>$$
+f_{\mathrm{IF}}=S\tau=\frac{2Sd}{c}
+$$</p>
+<h3 id="8-4-由-if-频率反求距离">8.4 由 IF 频率反求距离</h3>
+<p>$$
+d=\frac{c f_{\mathrm{IF}}}{2S}
+$$</p>
+<h3 id="8-5-理想距离分辨率">8.5 理想距离分辨率</h3>
+<p>$$
+d_{\mathrm{res}}=\frac{c}{2B}
+$$</p>
+<h3 id="8-6-最大距离-按本课程简化-if-bandwidth-模型">8.6 最大距离（按本课程简化 IF-bandwidth 模型）</h3>
+<p>$$
+d_{\mathrm{max}}=\frac{F_{\mathrm{s}} c}{2S}
+$$</p>
+<table>
+<thead>
+<tr>
+<th>符号</th>
+<th>含义</th>
+<th>常见单位</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$f_{\mathrm{c}}$</td>
+<td>Chirp 起始/载频附近频率</td>
+<td>GHz</td>
+</tr>
+<tr>
+<td>$B$</td>
+<td>有效扫频带宽</td>
+<td>GHz / MHz</td>
+</tr>
+<tr>
+<td>$T_{\mathrm{c}}$</td>
+<td>Chirp/有效观测时间</td>
+<td>μs</td>
+</tr>
+<tr>
+<td>$S$</td>
+<td>Chirp slope</td>
+<td>MHz/μs</td>
+</tr>
+<tr>
+<td>$\tau$</td>
+<td>雷达—目标—雷达往返时延</td>
+<td>s / ns</td>
+</tr>
+<tr>
+<td>$d$</td>
+<td>目标距离</td>
+<td>m</td>
+</tr>
+<tr>
+<td>$c$</td>
+<td>光速，约 $3\times10^8$</td>
+<td>m/s</td>
+</tr>
+<tr>
+<td>$f_{\mathrm{IF}}$</td>
+<td>IF/beat frequency</td>
+<td>kHz / MHz</td>
+</tr>
+<tr>
+<td>$F_{\mathrm{s}}$</td>
+<td>课程模型中的 ADC 可支持 IF 带宽/采样参数</td>
+<td>MHz</td>
+</tr>
+<tr>
+<td>$d_{\mathrm{res}}$</td>
+<td>距离分辨率</td>
+<td>m / cm</td>
+</tr>
+<tr>
+<td>$d_{\mathrm{max}}$</td>
+<td>最大可测距离</td>
+<td>m</td>
+</tr>
+</tbody>
+</table>
+<hr/>
+<h2 id="9-易错点与自检">9. 易错点与自检</h2>
+<h3 id="易错点-1-t-mathrm-c-越长-距离分辨率一定越高">易错点 1：$T_{\mathrm{c}}$ 越长，距离分辨率一定越高</h3>
+<p><strong>错误。</strong>只延长 $T_{\mathrm{c}}$ 而带宽 $B$ 不变时，$S=B/T_{\mathrm{c}}$ 会同步减小，最终 $d_{\mathrm{res}}=c/(2B)$ 不变。</p>
+<h3 id="易错点-2-fft-点数越大-距离分辨率就越高">易错点 2：FFT 点数越大，距离分辨率就越高</h3>
+<p>不一定。若只是对同一批 ADC 数据做 zero-padding，把 FFT 从 256 点补到 1024 点，只是让频率轴插值得更密；真实观测带宽和信息量没有增加，物理分辨率不会因此提高。</p>
+<h3 id="易错点-3-77-ghz-的-高载频-直接决定-3-75-cm-距离分辨率">易错点 3：77 GHz 的“高载频”直接决定 3.75 cm 距离分辨率</h3>
+<p>不是。理想 FMCW 距离分辨率由<strong>扫频带宽</strong>决定。77–81 GHz 例子之所以得到 3.75 cm，是因为它扫了 4 GHz 带宽，而不是因为中心频率大约 79 GHz。</p>
+<h3 id="易错点-4-最大距离和距离分辨率是一回事">易错点 4：最大距离和距离分辨率是一回事</h3>
+<p>不是。增大 $B$ 可以提高距离分辨率；最大距离还受到 slope、IF 链路和 ADC 可采带宽等限制。</p>
+<h3 id="易错点-5-目标回波仍然是几十-ghz-为什么-adc-不需要几十-ghz-采样">易错点 5：目标回波仍然是几十 GHz，为什么 ADC 不需要几十 GHz 采样？</h3>
+<p>因为 ADC 不直接采射频载波。TX 与 RX 先在 mixer 中做差，几十 GHz 的共同载频部分被“抵消”，留下与距离成正比的低频 IF/beat signal，再交给 ADC。</p>
+<h3 id="自检题">自检题</h3>
+<ol>
+<li>若 $B=4\,\mathrm{GHz}$，理想距离分辨率是多少？</li>
+<li>两个 Chirp 都扫 4 GHz，一个 40 μs、一个 20 μs，它们的理想距离分辨率是否不同？为什么？</li>
+<li>在 $S$ 不变时，目标距离翻倍，IF 频率怎样变化？</li>
+<li>为什么更大的 Chirp slope 会提高远距离目标对应的 IF 频率？这对 ADC 有什么影响？</li>
+<li>Range FFT 的峰值横坐标本质上先是什么量？怎样转换成距离？</li>
+</ol>
+<p><strong>答案要点：</strong>1）3.75 cm；2）相同，因为 $d_{\mathrm{res}}=c/(2B)$；3）翻倍；4）$f_{\mathrm{IF}}=2Sd/c$，需要更高 IF/ADC 带宽；5）先是 IF 频率，再用 $d=c f_{\mathrm{IF}}/(2S)$ 转成距离。</p>
+<hr/>
+<h2 id="10-本节小结">10. 本节小结</h2>
+<p>本节最重要的思想不是记三个公式，而是建立一条完整因果链：</p>
+<p><strong>距离 $d$ → 往返时延 $\tau$ → TX/RX Chirp 的频率差 → IF tone → FFT peak → 距离估计。</strong></p>
+<p>其中：</p>
+<ul>
+<li>$S$ 决定“时延被转换成多大的 IF 频率”；</li>
+<li>$B$ 决定“两个相近距离能否被分开”；</li>
+<li>IF/ADC 带宽与 $S$ 共同限制可处理的最远目标；</li>
+<li>Range FFT 是把 IF 的频率内容转换成距离谱的关键步骤。</li>
+</ul>
+<p>下一节会继续研究 IF signal 的<strong>相位</strong>。频率告诉我们“目标在哪个距离上”，而相位对非常小的位移以及跨 Chirp 的运动信息尤其敏感，是理解速度估计的重要基础。</p>
+<hr/>
+<h2 id="来源">来源</h2>
+<ol>
+<li>Bilibili：《毫米波雷达基础知识》，BV1du4m1g7bv，P1“1、毫米波雷达简介：FMCW雷达”。</li>
+<li>Texas Instruments: <em>Intro to mmWave Sensing: FMCW Radars — Module 1: Range Estimation</em>.</li>
+<li>Texas Instruments: <em>Introduction to mmWave Sensing: FMCW Radars</em> 演示文稿，Module 1 对应前 18 页。</li>
+<li>Texas Instruments: <em>The fundamentals of millimeter wave radar sensors</em>，用于背景补充。</li>
+</ol>
+<section class="source-panel">
+<strong>来源追溯</strong><br>
+主线资料：Bilibili《毫米波雷达基础知识》P1（BV1du4m1g7bv），并以 Texas Instruments 官方 <em>Intro to mmWave Sensing: FMCW Radars — Module 1: Range Estimation</em> 及本地保存的官方演示文稿第 1–18 页进行核验。Mixer 恒等式、FFT bin 与物理分辨率区别、Nyquist/有效采样时间等属于教学补充，不冒充原视频逐字内容。<br><br>
+<a href="references/ti_fmcw_slides.pdf">打开项目内 TI 官方配套讲义 PDF</a>
+</section>
+<div class="footer">学习笔记项目 · ChatGPT-AgentDock / Codex 协作产物 · 2026-09-21 重建 HTML 版</div>
+</main></div>
+<script>const bar=document.getElementById('progress');const links=[...document.querySelectorAll('.toc a')];
+function update(){const d=document.documentElement;const m=d.scrollHeight-d.clientHeight;bar.style.width=(m?d.scrollTop/m*100:0)+'%';}
+window.addEventListener('scroll',update,{passive:true});update();
+const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+e.target.id));}})},{rootMargin:'-15% 0px -72% 0px'});
+document.querySelectorAll('h2[id],h3[id]').forEach(h=>obs.observe(h));
+</script>
+</body></html>

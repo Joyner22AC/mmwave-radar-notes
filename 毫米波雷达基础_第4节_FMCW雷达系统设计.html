@@ -1,0 +1,687 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"><title>毫米波雷达基础｜第4节：FMCW雷达系统设计</title><script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']]},svg:{fontCache:'global'}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script><style>:root{--ink:#20303d;--muted:#627385;--line:#dce5ed;--paper:#fff;--soft:#f6f9fc;--blue:#1f6fb2;--blue2:#315f91;--orange:#c96d25;--shadow:0 12px 34px rgba(41,63,82,.08);}
+*{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;background:#f3f6f9;color:var(--ink);font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;line-height:1.82;font-size:16px}
+#progress{position:fixed;top:0;left:0;height:3px;background:var(--blue);width:0;z-index:50}
+.layout{display:grid;grid-template-columns:280px minmax(0,860px);gap:32px;max-width:1210px;margin:0 auto;padding:34px 24px 80px}
+.sidebar{position:sticky;top:22px;height:calc(100vh - 44px);overflow:auto;padding:18px 16px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.92);box-shadow:var(--shadow)}
+.brand{font-weight:700;color:#173c5c;margin:3px 8px 14px} .toc{display:flex;flex-direction:column;gap:2px} .toc a{text-decoration:none;color:#536779;border-radius:8px;padding:7px 9px;font-size:13px;line-height:1.4} .toc a:hover,.toc a.active{background:#edf4fa;color:#174e7e} .toc-sub{padding-left:22px!important;font-size:12.5px!important}
+.article{background:var(--paper);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:54px 68px;min-width:0}
+.hero{border-bottom:1px solid var(--line);padding-bottom:30px;margin-bottom:36px} .eyebrow{color:var(--blue);font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase} h1{font-size:35px;line-height:1.25;margin:10px 0 15px;color:#17344d} .lead{font-size:17px;color:#596d7f;max-width:720px;margin:0} .meta{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px} .chip{font-size:12px;padding:5px 9px;border-radius:999px;background:#edf4fa;color:#315f91;border:1px solid #d2e2ef}
+h2{font-size:25px;line-height:1.35;color:#183e5d;margin:54px 0 18px;padding-top:4px} h3{font-size:19px;line-height:1.4;color:#28516f;margin:34px 0 12px} p{margin:12px 0} strong{color:#193b56} code{font-family:"Cascadia Mono",Consolas,monospace;background:#f0f4f7;border:1px solid #e1e8ee;padding:.08em .34em;border-radius:5px;font-size:.92em}
+hr{border:0;border-top:1px solid var(--line);margin:42px 0} ul,ol{padding-left:1.55em} li{margin:.35em 0}
+blockquote.callout{margin:22px 0;padding:14px 18px;border-left:4px solid var(--blue);background:#f3f8fc;border-radius:0 10px 10px 0;color:#405669}
+table{width:100%;border-collapse:collapse;margin:20px 0 28px;font-size:14.5px} th,td{border:1px solid #dce5ed;padding:10px 12px;text-align:left;vertical-align:top} th{background:#eef5fa;color:#294f6d} tr:nth-child(even) td{background:#fbfcfd}
+.diagram{margin:28px 0 34px;padding:16px;border:1px solid var(--line);border-radius:16px;background:#fbfdff;overflow:hidden} .diagram svg{width:100%;height:auto;display:block} figcaption{text-align:center;color:#657889;font-size:13px;margin-top:10px} .svg-label{font:16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#415466} .svg-title{font:600 17px "Segoe UI","Microsoft YaHei",sans-serif;fill:#294f6d} .svg-accent{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#315f91} .svg-blue{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#1f6fb2} .svg-orange{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#c96d25}
+.formula-note{font-size:13px;color:var(--muted)} mjx-container{color:#172a3a} mjx-container[display="true"]{margin:1.35em 0!important;max-width:100%;overflow-x:auto;overflow-y:hidden;padding:.18em .25em .24em;text-align:center;scrollbar-width:thin;scrollbar-color:#c7d5e1 transparent} mjx-container[display="true"]>svg{display:inline-block;vertical-align:middle} mjx-container:not([display="true"]){font-size:1.01em}
+.source-panel{margin-top:52px;padding:22px;border:1px solid var(--line);background:#f8fafc;border-radius:14px;color:#526779;font-size:14px} .source-panel a{color:var(--blue)}
+.footer{margin-top:38px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:#7a8997;text-align:center}
+@media(max-width:980px){.layout{grid-template-columns:1fr;max-width:900px}.sidebar{position:relative;top:0;height:auto;max-height:340px}.article{padding:42px 34px}}
+@media(max-width:600px){body{font-size:15px}.layout{padding:12px 8px 50px}.sidebar{display:none}.article{padding:30px 20px;border-radius:12px}h1{font-size:28px}h2{font-size:22px}.diagram{padding:5px}mjx-container[display="true"]{font-size:.96em;margin:1.1em 0!important}}
+@media print{body{background:white;font-size:10.5pt}#progress,.sidebar{display:none!important}.layout{display:block;max-width:none;padding:0}.article{border:0;box-shadow:none;padding:0}.hero{margin-top:0}h2,h3{break-after:avoid-page}.diagram,table,blockquote,mjx-container[display="true"]{break-inside:avoid}mjx-container[display="true"]{overflow:visible}a{color:inherit;text-decoration:none}}
+</style></head><body><div id="progress"></div><div class="layout"><aside class="sidebar"><div class="brand">第 4 节 · FMCW雷达系统设计</div><nav class="toc"><a class="toc-sub" href="#本节学习目标">本节学习目标</a>
+<a class="toc-main" href="#1-第-4-节在做什么-从-会算-进入-会设计">1. 第 4 节在做什么：从“会算”进入“会设计”</a>
+<a class="toc-main" href="#2-先把-2d-fft-的工程数据流固定下来">2. 先把 2D FFT 的工程数据流固定下来</a>
+<a class="toc-sub" href="#2-1-第一维-range-fft">2.1 第一维：Range FFT</a>
+<a class="toc-sub" href="#2-2-第二维-doppler-fft">2.2 第二维：Doppler FFT</a>
+<a class="toc-main" href="#3-设计之前先区分三个-时间">3. 设计之前先区分三个“时间”</a>
+<a class="toc-sub" href="#3-1-有效-ramp-时间-t-mathrm-ramp">3.1 有效 Ramp 时间 $T_{\mathrm{ramp}}$</a>
+<a class="toc-sub" href="#3-2-chirp-重复间隔-t-mathrm-r">3.2 Chirp 重复间隔 $T_{\mathrm{r}}$</a>
+<a class="toc-sub" href="#3-3-active-frame-time-t-mathrm-f">3.3 Active frame time $T_{\mathrm{f}}$</a>
+<a class="toc-main" href="#4-四个系统需求-分别先锁定什么参数">4. 四个系统需求，分别先锁定什么参数？</a>
+<a class="toc-sub" href="#4-1-最大速度-chirp-重复间隔">4.1 最大速度 → Chirp 重复间隔</a>
+<a class="toc-sub" href="#4-2-距离分辨率-chirp-bandwidth">4.2 距离分辨率 → Chirp Bandwidth</a>
+<a class="toc-sub" href="#4-3-bandwidth-ramp-时间-slope">4.3 Bandwidth + Ramp 时间 → Slope</a>
+<a class="toc-sub" href="#4-4-速度分辨率-active-frame-time">4.4 速度分辨率 → Active frame time</a>
+<a class="toc-sub" href="#4-5-frame-time-chirp-间隔-chirp-数量">4.5 Frame time + Chirp 间隔 → Chirp 数量</a>
+<a class="toc-main" href="#5-最大距离为什么会进一步约束-if-bandwidth">5. 最大距离为什么会进一步约束 IF bandwidth？</a>
+<a class="toc-sub" href="#5-1-为什么-更远-和-更高分辨率-会打架">5.1 为什么“更远”和“更高分辨率”会打架？</a>
+<a class="toc-main" href="#6-一个完整的教学设计例子">6. 一个完整的教学设计例子</a>
+<a class="toc-sub" href="#6-1-由最大速度求-t-mathrm-r">6.1 由最大速度求 $T_{\mathrm{r}}$</a>
+<a class="toc-sub" href="#6-2-由距离分辨率求-bandwidth">6.2 由距离分辨率求 Bandwidth</a>
+<a class="toc-sub" href="#6-3-检查最大距离对应-if">6.3 检查最大距离对应 IF</a>
+<a class="toc-sub" href="#6-4-由速度分辨率求帧时长">6.4 由速度分辨率求帧时长</a>
+<a class="toc-sub" href="#6-5-为什么到这里仍不能说-设计完成">6.5 为什么到这里仍不能说“设计完成”？</a>
+<a class="toc-main" href="#7-为什么实际系统设计一定会迭代">7. 为什么实际系统设计一定会迭代？</a>
+<a class="toc-sub" href="#7-1-if-bandwidth-不够">7.1 IF bandwidth 不够</a>
+<a class="toc-sub" href="#7-2-slope-超出器件能力">7.2 Slope 超出器件能力</a>
+<a class="toc-sub" href="#7-3-必须留-inter-chirp-idle-time">7.3 必须留 inter-chirp idle time</a>
+<a class="toc-sub" href="#7-4-存储和计算量">7.4 存储和计算量</a>
+<a class="toc-main" href="#8-radar-range-equation-为什么回波功率按-d-4-衰减">8. Radar Range Equation：为什么回波功率按 $d^{-4}$ 衰减？</a>
+<a class="toc-sub" href="#8-1-第一次扩散-雷达到目标">8.1 第一次扩散：雷达到目标</a>
+<a class="toc-sub" href="#8-2-目标散射-radar-cross-section">8.2 目标散射：Radar Cross Section</a>
+<a class="toc-sub" href="#8-3-第二次扩散-目标回到雷达">8.3 第二次扩散：目标回到雷达</a>
+<a class="toc-sub" href="#8-4-rx-天线把功率密度转换为接收功率">8.4 RX 天线把功率密度转换为接收功率</a>
+<a class="toc-main" href="#9-从接收功率到-snr">9. 从接收功率到 SNR</a>
+<a class="toc-sub" href="#9-1-为什么更长测量时间可以提高-snr">9.1 为什么更长测量时间可以提高 SNR？</a>
+<a class="toc-main" href="#10-snr-限制下的最大探测距离">10. SNR 限制下的最大探测距离</a>
+<a class="toc-sub" href="#10-1-四次根意味着什么">10.1 四次根意味着什么？</a>
+<a class="toc-main" href="#11-两种-最大距离-必须彻底分开">11. 两种“最大距离”必须彻底分开</a>
+<a class="toc-sub" href="#11-1-采样-if-几何限制">11.1 采样/IF 几何限制</a>
+<a class="toc-sub" href="#11-2-snr-检测限制">11.2 SNR 检测限制</a>
+<a class="toc-main" href="#12-把整套设计链串起来">12. 把整套设计链串起来</a>
+<a class="toc-main" href="#13-三组最重要的设计权衡">13. 三组最重要的设计权衡</a>
+<a class="toc-sub" href="#13-1-最大速度-vs-chirp-间隔">13.1 最大速度 vs Chirp 间隔</a>
+<a class="toc-sub" href="#13-2-最大距离-vs-距离分辨率">13.2 最大距离 vs 距离分辨率</a>
+<a class="toc-sub" href="#13-3-速度分辨率-vs-延迟-计算量">13.3 速度分辨率 vs 延迟/计算量</a>
+<a class="toc-main" href="#14-易错点与自检">14. 易错点与自检</a>
+<a class="toc-sub" href="#易错点-1-bandwidth-越大越好">易错点 1：Bandwidth 越大越好</a>
+<a class="toc-sub" href="#易错点-2-增加-chirp-数量可以提高最大无模糊速度">易错点 2：增加 Chirp 数量可以提高最大无模糊速度</a>
+<a class="toc-sub" href="#易错点-3-课程中的-t-mathrm-c-永远等于-ramp-time">易错点 3：课程中的 $T_{\mathrm{c}}$ 永远等于 ramp time</a>
+<a class="toc-sub" href="#易错点-4-adc-最大距离就是雷达真实探测距离">易错点 4：ADC 最大距离就是雷达真实探测距离</a>
+<a class="toc-sub" href="#易错点-5-radar-range-equation-只有一次-1-d-2">易错点 5：Radar Range Equation 只有一次 $1/d^2$</a>
+<a class="toc-sub" href="#易错点-6-延长测量时间-2-倍-最大探测距离也变-2-倍">易错点 6：延长测量时间 2 倍，最大探测距离也变 2 倍</a>
+<a class="toc-sub" href="#自检题">自检题</a>
+<a class="toc-main" href="#15-本节小结">15. 本节小结</a>
+<a class="toc-main" href="#来源">来源</a></nav></aside><main class="article"><header class="hero"><div class="eyebrow">毫米波雷达基础 · Lesson 04</div><h1>FMCW 雷达系统设计</h1><p class="lead">把距离、速度、分辨率指标反推成 Chirp 与 Frame 参数，并理解 IF bandwidth、器件限制与 Radar Range Equation 如何共同决定一个真正可实现的雷达。</p><div class="meta"><span class="chip">TI Module 4 核验</span><span class="chip">System Design</span><span class="chip">Radar Range Equation</span><span class="chip">5 张教学示意图</span></div></header><blockquote class="callout">
+<p>对应 Bilibili P4《4、FMCW4：系统设计》；权威核验来源为 TI 官方 <em>Intro to mmWave Sensing: FMCW Radars — Module 4: Some System Design Topics</em> 及同套官方演示文稿。</p>
+</blockquote>
+<h3 id="本节学习目标">本节学习目标</h3>
+<p>学完本节，应能回答八个问题：</p>
+<ol>
+<li>前三节得到的距离/速度公式，怎样真正反推成一组 FMCW 波形参数？</li>
+<li>为什么设计时不能只追求“更大的带宽”或“更多的 Chirp”？</li>
+<li>$d_{\mathrm{res}}$、$d_{\mathrm{max}}$、$v_{\mathrm{res}}$、$v_{\mathrm{max}}$ 分别主要约束哪些参数？</li>
+<li>为什么 IF bandwidth 会把最大距离与距离分辨率耦合起来？</li>
+<li>实际器件里的 idle time、Slope 上限和存储容量为什么会迫使设计反复迭代？</li>
+<li>Radar Range Equation 为什么出现 $d^4$？</li>
+<li>“ADC 能看到的最远距离”和“SNR 足以检测的最远距离”有什么区别？</li>
+<li>为什么同距离、同速度的两个目标仍然无法靠 2D FFT 分开？</li>
+</ol>
+<hr/>
+<h2 id="1-第-4-节在做什么-从-会算-进入-会设计">1. 第 4 节在做什么：从“会算”进入“会设计”</h2>
+<p>前三节分别解决：</p>
+<p>$$
+\text{Range FFT}\rightarrow d,
+$$</p>
+<p>$$
+\text{phase across chirps}\rightarrow v,
+$$</p>
+<p>以及：</p>
+<p>$$
+\text{Doppler FFT}\rightarrow\text{多个速度分量}.
+$$</p>
+<p>到了第 4 节，问题反过来了：</p>
+<blockquote class="callout">
+<p>如果系统需求已经给定，例如“距离分辨率 10 cm、最远 50 m、最大速度 15 m/s、速度分辨率 0.5 m/s”，应该怎样设计 Chirp 与 Frame？</p>
+</blockquote>
+<p>这时不能再把每个公式孤立地看，而要把它们联立起来。</p>
+<p>TI Module 4 给出的三条主线正是：</p>
+<ol>
+<li><strong>2D FFT processing</strong>：数据在工程上怎样组织；</li>
+<li><strong>frame design trade-offs</strong>：指标怎样映射到波形参数；</li>
+<li><strong>radar range equation</strong>：即使几何/采样条件允许，目标回波 SNR 是否真的足够。</li>
+</ol>
+<hr/>
+<h2 id="2-先把-2d-fft-的工程数据流固定下来">2. 先把 2D FFT 的工程数据流固定下来</h2>
+<p>假设一帧发射 $N$ 个 Chirp，每个 Chirp 采集 $M$ 个 ADC sample。</p>
+<p>原始数据可看成矩阵：</p>
+<p>$$
+\mathbf{X}\in\mathbb{C}^{N\times M}.
+$$</p>
+<ul>
+<li>每一行：一个 Chirp 内的 fast-time ADC samples；</li>
+<li>每一列：固定 sample/range 位置跨多个 Chirp 的 slow-time 序列。</li>
+</ul>
+<h3 id="2-1-第一维-range-fft">2.1 第一维：Range FFT</h3>
+<p>对每个 Chirp 的 ADC 数据沿 fast time 做 FFT：</p>
+<p>$$
+\text{ADC samples}\xrightarrow{\text{Range FFT}}\text{range bins}.
+$$</p>
+<p>工程实现中常见做法不是把整帧原始 ADC 全部存下来再统一处理，而是：</p>
+<ol>
+<li>收到一个 Chirp 的 ADC；</li>
+<li>立刻做 Range FFT；</li>
+<li>只把 Range FFT 结果写入帧缓存；</li>
+<li>等一帧 $N$ 个 Chirp 都结束后，再沿列做 Doppler FFT。</li>
+</ol>
+<p>这样可以降低原始 ADC 数据的长期缓存压力。</p>
+<h3 id="2-2-第二维-doppler-fft">2.2 第二维：Doppler FFT</h3>
+<p>固定一个 range bin $r$，取：</p>
+<p>$$
+X[0,r],X[1,r],\ldots,X[N-1,r],
+$$</p>
+<p>沿 Chirp index 做 Doppler FFT：</p>
+<p>$$
+\text{slow-time sequence}\xrightarrow{\text{Doppler FFT}}\text{velocity bins}.
+$$</p>
+<figure class="diagram"><svg role="img" viewbox="0 0 920 500"><rect fill="#fbfdff" height="498" rx="18" stroke="#dce6f0" width="918" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="460" y="42">FMCW 2D FFT 的工程数据流</text><g transform="translate(90,95)"><rect fill="#fff" height="260" stroke="#9dbbd6" width="320" x="0" y="0"></rect><g stroke="#dce6f0"><line x1="0" x2="320" y1="52" y2="52"></line><line x1="0" x2="320" y1="104" y2="104"></line><line x1="0" x2="320" y1="156" y2="156"></line><line x1="0" x2="320" y1="208" y2="208"></line><line x1="64" x2="64" y1="0" y2="260"></line><line x1="128" x2="128" y1="0" y2="260"></line><line x1="192" x2="192" y1="0" y2="260"></line><line x1="256" x2="256" y1="0" y2="260"></line></g><text class="svg-label" text-anchor="middle" x="160" y="292">ADC matrix：row = chirp，column = fast-time sample</text></g><line stroke="#1f6fb2" stroke-width="4" x1="440" x2="530" y1="225" y2="225"></line><polygon fill="#1f6fb2" points="530,225 514,216 514,234"></polygon><rect fill="#eef5fb" height="110" rx="14" stroke="#9dbbd6" width="275" x="555" y="95"></rect><text class="svg-title" text-anchor="middle" x="692" y="135">每行 Range FFT</text><text class="svg-label" text-anchor="middle" x="692" y="170">fast time → range bins</text><line stroke="#c96d25" stroke-width="4" x1="692" x2="692" y1="210" y2="275"></line><polygon fill="#c96d25" points="692,275 683,259 701,259"></polygon><rect fill="#fff4ea" height="110" rx="14" stroke="#d8aa80" width="275" x="555" y="290"></rect><text class="svg-title" text-anchor="middle" x="692" y="330">每列 Doppler FFT</text><text class="svg-label" text-anchor="middle" x="692" y="365">slow time → velocity bins</text><text class="svg-accent" text-anchor="middle" x="460" y="455">Range FFT 结果可逐 Chirp 写入帧缓存，再统一做 Doppler FFT</text></svg><figcaption>图 1　2D FFT 的工程实现：Chirp 内沿 fast time 做 Range FFT；固定 range bin 后沿 Chirp 维做 Doppler FFT。</figcaption></figure>
+<blockquote class="callout">
+<p><strong>重要直觉</strong>：Range FFT 和 Doppler FFT 虽然都叫 FFT，但它们处理的是两个完全不同的维度和物理频率。</p>
+</blockquote>
+<hr/>
+<h2 id="3-设计之前先区分三个-时间">3. 设计之前先区分三个“时间”</h2>
+<p>TI 课程为了讲解简洁，很多地方统一用 $T_{\mathrm{c}}$。真实配置里最好拆开：</p>
+<h3 id="3-1-有效-ramp-时间-t-mathrm-ramp">3.1 有效 Ramp 时间 $T_{\mathrm{ramp}}$</h3>
+<p>频率真正线性上升、并用于有效 ADC 采样的时间尺度。</p>
+<p>Chirp slope：</p>
+<p>$$
+S=\frac{B}{T_{\mathrm{ramp}}}.
+$$</p>
+<h3 id="3-2-chirp-重复间隔-t-mathrm-r">3.2 Chirp 重复间隔 $T_{\mathrm{r}}$</h3>
+<p>从一个 Chirp 的参考时刻到下一个 Chirp 的参考时刻。</p>
+<p>若存在 inter-chirp idle time：</p>
+<p>$$
+T_{\mathrm{r}}&gt;T_{\mathrm{ramp}}.
+$$</p>
+<p>速度相关公式应使用 $T_{\mathrm{r}}$：</p>
+<p>$$
+v_{\mathrm{max}}=\frac{\lambda}{4T_{\mathrm{r}}}.
+$$</p>
+<h3 id="3-3-active-frame-time-t-mathrm-f">3.3 Active frame time $T_{\mathrm{f}}$</h3>
+<p>若一帧有 $N$ 个等间隔 Chirp：</p>
+<p>$$
+T_{\mathrm{f}}\approx NT_{\mathrm{r}}.
+$$</p>
+<p>速度分辨率：</p>
+<p>$$
+v_{\mathrm{res}}\approx\frac{\lambda}{2T_{\mathrm{f}}}.
+$$</p>
+<p>实际系统还可能有 inter-frame idle time，因此完整 frame period 可以大于 active frame time。</p>
+<blockquote class="callout">
+<p><strong>课程符号提醒</strong>：下面为了与 TI 公式对应，会同时指出理想化 $T_{\mathrm{c}}$ 关系；工程理解则优先采用 $T_{\mathrm{ramp}}$ 与 $T_{\mathrm{r}}$ 的区分。</p>
+</blockquote>
+<hr/>
+<h2 id="4-四个系统需求-分别先锁定什么参数">4. 四个系统需求，分别先锁定什么参数？</h2>
+<p>假设给定四个核心要求：</p>
+<ul>
+<li>距离分辨率：$d_{\mathrm{res}}$；</li>
+<li>最大距离：$d_{\mathrm{max}}$；</li>
+<li>最大无模糊速度：$v_{\mathrm{max}}$；</li>
+<li>速度分辨率：$v_{\mathrm{res}}$。</li>
+</ul>
+<p>TI 给出的设计思路可以整理成下面的“反推链”。</p>
+<figure class="diagram"><svg role="img" viewbox="0 0 920 520"><rect fill="#fbfdff" height="518" rx="18" stroke="#dce6f0" width="918" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="460" y="42">从性能需求反推 FMCW 波形参数</text><g class="svg-label"><rect fill="#eef5fb" height="66" rx="12" stroke="#9dbbd6" width="150" x="55" y="90"></rect><text text-anchor="middle" x="130" y="130">vmax</text><rect fill="#eef5fb" height="66" rx="12" stroke="#9dbbd6" width="150" x="55" y="190"></rect><text text-anchor="middle" x="130" y="230">dres</text><rect fill="#eef5fb" height="66" rx="12" stroke="#9dbbd6" width="150" x="55" y="290"></rect><text text-anchor="middle" x="130" y="330">vres</text><rect fill="#eef5fb" height="66" rx="12" stroke="#9dbbd6" width="150" x="55" y="390"></rect><text text-anchor="middle" x="130" y="430">dmax</text></g><g><rect fill="#fff" height="66" rx="12" stroke="#9dbbd6" width="170" x="330" y="90"></rect><text class="svg-accent" text-anchor="middle" x="415" y="120">Tr</text><text class="svg-label" text-anchor="middle" x="415" y="145">λ/(4vmax)</text><rect fill="#fff" height="66" rx="12" stroke="#9dbbd6" width="170" x="330" y="190"></rect><text class="svg-accent" text-anchor="middle" x="415" y="220">B</text><text class="svg-label" text-anchor="middle" x="415" y="245">c/(2dres)</text><rect fill="#fff" height="66" rx="12" stroke="#9dbbd6" width="170" x="330" y="290"></rect><text class="svg-accent" text-anchor="middle" x="415" y="320">Tf</text><text class="svg-label" text-anchor="middle" x="415" y="345">λ/(2vres)</text><rect fill="#fff" height="66" rx="12" stroke="#9dbbd6" width="170" x="330" y="390"></rect><text class="svg-accent" text-anchor="middle" x="415" y="420">IF check</text><text class="svg-label" text-anchor="middle" x="415" y="445">2Sdmax/c</text></g><g><rect fill="#fff4ea" height="72" rx="12" stroke="#d8aa80" width="190" x="650" y="135"></rect><text class="svg-orange" text-anchor="middle" x="745" y="165">S = B/Tramp</text><text class="svg-label" text-anchor="middle" x="745" y="190">Slope</text><rect fill="#fff4ea" height="72" rx="12" stroke="#d8aa80" width="190" x="650" y="270"></rect><text class="svg-orange" text-anchor="middle" x="745" y="300">N ≈ Tf/Tr</text><text class="svg-label" text-anchor="middle" x="745" y="325">chirps / frame</text><rect fill="#fff4ea" height="72" rx="12" stroke="#d8aa80" width="190" x="650" y="390"></rect><text class="svg-orange" text-anchor="middle" x="745" y="420">ADC / Fs</text><text class="svg-label" text-anchor="middle" x="745" y="445">覆盖 IF bandwidth</text></g><g fill="none" stroke="#60788f" stroke-width="3"><path d="M205 123 H330"></path><path d="M205 223 H330"></path><path d="M205 323 H330"></path><path d="M205 423 H330"></path><path d="M500 223 C580 223 575 171 650 171"></path><path d="M500 323 H650"></path><path d="M500 423 H650"></path></g></svg><figcaption>图 2　设计不是单公式问题：四类性能指标分别约束 Chirp 间隔、带宽、帧时长与 IF/ADC，再共同决定 slope、Chirp 数和采样配置。</figcaption></figure>
+<h3 id="4-1-最大速度-chirp-重复间隔">4.1 最大速度 → Chirp 重复间隔</h3>
+<p>由第 3 节：</p>
+<p>$$
+\boxed{v_{\mathrm{max}}=\frac{\lambda}{4T_{\mathrm{r}}}}.
+$$</p>
+<p>所以：</p>
+<p>$$
+T_{\mathrm{r}}\le \frac{\lambda}{4v_{\mathrm{max}}}.
+$$</p>
+<p>想测更快的目标，Chirp 必须更密。</p>
+<h3 id="4-2-距离分辨率-chirp-bandwidth">4.2 距离分辨率 → Chirp Bandwidth</h3>
+<p>由第 1 节：</p>
+<p>$$
+\boxed{d_{\mathrm{res}}=\frac{c}{2B}}.
+$$</p>
+<p>所以：</p>
+<p>$$
+B=\frac{c}{2d_{\mathrm{res}}}.
+$$</p>
+<p>想把两个距离很近的目标分开，需要更大的 RF sweep bandwidth。</p>
+<h3 id="4-3-bandwidth-ramp-时间-slope">4.3 Bandwidth + Ramp 时间 → Slope</h3>
+<p>$$
+\boxed{S=\frac{B}{T_{\mathrm{ramp}}}}.
+$$</p>
+<p>如果先用理想化近似：</p>
+<p>$$
+T_{\mathrm{ramp}}\approx T_{\mathrm{r}},
+$$</p>
+<p>那么 $B$ 与 $T_{\mathrm{r}}$ 一旦确定，Slope 也基本确定。</p>
+<h3 id="4-4-速度分辨率-active-frame-time">4.4 速度分辨率 → Active frame time</h3>
+<p>$$
+\boxed{v_{\mathrm{res}}=\frac{\lambda}{2T_{\mathrm{f}}}}.
+$$</p>
+<p>因此：</p>
+<p>$$
+T_{\mathrm{f}}=\frac{\lambda}{2v_{\mathrm{res}}}.
+$$</p>
+<p>想把两个接近的速度分开，就要观察更久。</p>
+<h3 id="4-5-frame-time-chirp-间隔-chirp-数量">4.5 Frame time + Chirp 间隔 → Chirp 数量</h3>
+<p>$$
+N\approx\frac{T_{\mathrm{f}}}{T_{\mathrm{r}}}.
+$$</p>
+<p>实际实现可再根据 FFT 长度、调度、内存等要求把 $N$ 调整到合适整数。</p>
+<hr/>
+<h2 id="5-最大距离为什么会进一步约束-if-bandwidth">5. 最大距离为什么会进一步约束 IF bandwidth？</h2>
+<p>目标距离 $d$ 对应：</p>
+<p>$$
+f_{\mathrm{IF}}=\frac{2Sd}{c}.
+$$</p>
+<p>因此最远目标 $d_{\mathrm{max}}$ 对应最高 IF：</p>
+<p>$$
+\boxed{f_{\mathrm{IF,max}}=\frac{2Sd_{\mathrm{max}}}{c}}.
+$$</p>
+<p>若 ADC / 模拟 IF 链只能支持到某个最大有效 IF bandwidth：</p>
+<p>$$
+B_{\mathrm{IF,avail}},
+$$</p>
+<p>则必须满足：</p>
+<p>$$
+\frac{2Sd_{\mathrm{max}}}{c}\le B_{\mathrm{IF,avail}}.
+$$</p>
+<p>于是：</p>
+<p>$$
+S\,d_{\mathrm{max}}\le \frac{cB_{\mathrm{IF,avail}}}{2}.
+$$</p>
+<p>这就是 TI Module 4 特别强调的工程约束。</p>
+<h3 id="5-1-为什么-更远-和-更高分辨率-会打架">5.1 为什么“更远”和“更高分辨率”会打架？</h3>
+<p>固定设备 IF bandwidth 后，如果要求 $d_{\mathrm{max}}$ 增大，就必须降低 $S$。</p>
+<p>若此时 $T_{\mathrm{ramp}}$ 又大致受最大速度需求锁定，则：</p>
+<p>$$
+B=S T_{\mathrm{ramp}}
+$$</p>
+<p>会随 $S$ 减小。</p>
+<p>而：</p>
+<p>$$
+d_{\mathrm{res}}=\frac{c}{2B}
+$$</p>
+<p>会变差。</p>
+<p>因此在同一器件、同一时间约束下，经常出现：</p>
+<blockquote class="callout">
+<p><strong>短距雷达可以用更陡的 Chirp、更大的带宽，得到更好的距离分辨率；长距雷达为了不让 IF 超出器件带宽，往往需要降低 slope，从而牺牲部分分辨率。</strong></p>
+</blockquote>
+<figure class="diagram"><svg role="img" viewbox="0 0 920 420"><rect fill="#fbfdff" height="418" rx="18" stroke="#dce6f0" width="918" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="460" y="42">固定 IF bandwidth 时的距离—分辨率权衡</text><rect fill="#eef5fb" height="95" rx="14" stroke="#9dbbd6" width="165" x="55" y="135"></rect><text class="svg-title" text-anchor="middle" x="137" y="175">dmax ↑</text><text class="svg-label" text-anchor="middle" x="137" y="205">要求看得更远</text><line stroke="#60788f" stroke-width="4" x1="220" x2="300" y1="182" y2="182"></line><polygon fill="#60788f" points="300,182 284,173 284,191"></polygon><rect fill="#fff4ea" height="95" rx="14" stroke="#d8aa80" width="165" x="305" y="135"></rect><text class="svg-orange" text-anchor="middle" x="387" y="175">S ↓</text><text class="svg-label" text-anchor="middle" x="387" y="205">因 S·dmax 受限</text><line stroke="#60788f" stroke-width="4" x1="470" x2="550" y1="182" y2="182"></line><polygon fill="#60788f" points="550,182 534,173 534,191"></polygon><rect fill="#fff" height="95" rx="14" stroke="#9dbbd6" width="135" x="555" y="135"></rect><text class="svg-accent" text-anchor="middle" x="622" y="175">B ↓</text><text class="svg-label" text-anchor="middle" x="622" y="205">B=S·Tramp</text><line stroke="#60788f" stroke-width="4" x1="690" x2="755" y1="182" y2="182"></line><polygon fill="#60788f" points="755,182 739,173 739,191"></polygon><rect fill="#f7f9fb" height="95" rx="14" stroke="#9dbbd6" width="115" x="760" y="135"></rect><text class="svg-accent" text-anchor="middle" x="817" y="175">dres ↑</text><text class="svg-label" text-anchor="middle" x="817" y="205">分辨率变差</text><text class="svg-label" text-anchor="middle" x="460" y="300">fIF,max = 2Sdmax/c ≤ BIF,avail</text><text class="svg-accent" text-anchor="middle" x="460" y="345">同一器件上，最远距离与距离分辨率常常不能同时无限提升</text></svg><figcaption>图 3　IF 带宽把最大距离与 Chirp slope 耦合；在固定 ramp 时间下，降低 slope 会连带降低 RF bandwidth，从而恶化距离分辨率。</figcaption></figure>
+<hr/>
+<h2 id="6-一个完整的教学设计例子">6. 一个完整的教学设计例子</h2>
+<p>下面用一组<strong>教学参数</strong>走完整流程。它不是 TI 的固定配置。</p>
+<p>设载频：</p>
+<p>$$
+f_{\mathrm{c}}=77\,\mathrm{GHz},
+$$</p>
+<p>则：</p>
+<p>$$
+\lambda=\frac{c}{f_{\mathrm{c}}}\approx3.896\,\mathrm{mm}.
+$$</p>
+<p>需求：</p>
+<ul>
+<li>$d_{\mathrm{res}}=0.10\,\mathrm{m}$；</li>
+<li>$d_{\mathrm{max}}=50\,\mathrm{m}$；</li>
+<li>$v_{\mathrm{max}}=15\ \mathrm{m\,s^{-1}}$；</li>
+<li>$v_{\mathrm{res}}\approx0.5\ \mathrm{m\,s^{-1}}$。</li>
+</ul>
+<h3 id="6-1-由最大速度求-t-mathrm-r">6.1 由最大速度求 $T_{\mathrm{r}}$</h3>
+<p>$$
+T_{\mathrm{r}}\le\frac{3.896\times10^{-3}}{4\times15}
+\approx64.9\,\mu\mathrm{s}.
+$$</p>
+<p>先取理想化：</p>
+<p>$$
+T_{\mathrm{r}}\approx64.9\,\mu\mathrm{s}.
+$$</p>
+<h3 id="6-2-由距离分辨率求-bandwidth">6.2 由距离分辨率求 Bandwidth</h3>
+<p>$$
+B=\frac{3\times10^8}{2\times0.10}
+=1.5\,\mathrm{GHz}.
+$$</p>
+<p>若暂取：</p>
+<p>$$
+T_{\mathrm{ramp}}\approx T_{\mathrm{r}},
+$$</p>
+<p>则：</p>
+<p>$$
+S\approx\frac{1.5\times10^9}{64.9\times10^{-6}}
+\approx2.31\times10^{13}\ \mathrm{Hz\,s^{-1}}.
+$$</p>
+<p>也就是：</p>
+<p>$$
+S\approx23.1\,\mathrm{MHz}\,\mu\mathrm{s}^{-1}.
+$$</p>
+<h3 id="6-3-检查最大距离对应-if">6.3 检查最大距离对应 IF</h3>
+<p>$$
+f_{\mathrm{IF,max}}
+=\frac{2Sd_{\mathrm{max}}}{c}
+\approx7.7\,\mathrm{MHz}.
+$$</p>
+<p>所以模拟 IF 链和 ADC 的有效采样设计必须能覆盖这一频率范围，并预留滤波器过渡带和工程裕量。</p>
+<h3 id="6-4-由速度分辨率求帧时长">6.4 由速度分辨率求帧时长</h3>
+<p>$$
+T_{\mathrm{f}}=\frac{\lambda}{2v_{\mathrm{res}}}
+\approx\frac{3.896\times10^{-3}}{1}
+=3.896\,\mathrm{ms}.
+$$</p>
+<p>于是理想 Chirp 数：</p>
+<p>$$
+N\approx\frac{3.896\,\mathrm{ms}}{64.9\,\mu\mathrm{s}}\approx60.
+$$</p>
+<p>若工程上选择：</p>
+<p>$$
+N=64,
+$$</p>
+<p>则 active frame time：</p>
+<p>$$
+T_{\mathrm{f}}\approx64\times64.9\,\mu\mathrm{s}\approx4.16\,\mathrm{ms},
+$$</p>
+<p>实际速度分辨率约：</p>
+<p>$$
+v_{\mathrm{res}}
+\approx\frac{3.896\times10^{-3}}{2\times4.16\times10^{-3}}
+\approx0.469\ \mathrm{m\,s^{-1}}.
+$$</p>
+<p>这已经略优于 0.5 m/s 的目标。</p>
+<h3 id="6-5-为什么到这里仍不能说-设计完成">6.5 为什么到这里仍不能说“设计完成”？</h3>
+<p>还要检查：</p>
+<ul>
+<li>器件能否产生约 23.1 MHz/$\mu$s 的 slope；</li>
+<li>ramp 前后是否必须留 idle / reset time；</li>
+<li>ADC sample rate 与采样点数是否满足 IF bandwidth；</li>
+<li>Range FFT 数据量是否装得下；</li>
+<li>$N=64$ 的 active frame time 与应用刷新率是否冲突；</li>
+<li>多 RX 通道后内存和处理量是否仍可接受；</li>
+<li>SNR 是否足够支撑 50 m 目标检测。</li>
+</ul>
+<p>所以真正的 FMCW 波形设计往往是<strong>迭代</strong>而不是一次代公式。</p>
+<hr/>
+<h2 id="7-为什么实际系统设计一定会迭代">7. 为什么实际系统设计一定会迭代？</h2>
+<p>TI Module 4 给出了几个典型限制。</p>
+<h3 id="7-1-if-bandwidth-不够">7.1 IF bandwidth 不够</h3>
+<p>若：</p>
+<p>$$
+f_{\mathrm{IF,max}}&gt;B_{\mathrm{IF,avail}},
+$$</p>
+<p>只能在以下参数中做调整：</p>
+<ul>
+<li>减小 slope $S$；</li>
+<li>降低 $d_{\mathrm{max}}$；</li>
+<li>更换支持更高 IF/ADC bandwidth 的器件配置。</li>
+</ul>
+<h3 id="7-2-slope-超出器件能力">7.2 Slope 超出器件能力</h3>
+<p>理论公式可能给出很大的 $S$，但实际 synthesizer 有可实现 slope 范围。</p>
+<h3 id="7-3-必须留-inter-chirp-idle-time">7.3 必须留 inter-chirp idle time</h3>
+<p>真实 Chirp 结束后，合成器可能需要时间回落或重新准备下一次 ramp。</p>
+<p>因此：</p>
+<p>$$
+T_{\mathrm{r}}=T_{\mathrm{ramp}}+T_{\mathrm{idle}}
+$$</p>
+<p>可能显著大于 $T_{\mathrm{ramp}}$。</p>
+<p>这会直接影响：</p>
+<p>$$
+v_{\mathrm{max}}=\frac{\lambda}{4T_{\mathrm{r}}}.
+$$</p>
+<h3 id="7-4-存储和计算量">7.4 存储和计算量</h3>
+<p>Doppler FFT 开始前，通常需要至少保留一整帧各 Chirp 的 Range FFT 结果。</p>
+<p>若：</p>
+<ul>
+<li>$N$ 很大；</li>
+<li>range bins 很多；</li>
+<li>RX channel 很多；</li>
+<li>每个复数用较高精度存储；</li>
+</ul>
+<p>内存会迅速增加。</p>
+<p>这说明“加更多 Chirp 改善速度分辨率”并非没有成本。</p>
+<hr/>
+<h2 id="8-radar-range-equation-为什么回波功率按-d-4-衰减">8. Radar Range Equation：为什么回波功率按 $d^{-4}$ 衰减？</h2>
+<p>前面讨论的 $d_{\mathrm{max}}$ 更多是在说：</p>
+<blockquote class="callout">
+<p>IF frequency 和 ADC bandwidth 允许我们表示到多远。</p>
+</blockquote>
+<p>但一个目标即使落在 ADC 可表示的频率范围内，如果回波太弱，依然检测不到。</p>
+<p>这时需要 Radar Range Equation。</p>
+<figure class="diagram"><svg role="img" viewbox="0 0 920 470"><rect fill="#fbfdff" height="468" rx="18" stroke="#dce6f0" width="918" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="460" y="42">Radar Range Equation：为什么是 d⁻⁴</text><rect fill="#eef5fb" height="95" rx="14" stroke="#9dbbd6" width="130" x="60" y="170"></rect><text class="svg-title" text-anchor="middle" x="125" y="205">Radar TX</text><text class="svg-label" text-anchor="middle" x="125" y="235">Pt · GTX</text><circle cx="460" cy="215" fill="#fff4ea" r="58" stroke="#d8aa80"></circle><text class="svg-title" text-anchor="middle" x="460" y="208">Target</text><text class="svg-orange" text-anchor="middle" x="460" y="238">RCS σ</text><rect fill="#eef5fb" height="95" rx="14" stroke="#9dbbd6" width="130" x="730" y="170"></rect><text class="svg-title" text-anchor="middle" x="795" y="205">Radar RX</text><text class="svg-label" text-anchor="middle" x="795" y="235">GRX, ARX</text><path d="M190 195 C280 110 365 110 405 180" fill="none" stroke="#1f6fb2" stroke-width="4"></path><polygon fill="#1f6fb2" points="405,180 389,175 399,163"></polygon><path d="M515 180 C575 110 675 115 730 195" fill="none" stroke="#c96d25" stroke-width="4"></path><polygon fill="#c96d25" points="730,195 713,190 723,177"></polygon><text class="svg-blue" text-anchor="middle" x="300" y="105">去程扩散：1/(4πd²)</text><text class="svg-orange" text-anchor="middle" x="630" y="105">回程扩散：1/(4πd²)</text><text class="svg-accent" text-anchor="middle" x="460" y="330">ARX = GRX λ²/(4π)</text><text class="svg-title" text-anchor="middle" x="460" y="380">Pr = Pt GTX GRX σ λ² / [(4π)³ d⁴]</text><text class="svg-label" text-anchor="middle" x="460" y="425">两次球面扩散 → d⁻² × d⁻² = d⁻⁴</text></svg><figcaption>图 4　单基地雷达回波经历去程和回程两次球面扩散，因此接收功率随距离按 d⁻⁴ 快速下降。</figcaption></figure>
+<h3 id="8-1-第一次扩散-雷达到目标">8.1 第一次扩散：雷达到目标</h3>
+<p>若发射功率为 $P_{\mathrm{t}}$，TX 天线增益为 $G_{\mathrm{TX}}$，距离为 $d$，则目标处功率密度：</p>
+<p>$$
+\mathcal{S}_{\mathrm{target}}=
+\frac{P_{\mathrm{t}}\,G_{\mathrm{TX}}}{4\pi d^2}.
+$$</p>
+<p>这里第一次出现：</p>
+<p>$$
+\frac1{d^2}.
+$$</p>
+<h3 id="8-2-目标散射-radar-cross-section">8.2 目标散射：Radar Cross Section</h3>
+<p>用 RCS：</p>
+<p>$$
+\sigma
+$$</p>
+<p>描述目标把入射能量散射回雷达方向的等效能力。</p>
+<p>于是等效散射功率尺度为：</p>
+<p>$$
+\frac{P_{\mathrm{t}}\,G_{\mathrm{TX}}\,\sigma}{4\pi d^2}.
+$$</p>
+<h3 id="8-3-第二次扩散-目标回到雷达">8.3 第二次扩散：目标回到雷达</h3>
+<p>回波又传播距离 $d$，再次球面扩散：</p>
+<p>$$
+\mathcal{S}_{\mathrm{RX}}
+=\frac{P_{\mathrm{t}}\,G_{\mathrm{TX}}\,\sigma}{(4\pi)^2\,d^4}.
+$$</p>
+<p>因此：</p>
+<p>$$
+d^{-2}\times d^{-2}=d^{-4}.
+$$</p>
+<p>这就是雷达“远距离非常吃亏”的根本原因。</p>
+<h3 id="8-4-rx-天线把功率密度转换为接收功率">8.4 RX 天线把功率密度转换为接收功率</h3>
+<p>接收天线有效孔径：</p>
+<p>$$
+A_{\mathrm{RX}}=\frac{G_{\mathrm{RX}}\,\lambda^2}{4\pi}.
+$$</p>
+<p>因此接收功率：</p>
+<p>$$
+P_{\mathrm{r}}=\mathcal{S}_{\mathrm{RX}}A_{\mathrm{RX}}.
+$$</p>
+<p>得到经典单基地雷达距离方程：</p>
+<p>$$
+\boxed{
+P_{\mathrm{r}}=
+\frac{P_{\mathrm{t}}\,G_{\mathrm{TX}}\,G_{\mathrm{RX}}\,\sigma\,\lambda^2}
+{(4\pi)^3\,d^4}
+}.
+$$</p>
+<p>真实系统还会加入传播损耗、硬件损耗、天线失配等因子；TI 此处先给出最核心的理想关系。</p>
+<hr/>
+<h2 id="9-从接收功率到-snr">9. 从接收功率到 SNR</h2>
+<p>只有接收功率还不够。检测真正关心的是：</p>
+<p>$$
+\mathrm{SNR}=\frac{P_{\mathrm{signal}}}{P_{\mathrm{noise}}}.
+$$</p>
+<p>热噪声的基本尺度由：</p>
+<p>$$
+kT
+$$</p>
+<p>决定，其中：</p>
+<ul>
+<li>$k$：Boltzmann 常数；</li>
+<li>$T$：系统/天线噪声温度。</li>
+</ul>
+<p>再考虑接收机噪声因子 $F$ 和有效测量时间 $T_{\mathrm{meas}}$，TI 给出的简化关系可整理为：</p>
+<p>$$
+\boxed{
+\mathrm{SNR}=
+\frac{
+\sigma\,P_{\mathrm{t}}\,G_{\mathrm{TX}}\,G_{\mathrm{RX}}\,\lambda^2\,T_{\mathrm{meas}}
+}
+{
+(4\pi)^3\,d^4\,k\,T\,F
+}
+}.
+$$</p>
+<p>这里的 $F$ 应使用<strong>线性噪声因子</strong>；若器件规格给的是 noise figure（dB），需要先换算：</p>
+<p>$$
+F=10^{NF_{\mathrm{dB}}/10}.
+$$</p>
+<h3 id="9-1-为什么更长测量时间可以提高-snr">9.1 为什么更长测量时间可以提高 SNR？</h3>
+<p>式子中：</p>
+<p>$$
+\mathrm{SNR}\propto T_{\mathrm{meas}}.
+$$</p>
+<p>直观上，多次相干/非相干积累可以提高检测能力；课程在此用总测量时间表达处理增益趋势。</p>
+<p>但这并不意味着无限增加测量时间没有代价，因为：</p>
+<ul>
+<li>frame latency 会增加；</li>
+<li>目标可能在积累期间显著运动；</li>
+<li>速度分辨率、刷新率、计算量都会变化。</li>
+</ul>
+<hr/>
+<h2 id="10-snr-限制下的最大探测距离">10. SNR 限制下的最大探测距离</h2>
+<p>设检测器要求最低：</p>
+<p>$$
+\mathrm{SNR}_{\mathrm{min}}.
+$$</p>
+<p>TI 课程提到典型检测门限可以处于约 15–20 dB 量级，但具体数值取决于允许的虚警率、漏检率、检测算法和场景。</p>
+<p>令：</p>
+<p>$$
+\mathrm{SNR}=\mathrm{SNR}_{\mathrm{min}},
+$$</p>
+<p>由上一式解 $d$：</p>
+<p>$$
+\boxed{
+ d_{\mathrm{max,SNR}}
+=
+\left(
+\frac{
+\sigma\,P_{\mathrm{t}}\,G_{\mathrm{TX}}\,G_{\mathrm{RX}}\,\lambda^2\,T_{\mathrm{meas}}
+}
+{(4\pi)^3\mathrm{SNR}_{\mathrm{min}}\,k\,T\,F}
+\right)^{1/4}
+}.
+$$</p>
+<figure class="diagram"><svg role="img" viewbox="0 0 920 450"><rect fill="#fbfdff" height="448" rx="18" stroke="#dce6f0" width="918" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="460" y="42">SNR、距离与测量时间的关系</text><line stroke="#415466" stroke-width="2" x1="95" x2="830" y1="355" y2="355"></line><line stroke="#415466" stroke-width="2" x1="95" x2="95" y1="355" y2="85"></line><text class="svg-label" x="835" y="380">distance d</text><text class="svg-label" x="55" y="95">SNR</text><path d="M115 105 C220 135 300 170 390 220 S570 305 790 338" fill="none" stroke="#1f6fb2" stroke-width="5"></path><path d="M115 80 C230 105 325 145 430 200 S620 285 820 325" fill="none" stroke="#c96d25" stroke-width="4"></path><line stroke="#60788f" stroke-dasharray="8 6" stroke-width="2" x1="95" x2="830" y1="285" y2="285"></line><text class="svg-label" x="110" y="275">SNRmin</text><circle cx="600" cy="285" fill="#1f6fb2" r="6"></circle><circle cx="710" cy="285" fill="#c96d25" r="6"></circle><text class="svg-blue" text-anchor="middle" x="600" y="320">dmax,1</text><text class="svg-orange" text-anchor="middle" x="710" y="260">更长 Tmeas</text><text class="svg-accent" text-anchor="middle" x="460" y="415">SNR ∝ Tmeas / d⁴　→　dmax ∝ Tmeas^(1/4)</text></svg><figcaption>图 5　延长测量时间能提高 SNR，但最大探测距离只按四次根增长；距离翻倍需要约 16 倍的测量时间增益。</figcaption></figure>
+<h3 id="10-1-四次根意味着什么">10.1 四次根意味着什么？</h3>
+<p>因为：</p>
+<p>$$
+d_{\mathrm{max}}\propto T_{\mathrm{meas}}^{1/4},
+$$</p>
+<p>所以想把探测距离翻倍：</p>
+<p>$$
+2=\left(\frac{T_2}{T_1}\right)^{1/4}
+$$</p>
+<p>意味着：</p>
+<p>$$
+\frac{T_2}{T_1}=16.
+$$</p>
+<p>也就是说，<strong>增加积分时间确实有效，但提高最远探测距离的收益非常慢。</strong></p>
+<p>同样：</p>
+<p>$$
+d_{\mathrm{max}}\propto P_{\mathrm{t}}^{1/4},
+$$</p>
+<p>单纯堆发射功率也不是线性换距离。</p>
+<hr/>
+<h2 id="11-两种-最大距离-必须彻底分开">11. 两种“最大距离”必须彻底分开</h2>
+<p>这是本节非常容易混淆的一点。</p>
+<h3 id="11-1-采样-if-几何限制">11.1 采样/IF 几何限制</h3>
+<p>由：</p>
+<p>$$
+f_{\mathrm{IF,max}}=\frac{2Sd}{c}
+$$</p>
+<p>和 ADC / IF bandwidth 决定。</p>
+<p>它回答：</p>
+<blockquote class="callout">
+<p>这个距离对应的 beat frequency，系统能不能正确采样？</p>
+</blockquote>
+<h3 id="11-2-snr-检测限制">11.2 SNR 检测限制</h3>
+<p>由 Radar Range Equation 决定。</p>
+<p>它回答：</p>
+<blockquote class="callout">
+<p>即使频率落在可采样范围，回波是否强到足以超过检测门限？</p>
+</blockquote>
+<p>最终真正可用的最大距离应该受更严格的限制：</p>
+<p>$$
+\boxed{
+ d_{\mathrm{max,usable}}
+\le
+\min\left(
+ d_{\mathrm{max,IF}},
+ d_{\mathrm{max,SNR}}
+\right)
+}.
+$$</p>
+<p>工程上还可能有第三类限制，例如多径、动态范围、杂波、天线覆盖范围等。</p>
+<hr/>
+<h2 id="12-把整套设计链串起来">12. 把整套设计链串起来</h2>
+<p>给定：</p>
+<p>$$
+\{d_{\mathrm{res}},d_{\mathrm{max}},v_{\mathrm{res}},v_{\mathrm{max}}\},
+$$</p>
+<p>可以先走理想设计：</p>
+<ol>
+<li>由 $v_{\mathrm{max}}$ 选 $T_{\mathrm{r}}$；</li>
+<li>由 $d_{\mathrm{res}}$ 选 $B$；</li>
+<li>由 $B$ 和 $T_{\mathrm{ramp}}$ 得 $S$；</li>
+<li>用 $d_{\mathrm{max}}$ 检查 $f_{\mathrm{IF,max}}$；</li>
+<li>由 $v_{\mathrm{res}}$ 得 $T_{\mathrm{f}}$；</li>
+<li>由 $T_{\mathrm{f}}/T_{\mathrm{r}}$ 得 $N$；</li>
+<li>检查 ADC、Slope、idle time、内存与计算量；</li>
+<li>用 Radar Range Equation 检查目标 RCS 下的 SNR / 探测距离；</li>
+<li>不满足就返回前面迭代。</li>
+</ol>
+<p>这才是“系统设计”真正的含义：</p>
+<blockquote class="callout">
+<p>不是找到一条万能公式，而是在多个性能指标和硬件边界之间找到可实现的参数组合。</p>
+</blockquote>
+<hr/>
+<h2 id="13-三组最重要的设计权衡">13. 三组最重要的设计权衡</h2>
+<h3 id="13-1-最大速度-vs-chirp-间隔">13.1 最大速度 vs Chirp 间隔</h3>
+<p>$$
+v_{\mathrm{max}}=\frac{\lambda}{4T_{\mathrm{r}}}.
+$$</p>
+<p>更高最大速度 → 更小 $T_{\mathrm{r}}$ → 更紧的时序与硬件要求。</p>
+<h3 id="13-2-最大距离-vs-距离分辨率">13.2 最大距离 vs 距离分辨率</h3>
+<p>器件 IF bandwidth 固定时：</p>
+<p>$$
+S\,d_{\mathrm{max}}\le\text{constant}.
+$$</p>
+<p>更远距离 → 往往要更小 slope → 在固定 ramp time 下带宽减小 → 距离分辨率变差。</p>
+<h3 id="13-3-速度分辨率-vs-延迟-计算量">13.3 速度分辨率 vs 延迟/计算量</h3>
+<p>$$
+v_{\mathrm{res}}=\frac{\lambda}{2T_{\mathrm{f}}}.
+$$</p>
+<p>更细速度分辨率 → 更长 frame observation → 更多 Chirp / 更大缓存 / 更高延迟。</p>
+<hr/>
+<h2 id="14-易错点与自检">14. 易错点与自检</h2>
+<h3 id="易错点-1-bandwidth-越大越好">易错点 1：Bandwidth 越大越好</h3>
+<p>不完整。更大 RF bandwidth 改善距离分辨率，但若 ramp time 不变，会提高 slope，从而提高最远目标的 IF frequency，可能撞上器件 IF/ADC bandwidth。</p>
+<h3 id="易错点-2-增加-chirp-数量可以提高最大无模糊速度">易错点 2：增加 Chirp 数量可以提高最大无模糊速度</h3>
+<p>错误。若 $T_{\mathrm{r}}$ 不变，增加 $N$ 主要延长 $T_{\mathrm{f}}$、改善速度分辨率；$v_{\mathrm{max}}$ 主要由 $T_{\mathrm{r}}$ 决定。</p>
+<h3 id="易错点-3-课程中的-t-mathrm-c-永远等于-ramp-time">易错点 3：课程中的 $T_{\mathrm{c}}$ 永远等于 ramp time</h3>
+<p>真实配置里不一定。存在 inter-chirp idle 时，应区分 $T_{\mathrm{ramp}}$ 与 $T_{\mathrm{r}}$。</p>
+<h3 id="易错点-4-adc-最大距离就是雷达真实探测距离">易错点 4：ADC 最大距离就是雷达真实探测距离</h3>
+<p>错误。ADC/IF 限制只说明“频率能不能采样”；真实目标还必须有足够 SNR。</p>
+<h3 id="易错点-5-radar-range-equation-只有一次-1-d-2">易错点 5：Radar Range Equation 只有一次 $1/d^2$</h3>
+<p>错误。雷达波从雷达到目标扩散一次，反射回来再扩散一次，所以总共得到 $1/d^4$。</p>
+<h3 id="易错点-6-延长测量时间-2-倍-最大探测距离也变-2-倍">易错点 6：延长测量时间 2 倍，最大探测距离也变 2 倍</h3>
+<p>错误。简化方程中：</p>
+<p>$$
+d_{\mathrm{max}}\propto T_{\mathrm{meas}}^{1/4}.
+$$</p>
+<h3 id="自检题">自检题</h3>
+<ol>
+<li>若希望距离分辨率提高一倍，Chirp bandwidth 应怎样变化？</li>
+<li>若 $T_{\mathrm{r}}$ 减半，最大无模糊速度怎样变化？</li>
+<li>为什么最大距离增加会迫使 slope 降低？</li>
+<li>为什么真实设计中 $T_{\mathrm{r}}$ 不能简单当成 $T_{\mathrm{ramp}}$？</li>
+<li>为什么接收功率随距离按 $d^{-4}$ 衰减？</li>
+<li>“IF bandwidth 最大距离”和“SNR 最大探测距离”分别回答什么问题？</li>
+</ol>
+<p><strong>答案要点：</strong>1）带宽翻倍；2）$v_{\mathrm{max}}$ 翻倍；3）因为 $f_{\mathrm{IF,max}}=2Sd_{\mathrm{max}}/c$ 受器件 IF bandwidth 限制；4）Chirp 间可能存在 idle time；5）去程和回程各一次球面扩散；6）前者判断频率是否可采样，后者判断回波是否足够强。</p>
+<hr/>
+<h2 id="15-本节小结">15. 本节小结</h2>
+<p>前 3 节解决的是“怎么从信号估计距离和速度”。</p>
+<p>第 4 节第一次站到系统设计者视角：</p>
+<blockquote class="callout">
+<p><strong>系统设计链</strong>：性能需求 → Chirp / Frame 参数 → 硬件可实现性 → SNR 可行性。</p>
+</blockquote>
+<p>四个最常用的起点公式：</p>
+<p>$$
+d_{\mathrm{res}}=\frac{c}{2B}
+$$</p>
+<p>$$
+v_{\mathrm{max}}=\frac{\lambda}{4T_{\mathrm{r}}}
+$$</p>
+<p>$$
+v_{\mathrm{res}}=\frac{\lambda}{2T_{\mathrm{f}}}
+$$</p>
+<p>$$
+f_{\mathrm{IF,max}}=\frac{2Sd_{\mathrm{max}}}{c}
+$$</p>
+<p>而 Radar Range Equation 又告诉我们：</p>
+<p>$$
+P_{\mathrm{r}}\propto\frac1{d^4}
+$$</p>
+<p>以及：</p>
+<p>$$
+d_{\mathrm{max,SNR}}\propto T_{\mathrm{meas}}^{1/4}.
+$$</p>
+<p>所以真正好的 FMCW 参数设计，不是把某个指标单独拉到极限，而是在距离、速度、分辨率、采样带宽、器件时序、内存、刷新率与 SNR 之间做整体权衡。</p>
+<p>最后还有一个问题：如果两个目标<strong>距离相同、速度也相同</strong>，Range-Doppler 2D FFT 仍只会看到一个峰。下一节将引入多个 RX 天线，利用空间相位差估计 <strong>Angle of Arrival (AoA)</strong>，进入第三个感知维度——角度。</p>
+<hr/>
+<h2 id="来源">来源</h2>
+<ol>
+<li>Bilibili：《毫米波雷达基础知识》，BV1du4m1g7bv，P4“4、FMCW4：系统设计”。</li>
+<li>Texas Instruments: <em>Intro to mmWave Sensing: FMCW Radars — Module 4: Some System Design Topics</em>.</li>
+<li>Texas Instruments: <em>Introduction to mmWave Sensing: FMCW Radars</em> 配套演示文稿，Module 4 对应约 PDF 第 43–51 页。</li>
+</ol><section class="source-panel"><strong>来源追溯</strong><br>主线资料：Bilibili《毫米波雷达基础知识》P4“FMCW4：系统设计”，并以 Texas Instruments 官方 <em>Intro to mmWave Sensing: FMCW Radars — Module 4: Some System Design Topics</em> 与同套官方 70 页讲义约第 43–51 页核验。Tramp/Tr 区分、完整参数反推流程及教学数值例子属于明确标注的教学补充。</section><div class="footer">学习笔记项目 · ChatGPT-AgentDock / Codex 协作产物 · 2026-09-22</div></main></div><script>const bar=document.getElementById('progress');const links=[...document.querySelectorAll('.toc a')];
+function update(){const d=document.documentElement;const m=d.scrollHeight-d.clientHeight;bar.style.width=(m?d.scrollTop/m*100:0)+'%';}
+window.addEventListener('scroll',update,{passive:true});update();
+const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+e.target.id));}})},{rootMargin:'-15% 0px -72% 0px'});
+document.querySelectorAll('h2[id],h3[id]').forEach(h=>obs.observe(h));
+</script></body></html>

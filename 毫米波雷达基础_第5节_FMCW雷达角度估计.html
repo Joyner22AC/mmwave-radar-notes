@@ -1,0 +1,894 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"><title>毫米波雷达基础｜第5节：FMCW雷达角度估计</title><script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']]},svg:{fontCache:'global'}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script><style>:root{--ink:#20303d;--muted:#627385;--line:#dce5ed;--paper:#fff;--soft:#f6f9fc;--blue:#1f6fb2;--blue2:#315f91;--orange:#c96d25;--shadow:0 12px 34px rgba(41,63,82,.08);}
+*{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;background:#f3f6f9;color:var(--ink);font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;line-height:1.82;font-size:16px}
+#progress{position:fixed;top:0;left:0;height:3px;background:var(--blue);width:0;z-index:50}
+.layout{display:grid;grid-template-columns:280px minmax(0,860px);gap:32px;max-width:1210px;margin:0 auto;padding:34px 24px 80px}
+.sidebar{position:sticky;top:22px;height:calc(100vh - 44px);overflow:auto;padding:18px 16px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.92);box-shadow:var(--shadow)}
+.brand{font-weight:700;color:#173c5c;margin:3px 8px 14px} .toc{display:flex;flex-direction:column;gap:2px} .toc a{text-decoration:none;color:#536779;border-radius:8px;padding:7px 9px;font-size:13px;line-height:1.4} .toc a:hover,.toc a.active{background:#edf4fa;color:#174e7e} .toc-sub{padding-left:22px!important;font-size:12.5px!important}
+.article{background:var(--paper);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:54px 68px;min-width:0}
+.hero{border-bottom:1px solid var(--line);padding-bottom:30px;margin-bottom:36px} .eyebrow{color:var(--blue);font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase} h1{font-size:35px;line-height:1.25;margin:10px 0 15px;color:#17344d} .lead{font-size:17px;color:#596d7f;max-width:720px;margin:0} .meta{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px} .chip{font-size:12px;padding:5px 9px;border-radius:999px;background:#edf4fa;color:#315f91;border:1px solid #d2e2ef}
+h2{font-size:25px;line-height:1.35;color:#183e5d;margin:54px 0 18px;padding-top:4px} h3{font-size:19px;line-height:1.4;color:#28516f;margin:34px 0 12px} p{margin:12px 0} strong{color:#193b56} code{font-family:"Cascadia Mono",Consolas,monospace;background:#f0f4f7;border:1px solid #e1e8ee;padding:.08em .34em;border-radius:5px;font-size:.92em}
+hr{border:0;border-top:1px solid var(--line);margin:42px 0} ul,ol{padding-left:1.55em} li{margin:.35em 0}
+blockquote.callout{margin:22px 0;padding:14px 18px;border-left:4px solid var(--blue);background:#f3f8fc;border-radius:0 10px 10px 0;color:#405669}
+table{width:100%;border-collapse:collapse;margin:20px 0 28px;font-size:14.5px} th,td{border:1px solid #dce5ed;padding:10px 12px;text-align:left;vertical-align:top} th{background:#eef5fa;color:#294f6d} tr:nth-child(even) td{background:#fbfcfd}
+.diagram{margin:28px 0 34px;padding:16px;border:1px solid var(--line);border-radius:16px;background:#fbfdff;overflow:hidden} .diagram svg{width:100%;height:auto;display:block} figcaption{text-align:center;color:#657889;font-size:13px;margin-top:10px} .svg-label{font:16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#415466} .svg-title{font:600 17px "Segoe UI","Microsoft YaHei",sans-serif;fill:#294f6d} .svg-accent{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#315f91} .svg-blue{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#1f6fb2} .svg-orange{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#c96d25}
+.formula-note{font-size:13px;color:var(--muted)} mjx-container{color:#172a3a} mjx-container[display="true"]{margin:1.35em 0!important;max-width:100%;overflow-x:auto;overflow-y:hidden;padding:.18em .25em .24em;text-align:center;scrollbar-width:thin;scrollbar-color:#c7d5e1 transparent} mjx-container[display="true"]>svg{display:inline-block;vertical-align:middle} mjx-container:not([display="true"]){font-size:1.01em}
+.source-panel{margin-top:52px;padding:22px;border:1px solid var(--line);background:#f8fafc;border-radius:14px;color:#526779;font-size:14px} .source-panel a{color:var(--blue)}
+.footer{margin-top:38px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:#7a8997;text-align:center}
+@media(max-width:980px){.layout{grid-template-columns:1fr;max-width:900px}.sidebar{position:relative;top:0;height:auto;max-height:340px}.article{padding:42px 34px}}
+@media(max-width:600px){body{font-size:15px}.layout{padding:12px 8px 50px}.sidebar{display:none}.article{padding:30px 20px;border-radius:12px}h1{font-size:28px}h2{font-size:22px}.diagram{padding:5px}mjx-container[display="true"]{font-size:.96em;margin:1.1em 0!important}}
+@media print{body{background:white;font-size:10.5pt}#progress,.sidebar{display:none!important}.layout{display:block;max-width:none;padding:0}.article{border:0;box-shadow:none;padding:0}.hero{margin-top:0}h2,h3{break-after:avoid-page}.diagram,table,blockquote,mjx-container[display="true"]{break-inside:avoid}mjx-container[display="true"]{overflow:visible}a{color:inherit;text-decoration:none}}
+</style></head><body><div id="progress"></div><div class="layout"><aside class="sidebar"><div class="brand">第 5 节 · FMCW雷达角度估计</div><nav class="toc"><a class="toc-sub" href="#本节学习目标">本节学习目标</a>
+<a class="toc-main" href="#1-前四节还缺最后一个维度-角度">1. 前四节还缺最后一个维度：角度</a>
+<a class="toc-main" href="#2-角度估计为什么至少需要两个-rx">2. 角度估计为什么至少需要两个 RX？</a>
+<a class="toc-sub" href="#2-1-为什么这里是-2-pi-而第-2-节微位移是-4-pi">2.1 为什么这里是 $2\pi$，而第 2 节微位移是 $4\pi$？</a>
+<a class="toc-main" href="#3-两个-rx-怎样直接估计一个目标的-aoa">3. 两个 RX 怎样直接估计一个目标的 AoA？</a>
+<a class="toc-sub" href="#3-1-一个-77-ghz-的直观例子">3.1 一个 77 GHz 的直观例子</a>
+<a class="toc-main" href="#4-角度与相位不是线性关系">4. 角度与相位不是线性关系</a>
+<a class="toc-sub" href="#4-1-角度估计精度-不是-角分辨率">4.1 “角度估计精度”不是“角分辨率”</a>
+<a class="toc-main" href="#5-angular-field-of-view-为什么天线不能随便放得很远">5. Angular Field of View：为什么天线不能随便放得很远？</a>
+<a class="toc-sub" href="#5-1-为什么经典阵列常用-d-mathrm-a-lambda-2">5.1 为什么经典阵列常用 $d_{\mathrm{a}}=\lambda/2$？</a>
+<a class="toc-main" href="#6-两个-rx-为什么不能分开两个同距同速目标">6. 两个 RX 为什么不能分开两个同距同速目标？</a>
+<a class="toc-main" href="#7-n-元-rx-阵列-角度变成-空间频率">7. N 元 RX 阵列：角度变成“空间频率”</a>
+<a class="toc-sub" href="#7-1-angle-fft-和-doppler-fft-本质上是同一类问题">7.1 Angle FFT 和 Doppler FFT 本质上是同一类问题</a>
+<a class="toc-main" href="#8-角分辨率怎样推出来">8. 角分辨率怎样推出来？</a>
+<a class="toc-sub" href="#8-1-为什么-broadside-的角分辨率最好">8.1 为什么 broadside 的角分辨率最好？</a>
+<a class="toc-main" href="#9-半波长阵列下-一个非常好记的近似">9. 半波长阵列下，一个非常好记的近似</a>
+<a class="toc-sub" href="#9-1-n-4-时">9.1 N=4 时</a>
+<a class="toc-sub" href="#9-2-n-8-时">9.2 N=8 时</a>
+<a class="toc-sub" href="#9-3-为什么-angle-resolution-很-贵">9.3 为什么 angle resolution 很“贵”？</a>
+<a class="toc-main" href="#10-天线间距越大-角分辨率不是越好吗-为什么又不能无限增大">10. 天线间距越大，角分辨率不是越好吗？为什么又不能无限增大？</a>
+<a class="toc-main" href="#11-range-doppler-angle-三维处理链怎样串起来">11. Range-Doppler-Angle：三维处理链怎样串起来？</a>
+<a class="toc-sub" href="#第一步-每个-rx-单独做-range-fft">第一步：每个 RX 单独做 Range FFT</a>
+<a class="toc-sub" href="#第二步-每个-rx-单独做-doppler-fft">第二步：每个 RX 单独做 Doppler FFT</a>
+<a class="toc-sub" href="#第三步-固定某个-range-doppler-bin-跨-rx-做-angle-fft">第三步：固定某个 Range-Doppler bin，跨 RX 做 Angle FFT</a>
+<a class="toc-sub" href="#11-1-一个目标最终怎样变成空间位置">11.1 一个目标最终怎样变成空间位置？</a>
+<a class="toc-main" href="#12-一个非常关键的边界-目标不一定非要靠角度分开">12. 一个非常关键的边界：目标不一定非要靠角度分开</a>
+<a class="toc-sub" href="#12-1-为什么雷达移动也能帮助分离静止目标">12.1 为什么雷达移动也能帮助分离静止目标？</a>
+<a class="toc-main" href="#13-range-velocity-angle-三种-分辨率-统一比较">13. Range、Velocity、Angle 三种“分辨率”统一比较</a>
+<a class="toc-main" href="#14-速度估计与角度估计的-镜像关系">14. 速度估计与角度估计的“镜像关系”</a>
+<a class="toc-main" href="#15-工程补充-为什么真实芯片会有多个-tx">15. 工程补充：为什么真实芯片会有多个 TX？</a>
+<a class="toc-main" href="#16-易错点与自检">16. 易错点与自检</a>
+<a class="toc-sub" href="#易错点-1-角度估计也用-4-pi-d-mathrm-a-sin-theta-lambda">易错点 1：角度估计也用 $4\pi d_{\mathrm{a}}\sin\theta/\lambda$</a>
+<a class="toc-sub" href="#易错点-2-天线间距越大一定越好">易错点 2：天线间距越大一定越好</a>
+<a class="toc-sub" href="#易错点-3-有两根-rx-就能分开任意多个不同角度目标">易错点 3：有两根 RX 就能分开任意多个不同角度目标</a>
+<a class="toc-sub" href="#易错点-4-2-n-是角度制">易错点 4：$2/N$ 是角度制</a>
+<a class="toc-sub" href="#易错点-5-angle-fft-是对整个-adc-原始矩阵再做第三次-fft">易错点 5：Angle FFT 是对整个 ADC 原始矩阵再做第三次 FFT</a>
+<a class="toc-sub" href="#易错点-6-角度越大-相位差越大-所以一定越容易估准">易错点 6：角度越大，相位差越大，所以一定越容易估准</a>
+<a class="toc-sub" href="#自检题">自检题</a>
+<a class="toc-main" href="#17-本节小结-fmcw-的三个感知维度终于完整">17. 本节小结：FMCW 的三个感知维度终于完整</a>
+<a class="toc-sub" href="#距离">距离</a>
+<a class="toc-sub" href="#速度">速度</a>
+<a class="toc-sub" href="#角度">角度</a>
+<a class="toc-main" href="#来源">来源</a></nav></aside><main class="article"><header class="hero"><div class="eyebrow">毫米波雷达基础 · Lesson 05</div><h1>FMCW 雷达角度估计</h1><p class="lead">从多 RX 的空间相位差出发，推导 AoA、无模糊视场与角分辨率，并把 Range、Velocity、Angle 三个感知维度统一到同一个 FFT / 相位框架中。</p><div class="meta"><span class="chip">TI Module 5 核验</span><span class="chip">AoA / Angle FFT</span><span class="chip">5 张教学示意图</span><span class="chip">lesson_html_v1</span></div></header><blockquote class="callout">
+<p>对应 Bilibili P5《5、FMCW5：角度估计》；权威核验来源为 TI 官方 <em>Intro to mmWave Sensing: FMCW Radars — Module 5: Angle Estimation</em> 及同套官方演示文稿。</p>
+</blockquote>
+<h3 id="本节学习目标">本节学习目标</h3>
+<p>学完本节，应能回答八个问题：</p>
+<ol>
+<li>为什么一个 TX + 一个 RX 能测距离和速度，却不能直接知道目标在左边还是右边？</li>
+<li>两根 RX 天线为什么能通过相位差估计 Angle of Arrival（AoA）？</li>
+<li>为什么目标前后移动时是 $4\pi\Delta R/\lambda$，而两根 RX 之间的空间相位差却只有 $2\pi\Delta R/\lambda$？</li>
+<li>天线间距为什么同时决定无模糊视场和角度灵敏度？</li>
+<li>为什么角度越靠近阵列侧向，估计精度和角分辨率都会变差？</li>
+<li>两个同距离、同速度、不同角度的目标为什么需要多个 RX 与 Angle FFT？</li>
+<li>角分辨率为什么主要取决于阵列孔径/天线数，而不是 Chirp bandwidth？</li>
+<li>Range / Velocity / Angle 三个维度最终怎样合成完整的雷达定位框架？</li>
+</ol>
+<hr/>
+<h2 id="1-前四节还缺最后一个维度-角度">1. 前四节还缺最后一个维度：角度</h2>
+<p>前四节已经建立了两条完整链路：</p>
+<p>$$
+\text{fast time}\rightarrow\text{Range FFT}\rightarrow R,
+$$</p>
+<p>以及：</p>
+<p>$$
+\text{slow time}\rightarrow\text{Doppler FFT}\rightarrow v.
+$$</p>
+<p>这样已经可以回答：</p>
+<ul>
+<li>目标离雷达多远？</li>
+<li>目标相对雷达的径向速度是多少？</li>
+</ul>
+<p>但如果两个目标：</p>
+<ul>
+<li>距离相同；</li>
+<li>径向速度也相同；</li>
+</ul>
+<p>那么它们会落在同一个 Range-Doppler bin 里。</p>
+<p>单 TX、单 RX 的 2D FFT 仍只看到一个峰。</p>
+<p>这时还缺第三个空间维度：</p>
+<p><strong>Angle of Arrival（AoA，到达角）</strong>。</p>
+<p>也就是目标回波是从哪个方向到达接收阵列的。</p>
+<p>TI Module 5 的核心思想非常统一：</p>
+<blockquote class="callout">
+<p><strong>速度估计观察“相位随时间怎么变化”，角度估计观察“相位随空间怎么变化”。</strong></p>
+</blockquote>
+<hr/>
+<h2 id="2-角度估计为什么至少需要两个-rx">2. 角度估计为什么至少需要两个 RX？</h2>
+<p>考虑两个相邻接收天线：</p>
+<ul>
+<li>RX1；</li>
+<li>RX2；</li>
+<li>间距为 $d_{\mathrm{a}}$。</li>
+</ul>
+<p>目标位于阵列法线方向夹角 $\theta$ 处。</p>
+<p>在远场/平面波近似下，目标到两根 RX 的传播路径会有一个近似差值：</p>
+<p>$$
+\Delta R\approx d_{\mathrm{a}}\sin\theta.
+$$</p>
+<p>因此同一个回波到达两根天线时，会产生空间相位差。</p>
+<p>一个波长对应 $2\pi$ 相位，所以：</p>
+<p>$$
+\omega
+=\frac{2\pi}{\lambda}\Delta R.
+$$</p>
+<p>代入：</p>
+<p>$$
+\boxed{
+\omega=\frac{2\pi d_{\mathrm{a}}\sin\theta}{\lambda}
+}.
+$$</p>
+<p>这就是 AoA 估计最核心的公式。</p>
+<figure class="diagram"><svg role="img" viewbox="0 0 920 500"><rect fill="#fbfdff" height="498" rx="18" stroke="#dce6f0" width="918" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="460" y="42">两 RX 的空间路径差产生 AoA 相位差</text><circle cx="460" cy="105" fill="#fff4ea" r="34" stroke="#d8aa80"></circle><text class="svg-title" text-anchor="middle" x="460" y="111">Target</text><line stroke="#1f6fb2" stroke-width="4" x1="460" x2="305" y1="140" y2="360"></line><line stroke="#c96d25" stroke-width="4" x1="460" x2="615" y1="140" y2="360"></line><circle cx="305" cy="375" fill="#eef5fb" r="20" stroke="#9dbbd6"></circle><circle cx="615" cy="375" fill="#eef5fb" r="20" stroke="#9dbbd6"></circle><text class="svg-label" text-anchor="middle" x="305" y="415">RX1</text><text class="svg-label" text-anchor="middle" x="615" y="415">RX2</text><line stroke="#415466" stroke-width="2" x1="305" x2="615" y1="445" y2="445"></line><text class="svg-label" text-anchor="middle" x="460" y="475">antenna spacing dₐ</text><line stroke="#60788f" stroke-dasharray="7 6" x1="460" x2="460" y1="140" y2="310"></line><path d="M460 205 A65 65 0 0 1 505 223" fill="none" stroke="#315f91" stroke-width="3"></path><text class="svg-accent" x="520" y="215">θ</text><text class="svg-orange" x="660" y="240">ΔR ≈ dₐ sinθ</text><text class="svg-label" text-anchor="middle" x="460" y="75">ω = 2πΔR/λ = 2πdₐsinθ/λ</text></svg><figcaption>图 1　同一目标到两个 RX 的空间路径差约为 dₐsinθ，因此相同 Range-Doppler bin 的复数相位存在固定差值。</figcaption></figure>
+<h3 id="2-1-为什么这里是-2-pi-而第-2-节微位移是-4-pi">2.1 为什么这里是 $2\pi$，而第 2 节微位移是 $4\pi$？</h3>
+<p>这个 factor-of-two 是本节最值得弄清楚的地方。</p>
+<p>第 2 节讨论的是：<strong>同一个目标整体前后移动 $\Delta R$</strong>。</p>
+<p>雷达波的完整路径是：</p>
+<p>$$
+\text{TX}\rightarrow\text{target}\rightarrow\text{RX}.
+$$</p>
+<p>目标前后移动 $\Delta R$ 后，去程和回程都各改变约 $\Delta R$，总传播路径改变约：</p>
+<p>$$
+2\Delta R.
+$$</p>
+<p>所以：</p>
+<p>$$
+\Delta\phi_{\mathrm{radial}}
+=\frac{2\pi}{\lambda}(2\Delta R)
+=\frac{4\pi\Delta R}{\lambda}.
+$$</p>
+<p>而现在讨论的是：<strong>同一个目标同时被 RX1 和 RX2 接收</strong>。</p>
+<p>TX 到目标的路径对两个 RX 是公共项，做两通道相位差时会相消。</p>
+<p>真正不同的只有：</p>
+<p>$$
+\text{target}\rightarrow\text{RX1}
+$$</p>
+<p>与</p>
+<p>$$
+\text{target}\rightarrow\text{RX2}
+$$</p>
+<p>之间的空间路径差。</p>
+<p>它只有：</p>
+<p>$$
+\Delta R\approx d_{\mathrm{a}}\sin\theta.
+$$</p>
+<p>因此：</p>
+<p>$$
+
+\omega=\frac{2\pi d_{\mathrm{a}}\sin\theta}{\lambda}
+
+$$</p>
+<p>而不是 $4\pi$。</p>
+<blockquote class="callout">
+<p><strong>一句话记忆</strong>：目标前后动是“双程路径都变”；两 RX 比相位是“公共 TX 路径相消，只剩单程 RX 路径差”。</p>
+</blockquote>
+<hr/>
+<h2 id="3-两个-rx-怎样直接估计一个目标的-aoa">3. 两个 RX 怎样直接估计一个目标的 AoA？</h2>
+<p>由：</p>
+<p>$$
+\omega=\frac{2\pi d_{\mathrm{a}}\sin\theta}{\lambda},
+$$</p>
+<p>先解出：</p>
+<p>$$
+\sin\theta
+=\frac{\lambda\omega}{2\pi d_{\mathrm{a}}}.
+$$</p>
+<p>于是：</p>
+<p>$$
+\boxed{
+\theta
+=\arcsin\left(
+\frac{\lambda\omega}{2\pi d_{\mathrm{a}}}
+\right)
+}.
+$$</p>
+<p>实际处理步骤可以理解为：</p>
+<ol>
+<li>RX1 接收整帧数据，做 Range FFT + Doppler FFT；</li>
+<li>RX2 也做同样的 2D FFT；</li>
+<li>在目标对应的同一个 Range-Doppler bin 上读取两个复数值：</li>
+</ol>
+<p>$$
+X_1=A_1e^{j\phi_1},
+$$</p>
+<p>$$
+X_2=A_2e^{j\phi_2};
+$$</p>
+<ol start="4">
+<li>求相位差：</li>
+</ol>
+<p>$$
+\omega
+=\operatorname{angle}(X_2X_1^*)
+=\phi_2-\phi_1;
+$$</p>
+<ol start="5">
+<li>代入 AoA 公式得到 $\theta$。</li>
+</ol>
+<h3 id="3-1-一个-77-ghz-的直观例子">3.1 一个 77 GHz 的直观例子</h3>
+<p>77 GHz 波长约：</p>
+<p>$$
+\lambda\approx3.896\,\mathrm{mm}.
+$$</p>
+<p>若天线间距选择：</p>
+<p>$$
+ d_{\mathrm{a}}=\frac{\lambda}{2},
+$$</p>
+<p>目标角度：</p>
+<p>$$
+\theta=30^\circ,
+$$</p>
+<p>则：</p>
+<p>$$
+\omega
+=\frac{2\pi(\lambda/2)\sin30^\circ}{\lambda}.
+$$</p>
+<p>因为：</p>
+<p>$$
+\sin30^\circ=\frac12,
+$$</p>
+<p>所以：</p>
+<p>$$
+\omega=\frac{\pi}{2}=90^\circ.
+$$</p>
+<p>也就是说，半波长间距下，目标在 $30^\circ$ 方位时，相邻 RX 的复数峰相位大约相差四分之一圈。</p>
+<hr/>
+<h2 id="4-角度与相位不是线性关系">4. 角度与相位不是线性关系</h2>
+<p>速度估计里：</p>
+<p>$$
+\omega_{\mathrm{v}}=\frac{4\pi vT_{\mathrm{r}}}{\lambda},
+$$</p>
+<p>对速度 $v$ 是线性的。</p>
+<p>但角度估计里：</p>
+<p>$$
+\omega_\theta
+=\frac{2\pi d_{\mathrm{a}}}{\lambda}\sin\theta.
+$$</p>
+<p>这里有一个：</p>
+<p>$$
+\sin\theta.
+$$</p>
+<p>所以角度与空间相位并不是线性关系。</p>
+<p>为了看“相位对角度变化有多敏感”，对 $\theta$ 求导：</p>
+<p>$$
+\frac{\mathrm{d}\omega}{\mathrm{d}\theta}
+=
+\frac{2\pi d_{\mathrm{a}}}{\lambda}\cos\theta.
+$$</p>
+<p>于是：</p>
+<ul>
+<li>当 $\theta\approx0^\circ$ 时，$\cos\theta\approx1$，相位对角度变化最敏感；</li>
+<li>当 $|\theta|$ 增大时，$\cos\theta$ 变小；</li>
+<li>当 $|\theta|\rightarrow90^\circ$ 时，$\cos\theta\rightarrow0$。</li>
+</ul>
+<p>所以：</p>
+<blockquote class="callout">
+<p><strong>结论</strong>：AoA 在 broadside（正前方）附近最容易估准。</p>
+</blockquote>
+<p>而靠近阵列侧向时，同样的相位误差会被放大成更大的角度误差。</p>
+<figure class="diagram"><svg role="img" viewbox="0 0 920 430"><rect fill="#fbfdff" height="428" rx="18" stroke="#dce6f0" width="918" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="460" y="42">AoA 灵敏度：ω ∝ sinθ</text><line stroke="#415466" stroke-width="2" x1="100" x2="820" y1="335" y2="335"></line><line stroke="#415466" stroke-width="2" x1="460" x2="460" y1="365" y2="80"></line><path d="M120 305 C230 285 330 220 460 200 C590 180 690 115 800 95" fill="none" stroke="#1f6fb2" stroke-width="5"></path><line stroke="#c96d25" stroke-width="3" x1="340" x2="580" y1="215" y2="175"></line><line stroke="#c96d25" stroke-width="3" x1="120" x2="260" y1="305" y2="285"></line><line stroke="#c96d25" stroke-width="3" x1="660" x2="800" y1="130" y2="95"></line><text class="svg-label" x="465" y="390">θ</text><text class="svg-label" x="84" y="88">sinθ</text><text class="svg-accent" x="455" y="155">0°附近斜率最大</text><text class="svg-orange" x="155" y="265">接近 −90° 变平</text><text class="svg-orange" x="665" y="85">接近 +90° 变平</text><text class="svg-label" text-anchor="middle" x="460" y="405">dω/dθ = (2πdₐ/λ)cosθ</text></svg><figcaption>图 2　角度越靠近阵列侧向，sinθ 曲线越平；相同相位误差会映射成更大的角度误差。</figcaption></figure>
+<h3 id="4-1-角度估计精度-不是-角分辨率">4.1 “角度估计精度”不是“角分辨率”</h3>
+<p>这两个概念必须分开：</p>
+<ul>
+<li><strong>估计精度 accuracy</strong>：一个目标的角度估计值离真实值有多近；</li>
+<li><strong>角分辨率 resolution</strong>：两个角度很接近的目标能不能形成两个独立峰。</li>
+</ul>
+<p>本节后面会看到，它们虽然都随 $|\theta|$ 增大而变差，但物理问题并不相同。</p>
+<hr/>
+<h2 id="5-angular-field-of-view-为什么天线不能随便放得很远">5. Angular Field of View：为什么天线不能随便放得很远？</h2>
+<p>和 Doppler 频率一样，空间相位也存在 $2\pi$ 周期。</p>
+<p>如果只观测相邻天线的 wrapped phase，通常希望：</p>
+<p>$$
+|\omega|&lt;\pi.
+$$</p>
+<p>由：</p>
+<p>$$
+\omega=\frac{2\pi d_{\mathrm{a}}\sin\theta}{\lambda},
+$$</p>
+<p>得到：</p>
+<p>$$
+\left|
+\frac{2\pi d_{\mathrm{a}}\sin\theta}{\lambda}
+\right|&lt;\pi.
+$$</p>
+<p>约去 $\pi$：</p>
+<p>$$
+\left|\sin\theta\right|
+&lt;\frac{\lambda}{2d_{\mathrm{a}}}.
+$$</p>
+<p>因此当 $d_{\mathrm{a}}&gt;\lambda/2$ 时，无模糊最大角度：</p>
+<p>$$
+\boxed{
+\theta_{\mathrm{max}}
+=\arcsin\left(
+\frac{\lambda}{2d_{\mathrm{a}}}
+\right)
+}.
+$$</p>
+<h3 id="5-1-为什么经典阵列常用-d-mathrm-a-lambda-2">5.1 为什么经典阵列常用 $d_{\mathrm{a}}=\lambda/2$？</h3>
+<p>若：</p>
+<p>$$
+ d_{\mathrm{a}}=\frac{\lambda}{2},
+$$</p>
+<p>则：</p>
+<p>$$
+\frac{\lambda}{2d_{\mathrm{a}}}=1.
+$$</p>
+<p>于是：</p>
+<p>$$
+\theta_{\mathrm{max}}=\arcsin(1)=90^\circ.
+$$</p>
+<p>也就是理论上覆盖：</p>
+<p>$$
+-90^\circ\sim+90^\circ
+$$</p>
+<p>这一整个前半空间。</p>
+<p>若把间距继续增大，例如：</p>
+<p>$$
+ d_{\mathrm{a}}=\lambda,
+$$</p>
+<p>则：</p>
+<p>$$
+\theta_{\mathrm{max}}
+=\arcsin\left(\frac12\right)
+=30^\circ.
+$$</p>
+<p>超过这个角度后会产生空间相位模糊 / grating ambiguity。</p>
+<p>若：</p>
+<p>$$
+ d_{\mathrm{a}}&lt;\frac{\lambda}{2},
+$$</p>
+<p>则整个物理前半空间内都不会因为相邻采样发生 phase wrap；但阵列总孔径会缩小，角分辨率通常会变差。</p>
+<p>所以经典的半波长间距是一个非常重要的折中：</p>
+<blockquote class="callout">
+<p><strong>既尽量保留最大无模糊视场，又不无谓缩小阵列孔径。</strong></p>
+</blockquote>
+<hr/>
+<h2 id="6-两个-rx-为什么不能分开两个同距同速目标">6. 两个 RX 为什么不能分开两个同距同速目标？</h2>
+<p>假设两个目标：</p>
+<ul>
+<li>range 相同；</li>
+<li>velocity 相同；</li>
+<li>angle 不同：$\theta_1\ne\theta_2$。</li>
+</ul>
+<p>它们在 RX1 的同一个 Range-Doppler bin 中叠加：</p>
+<p>$$
+X_1=A_1e^{j\phi_{11}}+A_2e^{j\phi_{21}}.
+$$</p>
+<p>在 RX2 中：</p>
+<p>$$
+X_2=A_1e^{j\phi_{12}}+A_2e^{j\phi_{22}}.
+$$</p>
+<p>此时你只有两个“混合后的复数样本”。</p>
+<p>直接计算：</p>
+<p>$$
+\operatorname{angle}(X_2X_1^*)
+$$</p>
+<p>只会得到一个混合结果，不能把 $\theta_1$ 和 $\theta_2$ 分开。</p>
+<p>这和第 3 节非常像：</p>
+<ul>
+<li>两个 Chirp 可以估单目标速度；</li>
+<li>但同 range 的多个速度目标需要多个 Chirp + Doppler FFT。</li>
+</ul>
+<p>同理：</p>
+<ul>
+<li>两个 RX 可以估单目标 AoA；</li>
+<li>但同 range、同 velocity 的多个角度目标需要多个 RX + Angle FFT。</li>
+</ul>
+<hr/>
+<h2 id="7-n-元-rx-阵列-角度变成-空间频率">7. N 元 RX 阵列：角度变成“空间频率”</h2>
+<p>假设有 $N$ 根等间距 RX：</p>
+<p>$$
+\mathrm{RX}_0,\mathrm{RX}_1,\ldots,\mathrm{RX}_{N-1}.
+$$</p>
+<p>相邻间距均为：</p>
+<p>$$
+ d_{\mathrm{a}}.
+$$</p>
+<p>对于一个固定角度 $\theta$ 的远场目标，相邻天线间相位增量为：</p>
+<p>$$
+\omega
+=\frac{2\pi d_{\mathrm{a}}\sin\theta}{\lambda}.
+$$</p>
+<p>于是同一个 Range-Doppler bin 跨天线形成复数序列：</p>
+<p>$$
+ x[n]
+=Ae^{j(\phi_0+n\omega)},
+\quad n=0,1,\ldots,N-1.
+$$</p>
+<p>这正是一个离散复指数序列。</p>
+<p>如果同一个 bin 内有两个不同角度目标：</p>
+<p>$$
+ x[n]
+=A_1e^{j(\phi_1+n\omega_1)}
++A_2e^{j(\phi_2+n\omega_2)}.
+$$</p>
+<p>对天线 index 做 FFT：</p>
+<p>$$
+X_{\mathrm{A}}[k]
+=\sum_{n=0}^{N-1}x[n]e^{-j2\pi kn/N},
+$$</p>
+<p>就能在两个不同空间频率处形成峰。</p>
+<p>这就是：</p>
+<p><strong>Angle FFT（角度 FFT）</strong>。</p>
+<figure class="diagram"><svg role="img" viewbox="0 0 920 470"><rect fill="#fbfdff" height="468" rx="18" stroke="#dce6f0" width="918" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="460" y="42">Angle FFT：把空间相位旋转变成角度峰</text><g transform="translate(80,110)"><circle cx="0" cy="160" fill="#eef5fb" r="13" stroke="#9dbbd6"></circle><circle cx="75" cy="160" fill="#eef5fb" r="13" stroke="#9dbbd6"></circle><circle cx="150" cy="160" fill="#eef5fb" r="13" stroke="#9dbbd6"></circle><circle cx="225" cy="160" fill="#eef5fb" r="13" stroke="#9dbbd6"></circle><circle cx="300" cy="160" fill="#eef5fb" r="13" stroke="#9dbbd6"></circle><line stroke="#1f6fb2" stroke-width="4" x1="0" x2="55" y1="160" y2="105"></line><line stroke="#1f6fb2" stroke-width="4" x1="75" x2="110" y1="160" y2="90"></line><line stroke="#1f6fb2" stroke-width="4" x1="150" x2="160" y1="160" y2="80"></line><line stroke="#1f6fb2" stroke-width="4" x1="225" x2="205" y1="160" y2="82"></line><line stroke="#1f6fb2" stroke-width="4" x1="300" x2="255" y1="160" y2="95"></line><text class="svg-label" text-anchor="middle" x="150" y="205">RX index n → spatial samples</text><text class="svg-accent" text-anchor="middle" x="150" y="245">x[n] = Σ Aᵢe^{jnωᵢ}</text></g><line stroke="#60788f" stroke-width="4" x1="430" x2="535" y1="265" y2="265"></line><polygon fill="#60788f" points="535,265 519,256 519,274"></polygon><text class="svg-label" text-anchor="middle" x="482" y="245">FFT</text><line stroke="#415466" stroke-width="2" x1="590" x2="835" y1="355" y2="355"></line><path d="M600 355 L625 345 L655 145 L685 345 L705 355" fill="rgba(31,111,178,.10)" stroke="#1f6fb2" stroke-width="3"></path><path d="M705 355 L730 345 L760 190 L790 345 L820 355" fill="rgba(201,109,37,.10)" stroke="#c96d25" stroke-width="3"></path><text class="svg-blue" text-anchor="middle" x="655" y="125">θ₁</text><text class="svg-orange" text-anchor="middle" x="760" y="170">θ₂</text><text class="svg-label" text-anchor="middle" x="710" y="400">angle / spatial frequency</text></svg><figcaption>图 3　同一 Range-Doppler bin 跨 N 个 RX 形成空间复指数序列；Angle FFT 可把不同空间频率对应的不同角度分开。</figcaption></figure>
+<h3 id="7-1-angle-fft-和-doppler-fft-本质上是同一类问题">7.1 Angle FFT 和 Doppler FFT 本质上是同一类问题</h3>
+<p>Doppler FFT：</p>
+<p>$$
+\text{跨 Chirp 采样}
+\rightarrow
+\text{时间相位旋转}
+\rightarrow
+\text{velocity}.
+$$</p>
+<p>Angle FFT：</p>
+<p>$$
+\text{跨 RX 采样}
+\rightarrow
+\text{空间相位旋转}
+\rightarrow
+\text{angle}.
+$$</p>
+<p>一个是时间采样，一个是空间采样。</p>
+<p>数学上都在估计复指数序列的“频率”。</p>
+<hr/>
+<h2 id="8-角分辨率怎样推出来">8. 角分辨率怎样推出来？</h2>
+<p>对于两个角度很接近的目标：</p>
+<p>$$
+\theta
+$$</p>
+<p>和</p>
+<p>$$
+\theta+\Delta\theta,
+$$</p>
+<p>它们对应的空间角频率分别为：</p>
+<p>$$
+\omega(\theta)
+=\frac{2\pi d_{\mathrm{a}}}{\lambda}\sin\theta,
+$$</p>
+<p>$$
+\omega(\theta+\Delta\theta)
+=\frac{2\pi d_{\mathrm{a}}}{\lambda}\sin(\theta+\Delta\theta).
+$$</p>
+<p>所以频率差：</p>
+<p>$$
+\Delta\omega
+=
+\frac{2\pi d_{\mathrm{a}}}{\lambda}
+\left[
+\sin(\theta+\Delta\theta)-\sin\theta
+\right].
+$$</p>
+<p>当 $\Delta\theta$ 较小时：</p>
+<p>$$
+\sin(\theta+\Delta\theta)-\sin\theta
+\approx
+\cos\theta\,\Delta\theta.
+$$</p>
+<p>因此：</p>
+<p>$$
+\Delta\omega
+\approx
+\frac{2\pi d_{\mathrm{a}}}{\lambda}
+\cos\theta\,\Delta\theta.
+$$</p>
+<p>长度为 $N$ 的空间序列，FFT 的角频率分辨尺度约为：</p>
+<p>$$
+\Delta\omega_{\mathrm{min}}
+\approx\frac{2\pi}{N}.
+$$</p>
+<p>要让两个目标形成两个可分辨峰，要求：</p>
+<p>$$
+\frac{2\pi d_{\mathrm{a}}}{\lambda}
+\cos\theta\,\Delta\theta
+\gtrsim
+\frac{2\pi}{N}.
+$$</p>
+<p>约去 $2\pi$：</p>
+<p>$$
+\frac{d_{\mathrm{a}}}{\lambda}
+\cos\theta\,\Delta\theta
+\gtrsim\frac1N.
+$$</p>
+<p>得到：</p>
+<p>$$
+\boxed{
+\theta_{\mathrm{res}}
+\approx
+\frac{\lambda}{N d_{\mathrm{a}}\cos\theta}
+}
+$$</p>
+<p>这里的角度应按 <strong>rad</strong> 理解。</p>
+<figure class="diagram"><svg role="img" viewbox="0 0 920 430"><rect fill="#fbfdff" height="428" rx="18" stroke="#dce6f0" width="918" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="460" y="42">角分辨率：总阵列孔径越大越好，侧向越差</text><line stroke="#415466" stroke-width="2" x1="110" x2="810" y1="325" y2="325"></line><circle cx="235" cy="325" fill="#1f6fb2" r="10"></circle><circle cx="310" cy="325" fill="#1f6fb2" r="10"></circle><circle cx="385" cy="325" fill="#1f6fb2" r="10"></circle><circle cx="460" cy="325" fill="#1f6fb2" r="10"></circle><circle cx="535" cy="325" fill="#1f6fb2" r="10"></circle><circle cx="610" cy="325" fill="#1f6fb2" r="10"></circle><circle cx="685" cy="325" fill="#1f6fb2" r="10"></circle><line stroke="#315f91" stroke-width="3" x1="235" x2="685" y1="365" y2="365"></line><text class="svg-accent" text-anchor="middle" x="460" y="400">aperture ≈ (N−1)dₐ</text><path d="M455 315 C430 225 410 165 365 115" fill="none" stroke="#c96d25" stroke-width="4"></path><path d="M465 315 C490 235 520 205 575 175" fill="none" stroke="#c96d25" stroke-width="4"></path><text class="svg-orange" x="315" y="100">Δθ（broadside）较小</text><text class="svg-orange" x="585" y="160">同样空间频差在侧向映射成更大 Δθ</text><text class="svg-title" text-anchor="middle" x="460" y="80">θres ≈ λ / (N dₐ cosθ)</text></svg><figcaption>图 4　经典 FFT 角分辨率与总阵列孔径近似成反比，并随 |θ| 增大因 cosθ 下降而恶化。</figcaption></figure>
+<h3 id="8-1-为什么-broadside-的角分辨率最好">8.1 为什么 broadside 的角分辨率最好？</h3>
+<p>因为：</p>
+<p>$$
+\theta_{\mathrm{res}}
+\propto\frac1{\cos\theta}.
+$$</p>
+<p>当：</p>
+<p>$$
+\theta=0^\circ,
+$$</p>
+<p>有：</p>
+<p>$$
+\cos\theta=1,
+$$</p>
+<p>分辨率最好。</p>
+<p>当 $|\theta|$ 增大时，$\cos\theta$ 下降，角分辨率变差。</p>
+<p>这与前面单目标角度估计精度的趋势完全一致。</p>
+<hr/>
+<h2 id="9-半波长阵列下-一个非常好记的近似">9. 半波长阵列下，一个非常好记的近似</h2>
+<p>若：</p>
+<p>$$
+ d_{\mathrm{a}}=\frac{\lambda}{2},
+$$</p>
+<p>且目标接近 broadside：</p>
+<p>$$
+\theta\approx0,
+$$</p>
+<p>则：</p>
+<p>$$
+\theta_{\mathrm{res}}
+\approx
+\frac{\lambda}{N(\lambda/2)}
+=\frac2N\,\mathrm{rad}.
+$$</p>
+<p>这是 TI Module 5 给出的经典近似。</p>
+<h3 id="9-1-n-4-时">9.1 N=4 时</h3>
+<p>$$
+\theta_{\mathrm{res}}
+\approx\frac24=0.5\,\mathrm{rad}.
+$$</p>
+<p>换成角度：</p>
+<p>$$
+0.5\times\frac{180^\circ}{\pi}
+\approx28.6^\circ.
+$$</p>
+<h3 id="9-2-n-8-时">9.2 N=8 时</h3>
+<p>$$
+\theta_{\mathrm{res}}
+\approx\frac28=0.25\,\mathrm{rad}
+\approx14.3^\circ.
+$$</p>
+<p>所以天线数翻倍，broadside 附近的经典 FFT 角分辨尺度大致减半。</p>
+<h3 id="9-3-为什么-angle-resolution-很-贵">9.3 为什么 angle resolution 很“贵”？</h3>
+<p>提高 Range resolution，主要需要更大的 RF bandwidth。</p>
+<p>提高 Velocity resolution，主要需要更长观察时间。</p>
+<p>但提高 Angle resolution，往往需要：</p>
+<ul>
+<li>更多 RX 元素；</li>
+<li>更大的阵列孔径；</li>
+<li>更多模拟/RF 接收通道；</li>
+<li>更高硬件面积、功耗、成本与校准复杂度。</li>
+</ul>
+<p>所以 TI 在本模块最后强调：</p>
+<blockquote class="callout">
+<p><strong>Range 和 Velocity resolution 往往是雷达的天然强项，而高 Angle resolution 的硬件代价更明显。</strong></p>
+</blockquote>
+<hr/>
+<h2 id="10-天线间距越大-角分辨率不是越好吗-为什么又不能无限增大">10. 天线间距越大，角分辨率不是越好吗？为什么又不能无限增大？</h2>
+<p>从：</p>
+<p>$$
+\theta_{\mathrm{res}}
+\approx
+\frac{\lambda}{N d_{\mathrm{a}}\cos\theta}
+$$</p>
+<p>看起来：</p>
+<p>$$
+ d_{\mathrm{a}}\uparrow
+\Rightarrow
+\theta_{\mathrm{res}}\downarrow.
+$$</p>
+<p>即增大间距、扩大孔径，有利于角分辨率。</p>
+<p>但第 5 节又已经得到：</p>
+<p>$$
+\theta_{\mathrm{max}}
+=\arcsin\left(
+\frac{\lambda}{2d_{\mathrm{a}}}
+\right).
+$$</p>
+<p>因此：</p>
+<p>$$
+ d_{\mathrm{a}}\uparrow
+\Rightarrow
+\text{无模糊 FOV 变窄}.
+$$</p>
+<p>这形成非常经典的阵列设计权衡：</p>
+<ul>
+<li>大间距 / 大孔径：角分辨率更好；</li>
+<li>但太大间距会出现空间混叠和 grating lobes / angle ambiguity；</li>
+<li>半波长间距因此成为均匀线阵里最常见的基础选择。</li>
+</ul>
+<blockquote class="callout">
+<p><strong>一句话记忆：阵列孔径负责“分得细不细”，相邻采样间距负责“看得会不会混叠”。</strong></p>
+</blockquote>
+<hr/>
+<h2 id="11-range-doppler-angle-三维处理链怎样串起来">11. Range-Doppler-Angle：三维处理链怎样串起来？</h2>
+<p>对于多个 RX 通道，完整处理可以想成：</p>
+<h3 id="第一步-每个-rx-单独做-range-fft">第一步：每个 RX 单独做 Range FFT</h3>
+<p>沿 fast time：</p>
+<p>$$
+\text{ADC}\rightarrow\text{Range bins}.
+$$</p>
+<h3 id="第二步-每个-rx-单独做-doppler-fft">第二步：每个 RX 单独做 Doppler FFT</h3>
+<p>沿 slow time：</p>
+<p>$$
+\text{Range bin across chirps}
+\rightarrow
+\text{Doppler bins}.
+$$</p>
+<p>于是每个 RX 都得到一张自己的 Range-Doppler grid。</p>
+<h3 id="第三步-固定某个-range-doppler-bin-跨-rx-做-angle-fft">第三步：固定某个 Range-Doppler bin，跨 RX 做 Angle FFT</h3>
+<p>$$
+\text{same Range-Doppler bin across antennas}
+\rightarrow
+\text{Angle bins}.
+$$</p>
+<p>于是得到第三个维度：</p>
+<p>$$
+(R,\,v,\,\theta)
+$$</p>
+<figure class="diagram"><svg role="img" viewbox="0 0 920 500"><rect fill="#fbfdff" height="498" rx="18" stroke="#dce6f0" width="918" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="460" y="42">Range–Doppler–Angle 三维处理链</text><g><rect fill="#eef5fb" height="110" rx="12" stroke="#9dbbd6" width="170" x="70" y="100"></rect><text class="svg-title" text-anchor="middle" x="155" y="137">RX1</text><text class="svg-label" text-anchor="middle" x="155" y="170">Range FFT</text><text class="svg-label" text-anchor="middle" x="155" y="195">+ Doppler FFT</text><rect fill="#eef5fb" height="110" rx="12" stroke="#9dbbd6" width="170" x="70" y="245"></rect><text class="svg-title" text-anchor="middle" x="155" y="282">RX2 ... RXN</text><text class="svg-label" text-anchor="middle" x="155" y="315">各自产生</text><text class="svg-label" text-anchor="middle" x="155" y="340">Range-Doppler grid</text></g><line stroke="#60788f" stroke-width="4" x1="250" x2="410" y1="225" y2="225"></line><polygon fill="#60788f" points="410,225 394,216 394,234"></polygon><rect fill="#fff" height="170" rx="14" stroke="#9dbbd6" width="220" x="430" y="140"></rect><text class="svg-title" text-anchor="middle" x="540" y="175">固定同一 (R,v) bin</text><circle cx="490" cy="225" fill="#1f6fb2" r="10"></circle><circle cx="540" cy="225" fill="#315f91" r="10"></circle><circle cx="590" cy="225" fill="#c96d25" r="10"></circle><text class="svg-label" text-anchor="middle" x="540" y="270">跨 RX 收集复数相量</text><line stroke="#60788f" stroke-width="4" x1="660" x2="745" y1="225" y2="225"></line><polygon fill="#60788f" points="745,225 729,216 729,234"></polygon><rect fill="#fff4ea" height="120" rx="14" stroke="#d8aa80" width="110" x="760" y="165"></rect><text class="svg-title" text-anchor="middle" x="815" y="205">Angle</text><text class="svg-title" text-anchor="middle" x="815" y="235">FFT</text><text class="svg-orange" text-anchor="middle" x="815" y="265">θ bins</text><text class="svg-accent" text-anchor="middle" x="460" y="410">fast time → range　|　slow time → velocity　|　antenna index → angle</text></svg><figcaption>图 5　每个 RX 先完成 Range-Doppler 处理，再对同一个 Range-Doppler bin 跨天线做 Angle FFT，得到第三个感知维度。</figcaption></figure>
+<h3 id="11-1-一个目标最终怎样变成空间位置">11.1 一个目标最终怎样变成空间位置？</h3>
+<p>如果已估计出目标 range $R$ 与 azimuth angle $\theta$，在某一种常见坐标约定下可以进一步写成：</p>
+<p>$$
+ x=R\sin\theta,
+$$</p>
+<p>$$
+ y=R\cos\theta.
+$$</p>
+<p>具体 $x/y$ 方向取决于系统坐标系定义，但核心是：</p>
+<blockquote class="callout">
+<p>Range 给出“半径”，Angle 给出“方向”，二者合起来才形成横向空间定位。</p>
+</blockquote>
+<hr/>
+<h2 id="12-一个非常关键的边界-目标不一定非要靠角度分开">12. 一个非常关键的边界：目标不一定非要靠角度分开</h2>
+<p>假设两个目标一开始：</p>
+<ul>
+<li>range 相同；</li>
+<li>velocity 相同；</li>
+<li>angle 不同。</li>
+</ul>
+<p>那确实需要足够好的 angle resolution。</p>
+<p>但如果它们在 range 上已经相差超过：</p>
+<p>$$
+ d_{\mathrm{res}},
+$$</p>
+<p>那么 Range FFT 已经把它们分到不同 bin。</p>
+<p>此时即使角度非常接近，也不再需要靠 angle FFT 去区分“是不是两个目标”。</p>
+<p>同理，如果二者 velocity 不同、已经被 Doppler FFT 分开，也可以分别在不同 Range-Doppler bin 上做两天线单目标 AoA。</p>
+<p>所以：</p>
+<blockquote class="callout">
+<p><strong>系统级结论</strong>：两个目标只需要在 Range / Velocity / Angle 任意一个维度先被分开，就不必再依赖另外两个维度来证明“这是两个目标”。</p>
+</blockquote>
+<p>TI Module 5 最后几页正是在强调这个系统级观点。</p>
+<h3 id="12-1-为什么雷达移动也能帮助分离静止目标">12.1 为什么雷达移动也能帮助分离静止目标？</h3>
+<p>两个静止目标相对静止雷达：</p>
+<p>$$
+ v_{r,1}=v_{r,2}=0.
+$$</p>
+<p>如果雷达自身运动，不同方位的目标通常会产生不同的相对径向速度分量。</p>
+<p>于是原本在 Doppler=0 上重合的静止目标，可能在 velocity 维度分开。</p>
+<p>这说明三个维度并不是彼此孤立的。</p>
+<hr/>
+<h2 id="13-range-velocity-angle-三种-分辨率-统一比较">13. Range、Velocity、Angle 三种“分辨率”统一比较</h2>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>主要观测维</th>
+<th>经典分辨率关系</th>
+<th>最主要的设计资源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Range</td>
+<td>Chirp 内 fast time</td>
+<td>$d_{\mathrm{res}}=c/(2B)$</td>
+<td>RF bandwidth $B$</td>
+</tr>
+<tr>
+<td>Velocity</td>
+<td>Chirp 间 slow time</td>
+<td>$v_{\mathrm{res}}=\lambda/(2T_{\mathrm{f}})$</td>
+<td>observation/frame time $T_{\mathrm{f}}$</td>
+</tr>
+<tr>
+<td>Angle</td>
+<td>天线 index / space</td>
+<td>$\theta_{\mathrm{res}}\approx\lambda/(N d_{\mathrm{a}}\cos\theta)$</td>
+<td>array aperture / antenna count</td>
+</tr>
+</tbody>
+</table>
+<p>这三条公式放在一起，能看到一个非常漂亮的统一结构：</p>
+<ul>
+<li>想分开<strong>距离</strong>接近的两个目标，要让频率随快时间积累出足够差异；</li>
+<li>想分开<strong>速度</strong>接近的两个目标，要让相位随慢时间积累出足够差异；</li>
+<li>想分开<strong>角度</strong>接近的两个目标，要让相位随空间孔径积累出足够差异。</li>
+</ul>
+<p>本质都在做：</p>
+<blockquote class="callout">
+<p><strong>统一理解</strong>：无论距离、速度还是角度分辨，本质都是让两个目标在某个采样维度积累出足够大的相位或频率差异。</p>
+</blockquote>
+<hr/>
+<h2 id="14-速度估计与角度估计的-镜像关系">14. 速度估计与角度估计的“镜像关系”</h2>
+<p>这两个问题几乎可以一一对应：</p>
+<table>
+<thead>
+<tr>
+<th>速度估计</th>
+<th>角度估计</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>跨 Chirp 采样</td>
+<td>跨 RX 天线采样</td>
+</tr>
+<tr>
+<td>时间间隔 $T_{\mathrm{r}}$</td>
+<td>空间间隔 $d_{\mathrm{a}}$</td>
+</tr>
+<tr>
+<td>相位增量 $4\pi vT_{\mathrm{r}}/\lambda$</td>
+<td>相位增量 $2\pi d_{\mathrm{a}}\sin\theta/\lambda$</td>
+</tr>
+<tr>
+<td>Doppler FFT</td>
+<td>Angle FFT</td>
+</tr>
+<tr>
+<td>最大无模糊速度由 $T_{\mathrm{r}}$ 决定</td>
+<td>最大无模糊角度由 $d_{\mathrm{a}}$ 决定</td>
+</tr>
+<tr>
+<td>速度分辨率由总观测时间决定</td>
+<td>角分辨率由总阵列孔径决定</td>
+</tr>
+</tbody>
+</table>
+<p>这也是为什么理解第 3 节后，第 5 节其实会非常顺。</p>
+<p>可以把它们总结成一句：</p>
+<blockquote class="callout">
+<p><strong>Doppler FFT 在测“时间方向上的相位旋转频率”，Angle FFT 在测“空间方向上的相位旋转频率”。</strong></p>
+</blockquote>
+<hr/>
+<h2 id="15-工程补充-为什么真实芯片会有多个-tx">15. 工程补充：为什么真实芯片会有多个 TX？</h2>
+<p>本节 TI 的基础推导主要用：</p>
+<p>$$
+1\ \mathrm{TX}+N\ \mathrm{RX}
+$$</p>
+<p>解释 AoA。</p>
+<p>这已经足以说明角度估计的基本物理。</p>
+<p>但真实 mmWave 芯片常常还会配置多个 TX。</p>
+<p>其中一个重要目的，是通过特定的 MIMO / TDM-MIMO 方式，在物理 RX 数量有限时构造更大的<strong>虚拟阵列 aperture</strong>。</p>
+<p>这样可以提升角度维度的可用采样数与阵列孔径。</p>
+<p>不过这会引入：</p>
+<ul>
+<li>多 TX 时序；</li>
+<li>虚拟天线坐标；</li>
+<li>运动目标相位补偿；</li>
+<li>azimuth / elevation 阵列布局；</li>
+</ul>
+<p>这些已经超出 TI 这套入门 Module 5 的基础范围，所以本节只建立到 Angle FFT 与阵列孔径为止。</p>
+<hr/>
+<h2 id="16-易错点与自检">16. 易错点与自检</h2>
+<h3 id="易错点-1-角度估计也用-4-pi-d-mathrm-a-sin-theta-lambda">易错点 1：角度估计也用 $4\pi d_{\mathrm{a}}\sin\theta/\lambda$</h3>
+<p>错误。</p>
+<p>跨两个 RX 比相位时，TX 到目标的公共路径相消，只剩目标到两个 RX 的单程空间路径差，因此是：</p>
+<p>$$
+
+\omega=\frac{2\pi d_{\mathrm{a}}\sin\theta}{\lambda}
+.
+$$</p>
+<h3 id="易错点-2-天线间距越大一定越好">易错点 2：天线间距越大一定越好</h3>
+<p>错误。</p>
+<p>增大间距会扩大孔径、改善角分辨率，但超过半波长后会缩小无模糊 FOV，并可能产生空间混叠。</p>
+<h3 id="易错点-3-有两根-rx-就能分开任意多个不同角度目标">易错点 3：有两根 RX 就能分开任意多个不同角度目标</h3>
+<p>错误。</p>
+<p>两 RX 足以对一个已分离目标估计 AoA；多个同 range、同 velocity 目标叠在一起时，需要更多空间样本和 angle-FFT。</p>
+<h3 id="易错点-4-2-n-是角度制">易错点 4：$2/N$ 是角度制</h3>
+<p>错误。</p>
+<p>在：</p>
+<p>$$
+ d_{\mathrm{a}}=\lambda/2,\quad\theta\approx0
+$$</p>
+<p>时：</p>
+<p>$$
+\theta_{\mathrm{res}}\approx2/N
+$$</p>
+<p>默认是 <strong>rad</strong>。</p>
+<h3 id="易错点-5-angle-fft-是对整个-adc-原始矩阵再做第三次-fft">易错点 5：Angle FFT 是对整个 ADC 原始矩阵再做第三次 FFT</h3>
+<p>不准确。</p>
+<p>更准确的理解是：先在每个 RX 上做 Range-Doppler 处理，然后针对某个相同 Range-Doppler bin，收集各 RX 的复数值，在<strong>天线维度</strong>做 Angle FFT。</p>
+<h3 id="易错点-6-角度越大-相位差越大-所以一定越容易估准">易错点 6：角度越大，相位差越大，所以一定越容易估准</h3>
+<p>错误。</p>
+<p>虽然 $|\sin\theta|$ 变大，但：</p>
+<p>$$
+\frac{\mathrm{d}\omega}{\mathrm{d}\theta}
+\propto\cos\theta
+$$</p>
+<p>会变小，所以角度接近 ±90° 时，单位角度变化引起的相位变化反而更小，估计更敏感于噪声。</p>
+<h3 id="自检题">自检题</h3>
+<ol>
+<li>为什么目标径向位移公式有 $4\pi$，而两 RX AoA 公式只有 $2\pi$？</li>
+<li>半波长天线间距下，$30^\circ$ 目标的相邻 RX 相位差是多少？</li>
+<li>为什么 $d_{\mathrm{a}}&gt;\lambda/2$ 会出现角度模糊？</li>
+<li>为什么两个同 range、同 velocity 的不同角目标不能只靠两个 RX 分开？</li>
+<li>$N=8$、$d_{\mathrm{a}}=\lambda/2$、broadside 附近，经典 FFT 角分辨尺度约多少？</li>
+<li>Range / Velocity / Angle 三个分辨率分别主要由什么资源决定？</li>
+</ol>
+<p><strong>答案要点：</strong>1）径向移动改变去程与回程，两 RX 比较时公共 TX 路径相消；2）$\pi/2=90^\circ$；3）相邻空间采样的相位增量会超过 Nyquist 区间并发生 spatial aliasing；4）两个 RX 上都是混合相量，样本不足以分离多个空间频率；5）$2/8=0.25$ rad，约 $14.3^\circ$；6）分别是 RF bandwidth、frame observation time、array aperture / antenna count。</p>
+<hr/>
+<h2 id="17-本节小结-fmcw-的三个感知维度终于完整">17. 本节小结：FMCW 的三个感知维度终于完整</h2>
+<p>前五节可以浓缩成三条 FFT / 相位链：</p>
+<h3 id="距离">距离</h3>
+<p>$$
+\text{fast-time beat frequency}\xrightarrow{\text{Range FFT}}R
+$$</p>
+<h3 id="速度">速度</h3>
+<p>$$
+\text{phase progression across chirps}\xrightarrow{\text{Doppler FFT}}v
+$$</p>
+<h3 id="角度">角度</h3>
+<p>$$
+\text{phase progression across antennas}\xrightarrow{\text{Angle FFT}}\theta
+$$</p>
+<p>第 5 节最重要的三条关系是：</p>
+<p>$$
+
+\omega=\frac{2\pi d_{\mathrm{a}}\sin\theta}{\lambda}
+
+$$</p>
+<p>$$
+
+\theta
+=\arcsin\left(
+\frac{\lambda\omega}{2\pi d_{\mathrm{a}}}
+\right)
+
+$$</p>
+<p>$$
+
+\theta_{\mathrm{res}}
+\approx
+\frac{\lambda}{N d_{\mathrm{a}}\cos\theta}
+
+$$</p>
+<p>而阵列设计中最关键的直觉是：</p>
+<ul>
+<li>相邻间距 $d_{\mathrm{a}}$ 太大 → 无模糊 FOV 变窄；</li>
+<li>总阵列孔径 $Nd_{\mathrm{a}}$ 太小 → 角分辨率差；</li>
+<li>broadside 最容易估角，侧向精度与分辨率都会退化；</li>
+<li>多目标不一定必须在 angle 维分开，只要在 range / velocity / angle 任一维先分开即可。</li>
+</ul>
+<p>到这里，TI 这套五模块 FMCW 基础课程的主线已经闭环：</p>
+<p>$$
+(R,\,v,\,\theta)
+$$</p>
+<p>共同构成毫米波雷达从原始 ADC 数据到目标空间状态估计的基础。</p>
+<hr/>
+<h2 id="来源">来源</h2>
+<ol>
+<li>Bilibili：《毫米波雷达基础知识》，BV1du4m1g7bv，P5“5、FMCW5：角度估计”。</li>
+<li>Texas Instruments: <em>Intro to mmWave Sensing: FMCW Radars — Module 5: Angle Estimation</em>.</li>
+<li>Texas Instruments: <em>Introduction to mmWave Sensing: FMCW Radars</em> 配套演示文稿，Module 5 对应 PDF 第 52–70 页。</li>
+</ol><section class="source-panel"><strong>来源追溯</strong><br>主线资料：Bilibili《毫米波雷达基础知识》P5“FMCW5：角度估计”，并以 Texas Instruments 官方 <em>Intro to mmWave Sensing: FMCW Radars — Module 5: Angle Estimation</em> 与同套官方 70 页讲义第 52–70 页核验。符号 dₐ/R 规范化、远场路径差说明、角分辨率单位与 MIMO 简介属于明确标注的教学补充。</section><div class="footer">学习笔记项目 · ChatGPT-AgentDock / Codex 协作产物 · 2026-09-22</div></main></div><script>const bar=document.getElementById('progress');const links=[...document.querySelectorAll('.toc a')];
+function update(){const d=document.documentElement;const m=d.scrollHeight-d.clientHeight;bar.style.width=(m?d.scrollTop/m*100:0)+'%';}
+window.addEventListener('scroll',update,{passive:true});update();
+const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+e.target.id));}})},{rootMargin:'-15% 0px -72% 0px'});
+document.querySelectorAll('h2[id],h3[id]').forEach(h=>obs.observe(h));
+</script></body></html>
