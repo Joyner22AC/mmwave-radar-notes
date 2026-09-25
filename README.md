@@ -2,4 +2,6 @@
 
 GitHub Pages 发布仓库。包含 6 节 FMCW 毫米波雷达学习笔记及课程配套参考资料。
 
+线上访问入口：<https://joyner22ac.github.io/mmwave-radar-notes/>
+
 本仓库只用于发布静态学习笔记成品；原始工作区、Agent 状态、QA 缓存与构建过程文件不在此仓库中。
