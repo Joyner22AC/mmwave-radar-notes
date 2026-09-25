@@ -1,0 +1,917 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>现代数字信号处理｜第一章：时域离散随机信号的分析</title>
+<script>
+window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$','$$'], ['\\[','\\]']]}, svg: {fontCache: 'global'}};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<style>:root{--ink:#20303d;--muted:#627385;--line:#dce5ed;--paper:#fff;--soft:#f6f9fc;--blue:#1f6fb2;--blue2:#315f91;--orange:#c96d25;--shadow:0 12px 34px rgba(41,63,82,.08);}
+*{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;background:#f3f6f9;color:var(--ink);font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;line-height:1.82;font-size:16px}
+#progress{position:fixed;top:0;left:0;height:3px;background:var(--blue);width:0;z-index:50}
+.layout{display:grid;grid-template-columns:280px minmax(0,860px);gap:32px;max-width:1210px;margin:0 auto;padding:34px 24px 80px}
+.sidebar{position:sticky;top:22px;height:calc(100vh - 44px);overflow:auto;padding:18px 16px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.92);box-shadow:var(--shadow)}
+.brand{font-weight:700;color:#173c5c;margin:3px 8px 14px} .toc{display:flex;flex-direction:column;gap:2px} .toc a{text-decoration:none;color:#536779;border-radius:8px;padding:7px 9px;font-size:13px;line-height:1.4} .toc a:hover,.toc a.active{background:#edf4fa;color:#174e7e} .toc-sub{padding-left:22px!important;font-size:12.5px!important}
+.article{background:var(--paper);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:54px 68px;min-width:0}
+.hero{border-bottom:1px solid var(--line);padding-bottom:30px;margin-bottom:36px} .eyebrow{color:var(--blue);font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase} h1{font-size:35px;line-height:1.25;margin:10px 0 15px;color:#17344d} .lead{font-size:17px;color:#596d7f;max-width:720px;margin:0} .meta{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px} .chip{font-size:12px;padding:5px 9px;border-radius:999px;background:#edf4fa;color:#315f91;border:1px solid #d2e2ef}
+h2{font-size:25px;line-height:1.35;color:#183e5d;margin:54px 0 18px;padding-top:4px} h3{font-size:19px;line-height:1.4;color:#28516f;margin:34px 0 12px} p{margin:12px 0} strong{color:#193b56} code{font-family:"Cascadia Mono",Consolas,monospace;background:#f0f4f7;border:1px solid #e1e8ee;padding:.08em .34em;border-radius:5px;font-size:.92em}
+hr{border:0;border-top:1px solid var(--line);margin:42px 0} ul,ol{padding-left:1.55em} li{margin:.35em 0}
+blockquote.callout{margin:22px 0;padding:14px 18px;border-left:4px solid var(--blue);background:#f3f8fc;border-radius:0 10px 10px 0;color:#405669}
+table{width:100%;border-collapse:collapse;margin:20px 0 28px;font-size:14.5px} th,td{border:1px solid #dce5ed;padding:10px 12px;text-align:left;vertical-align:top} th{background:#eef5fa;color:#294f6d} tr:nth-child(even) td{background:#fbfcfd}
+.diagram{margin:28px 0 34px;padding:16px;border:1px solid var(--line);border-radius:16px;background:#fbfdff;overflow:hidden} .diagram svg{width:100%;height:auto;display:block} figcaption{text-align:center;color:#657889;font-size:13px;margin-top:10px} .svg-label{font:16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#415466} .svg-title{font:600 17px "Segoe UI","Microsoft YaHei",sans-serif;fill:#294f6d} .svg-accent{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#315f91} .svg-blue{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#1f6fb2} .svg-orange{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#c96d25}
+.formula-note{font-size:13px;color:var(--muted)} mjx-container{color:#172a3a} mjx-container[display="true"]{margin:1.35em 0!important;max-width:100%;overflow-x:auto;overflow-y:hidden;padding:.18em .25em .24em;text-align:center;scrollbar-width:thin;scrollbar-color:#c7d5e1 transparent} mjx-container[display="true"]>svg{display:inline-block;vertical-align:middle} mjx-container:not([display="true"]){font-size:1.01em}
+.source-panel{margin-top:52px;padding:22px;border:1px solid var(--line);background:#f8fafc;border-radius:14px;color:#526779;font-size:14px} .source-panel a{color:var(--blue)}
+.footer{margin-top:38px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:#7a8997;text-align:center}
+@media(max-width:980px){.layout{grid-template-columns:1fr;max-width:900px}.sidebar{position:relative;top:0;height:auto;max-height:340px}.article{padding:42px 34px}}
+@media(max-width:600px){body{font-size:15px}.layout{padding:12px 8px 50px}.sidebar{display:none}.article{padding:30px 20px;border-radius:12px}h1{font-size:28px}h2{font-size:22px}.diagram{padding:5px}mjx-container[display="true"]{font-size:.96em;margin:1.1em 0!important}}
+@media print{body{background:white;font-size:10.5pt}#progress,.sidebar{display:none!important}.layout{display:block;max-width:none;padding:0}.article{border:0;box-shadow:none;padding:0}.hero{margin-top:0}h2,h3{break-after:avoid-page}.diagram,table,blockquote,mjx-container[display="true"]{break-inside:avoid}mjx-container[display="true"]{overflow:visible}a{color:inherit;text-decoration:none}}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div class="layout">
+<aside class="sidebar"><div class="brand">现代数字信号处理 · 第一章</div><nav class="toc"><a class="toc-main" href="#0-为什么先学随机信号">0. 为什么先学随机信号</a>
+<a class="toc-main" href="#1-随机变量-随机信号的-单点语言">1. 随机变量：随机信号的“单点语言”</a>
+<a class="toc-sub" href="#1-1-分布函数与概率密度">1.1 分布函数与概率密度</a>
+<a class="toc-sub" href="#1-2-均值-均方值与方差">1.2 均值、均方值与方差</a>
+<a class="toc-sub" href="#1-3-协方差与-是否一起变化">1.3 协方差与“是否一起变化”</a>
+<a class="toc-sub" href="#1-4-多元高斯为什么重要">1.4 多元高斯为什么重要</a>
+<a class="toc-main" href="#2-从随机变量到随机过程-再到随机序列">2. 从随机变量到随机过程，再到随机序列</a>
+<a class="toc-sub" href="#2-1-一个随机过程有两种看法">2.1 一个随机过程有两种看法</a>
+<a class="toc-sub" href="#2-2-时域离散随机信号">2.2 时域离散随机信号</a>
+<a class="toc-sub" href="#2-3-为什么一维分布还不够">2.3 为什么一维分布还不够</a>
+<a class="toc-main" href="#3-二阶统计量-后续整门课的共同语言">3. 二阶统计量：后续整门课的共同语言</a>
+<a class="toc-sub" href="#3-1-均值函数与方差函数">3.1 均值函数与方差函数</a>
+<a class="toc-sub" href="#3-2-自相关与自协方差">3.2 自相关与自协方差</a>
+<a class="toc-sub" href="#3-3-互相关-正交与不相关">3.3 互相关、正交与不相关</a>
+<a class="toc-sub" href="#3-4-随机相位信号告诉我们什么">3.4 随机相位信号告诉我们什么</a>
+<a class="toc-main" href="#4-平稳性-为什么过去的统计规律可以用于未来">4. 平稳性：为什么过去的统计规律可以用于未来</a>
+<a class="toc-sub" href="#4-1-严平稳与宽平稳">4.1 严平稳与宽平稳</a>
+<a class="toc-sub" href="#4-2-wss-后-相关函数只剩一个自变量">4.2 WSS 后，相关函数只剩一个自变量</a>
+<a class="toc-sub" href="#4-3-hermitian-对称">4.3 Hermitian 对称</a>
+<a class="toc-sub" href="#4-4-自相关还有哪些重要性质">4.4 自相关还有哪些重要性质</a>
+<a class="toc-sub" href="#4-5-平稳不等于-值不变">4.5 平稳不等于“值不变”</a>
+<a class="toc-main" href="#5-各态历经性-为什么一条长记录能代表总体">5. 各态历经性：为什么一条长记录能代表总体</a>
+<a class="toc-sub" href="#5-1-集合平均">5.1 集合平均</a>
+<a class="toc-sub" href="#5-2-时间平均">5.2 时间平均</a>
+<a class="toc-sub" href="#5-3-各态历经的核心">5.3 各态历经的核心</a>
+<a class="toc-main" href="#6-随机信号采样-nyquist-定理仍然成立-但对象变成-psd">6. 随机信号采样：Nyquist 定理仍然成立，但对象变成 PSD</a>
+<a class="toc-sub" href="#6-1-如果噪声不是带限的怎么办">6.1 如果噪声不是带限的怎么办</a>
+<a class="toc-main" href="#7-从相关函数到功率谱-wiener-khinchin-定理">7. 从相关函数到功率谱：Wiener–Khinchin 定理</a>
+<a class="toc-sub" href="#7-1-为什么不直接对随机序列做-能量谱">7.1 为什么不直接对随机序列做“能量谱”</a>
+<a class="toc-sub" href="#7-2-wiener-khinchin-对">7.2 Wiener–Khinchin 对</a>
+<a class="toc-sub" href="#7-3-psd-的性质">7.3 PSD 的性质</a>
+<a class="toc-sub" href="#7-4-三种谱的直觉">7.4 三种谱的直觉</a>
+<a class="toc-main" href="#8-有限数据下的统计量估计">8. 有限数据下的统计量估计</a>
+<a class="toc-sub" href="#8-1-无偏性-有效性-一致性">8.1 无偏性、有效性、一致性</a>
+<a class="toc-sub" href="#8-2-均值估计">8.2 均值估计</a>
+<a class="toc-sub" href="#8-3-方差估计-为什么有-n-和-n-1">8.3 方差估计：为什么有 $N$ 和 $N-1$</a>
+<a class="toc-sub" href="#8-4-自相关-无偏估计和有偏估计为什么都存在">8.4 自相关：无偏估计和有偏估计为什么都存在</a>
+<a class="toc-main" href="#9-平稳随机序列通过-lti-系统">9. 平稳随机序列通过 LTI 系统</a>
+<a class="toc-sub" href="#9-1-输出均值">9.1 输出均值</a>
+<a class="toc-sub" href="#9-2-输出自相关">9.2 输出自相关</a>
+<a class="toc-sub" href="#9-3-输出功率谱">9.3 输出功率谱</a>
+<a class="toc-sub" href="#9-4-例-白噪声通过一阶系统">9.4 例：白噪声通过一阶系统</a>
+<a class="toc-main" href="#10-时间序列模型-把统计规律变成-生成系统">10. 时间序列模型：把统计规律变成“生成系统”</a>
+<a class="toc-sub" href="#10-1-arma-是统一模型">10.1 ARMA 是统一模型</a>
+<a class="toc-sub" href="#10-2-ma-零点塑造-谷">10.2 MA：零点塑造“谷”</a>
+<a class="toc-sub" href="#10-3-ar-极点塑造-峰">10.3 AR：极点塑造“峰”</a>
+<a class="toc-sub" href="#10-4-阶数和-滤波器长度-不是同一回事">10.4 阶数和“滤波器长度”不是同一回事</a>
+<a class="toc-sub" href="#10-5-wold-与-kolmogorov-为什么这些模型有普遍意义">10.5 Wold 与 Kolmogorov：为什么这些模型有普遍意义</a>
+<a class="toc-sub" href="#10-6-ar-的相关方程-yule-walker">10.6 AR 的相关方程：Yule–Walker</a>
+<a class="toc-sub" href="#10-7-从功率谱反推模型-谱分解">10.7 从功率谱反推模型：谱分解</a>
+<a class="toc-main" href="#11-第一章总复盘-把概念放回一张地图">11. 第一章总复盘：把概念放回一张地图</a>
+<a class="toc-main" href="#来源说明">来源说明</a></nav></aside>
+<main class="article">
+<header class="hero">
+<div class="eyebrow">Modern Digital Signal Processing · Chapter 01</div>
+<h1>时域离散随机信号的分析</h1>
+<p class="lead">从随机变量和随机过程出发，建立平稳性、遍历性、相关函数、功率谱、统计估计、LTI 随机响应与 AR/MA/ARMA 模型之间的一条完整知识链。</p>
+<div class="meta"><span class="chip">128 页课程 PPT</span><span class="chip">详细公式推导</span><span class="chip">6 张教学示意图</span><span class="chip">WSS · PSD · ARMA</span></div>
+</header>
+<blockquote class="callout">
+<p>本章的核心不是“多记几个概率公式”，而是完成一次思维切换：经典数字信号处理常把输入看成一条已经确定的序列，而现代数字信号处理更关心<strong>信号背后的统计规律</strong>。从这一章开始，我们不再问“这一条波形是多少”，而会不断问：它的均值、相关性、功率谱、可预测性和模型结构是什么？</p>
+</blockquote>
+
+<h2 id="0-为什么先学随机信号">0. 为什么先学随机信号</h2>
+<p>经典 DSP 中，我们熟悉的对象通常是确定性序列：给定 $x[n]$，就可以直接求 DTFT、DFT、卷积和系统响应。但实际接收信号常常同时受到噪声、随机扰动、未知参数和环境变化影响，同一实验重复两次，得到的波形并不会完全一样。</p>
+<p>因此现代数字信号处理把研究对象从“一个确定的 $x[n]$”扩展到随机序列 $X[n]$。课程真正关心两类问题：</p>
+<ol>
+<li><strong>分析问题</strong>：怎样用统计量描述随机信号？怎样建立时间序列模型？怎样估计功率谱、检测信号、做时频分析？</li>
+<li><strong>处理问题</strong>：已知观测中含有噪声，怎样设计 Wiener、Kalman 或自适应滤波器，使估计误差尽可能小？</li>
+</ol>
+<p>第一章就是后续所有内容的地基：</p>
+<p>$$
+\boxed{
+\begin{gathered}
+\text{随机序列}\to\text{二阶统计量}\to\text{平稳/遍历}\\
+\downarrow\\
+\text{功率谱}\to\text{估计}\to\text{LTI传播}\\
+\downarrow\\
+\text{AR/MA/ARMA模型}
+\end{gathered}}
+$$</p>
+<hr/>
+<h2 id="1-随机变量-随机信号的-单点语言">1. 随机变量：随机信号的“单点语言”</h2>
+
+<h3 id="1-1-分布函数与概率密度">1.1 分布函数与概率密度</h3>
+<p>设随机变量为 $X$。累积分布函数定义为</p>
+<p>$$
+F_X(x)=P(X\le x).
+$$</p>
+<p>对于连续型随机变量，概率密度函数为</p>
+<p>$$
+f_X(x)=\frac{\mathrm d F_X(x)}{\mathrm d x},
+$$</p>
+<p>并满足</p>
+<p>$$
+F_X(x)=\int_{-\infty}^{x}f_X(\xi)\,\mathrm d\xi.
+$$</p>
+<p>分布描述的是“取不同数值的概率规律”，而后面大量信号处理算法真正频繁使用的，是从分布中提炼出来的一阶、二阶统计量。</p>
+<h3 id="1-2-均值-均方值与方差">1.2 均值、均方值与方差</h3>
+<p>均值是一阶矩：</p>
+<p>$$
+\mu_X=\mathrm E\{X\}.
+$$</p>
+<p>均方值是二阶原点矩：</p>
+<p>$$
+P_X=\mathrm E\{|X|^2\}.
+$$</p>
+<p>方差是二阶中心矩：</p>
+<p>$$
+\sigma_X^2=\mathrm E\{|X-\mu_X|^2\}.
+$$</p>
+<p>三者满足一个非常重要的分解：</p>
+<p>$$
+\boxed{\mathrm E\{|X|^2\}=\sigma_X^2+|\mu_X|^2.}
+$$</p>
+<p>它告诉我们：<strong>总均方值 = 随机波动功率 + 直流/均值分量功率</strong>。以后分析随机序列时，$R_{XX}[0]$、平均功率和方差之间的关系，本质上仍然是这个式子的延伸。</p>
+<h3 id="1-3-协方差与-是否一起变化">1.3 协方差与“是否一起变化”</h3>
+<p>两个随机变量 $X,Y$ 的协方差定义为</p>
+<p>$$
+\operatorname{cov}(X,Y)
+=\mathrm E\{(X-\mu_X)(Y-\mu_Y)^*\}.
+$$</p>
+<p>展开得</p>
+<p>$$
+\operatorname{cov}(X,Y)
+=\mathrm E\{XY^*\}-\mu_X\mu_Y^*.
+$$</p>
+<p>若协方差为 0，我们称它们<strong>不相关</strong>。但“不相关”一般不等于“独立”。只有在一些特殊分布族中，例如联合高斯变量，零协方差才足以推出独立。</p>
+<h3 id="1-4-多元高斯为什么重要">1.4 多元高斯为什么重要</h3>
+<p>对于 $N$ 维实高斯随机向量 $\mathbf X$，概率密度由均值向量 $\boldsymbol\mu$ 和协方差矩阵 $\mathbf\Sigma$ 完全决定：</p>
+<p>$$
+\begin{aligned}
+f_{\mathbf X}(\mathbf x)
+&amp;=\frac{1}{(2\pi)^{N/2}|\mathbf\Sigma|^{1/2}}\\
+&amp;\quad\times\exp\left[-\frac12(\mathbf x-\boldsymbol\mu)^{\mathrm T}
+\mathbf\Sigma^{-1}(\mathbf x-\boldsymbol\mu)\right].
+\end{aligned}
+$$</p>
+<p>这也是为什么统计信号处理中如此强调“均值 + 协方差”：对于高斯问题，它们不是粗略摘要，而是已经完整描述了联合分布。</p>
+<hr/>
+<h2 id="2-从随机变量到随机过程-再到随机序列">2. 从随机变量到随机过程，再到随机序列</h2>
+
+<h3 id="2-1-一个随机过程有两种看法">2.1 一个随机过程有两种看法</h3>
+<p>随机过程 $X(t)$ 可以有两个等价视角：</p>
+<ul>
+<li>固定一次实验，随时间观察：得到一条样本函数 $x_i(t)$；</li>
+<li>固定一个时刻 $t_0$，跨不同实验观察：得到随机变量 $X(t_0)$。</li>
+</ul>
+<figure class="diagram" id="fig-sample-paths">
+<svg aria-label="随机过程的两种观察方向" role="img" viewbox="0 0 940 470">
+<defs><marker id="a1" markerheight="8" markerwidth="8" orient="auto" refx="7" refy="4"><path d="M0,0 L8,4 L0,8 z" fill="#315f91"></path></marker></defs>
+<rect fill="#fbfdff" height="468" rx="18" stroke="#dce6f0" width="938" x="1" y="1"></rect>
+<text class="svg-title" text-anchor="middle" x="470" y="38">随机过程 X[n]：既是一组样本函数，也是一族随机变量</text>
+<line marker-end="url(#a1)" stroke="#60788f" stroke-width="2" x1="80" x2="710" y1="350" y2="350"></line>
+<line marker-end="url(#a1)" stroke="#60788f" stroke-width="2" x1="80" x2="80" y1="350" y2="80"></line>
+<path d="M85 225 C145 125,205 315,265 210 S385 125,445 230 S565 305,625 185 S680 125,705 200" fill="none" stroke="#1f6fb2" stroke-width="4"></path>
+<path d="M85 270 C145 190,205 245,265 150 S385 245,445 170 S565 120,625 260 S680 290,705 225" fill="none" opacity=".85" stroke="#d2782e" stroke-width="3"></path>
+<path d="M85 175 C150 250,210 110,275 250 S395 275,455 145 S570 215,630 125 S685 205,705 160" fill="none" opacity=".9" stroke="#708aa1" stroke-width="3"></path>
+<text class="svg-label" x="715" y="355">n</text><text class="svg-label" x="48" y="77">幅值</text>
+<text class="svg-blue" x="625" y="104">x₁[n]</text><text class="svg-orange" x="625" y="285">x₂[n]</text><text class="svg-label" x="530" y="125">x₃[n]</text>
+<line stroke="#315f91" stroke-dasharray="7 6" stroke-width="2" x1="390" x2="390" y1="82" y2="350"></line>
+<circle cx="390" cy="157" fill="#708aa1" r="6"></circle><circle cx="390" cy="189" fill="#1f6fb2" r="6"></circle><circle cx="390" cy="239" fill="#d2782e" r="6"></circle>
+<text class="svg-accent" x="405" y="100">固定 n=n₀</text>
+<line stroke="#60788f" stroke-width="2" x1="760" x2="760" y1="100" y2="320"></line>
+<circle cx="760" cy="145" fill="#708aa1" r="7"></circle><circle cx="760" cy="210" fill="#1f6fb2" r="7"></circle><circle cx="760" cy="278" fill="#d2782e" r="7"></circle>
+<text class="svg-label" x="788" y="150">x₃[n₀]</text><text class="svg-label" x="788" y="215">x₁[n₀]</text><text class="svg-label" x="788" y="283">x₂[n₀]</text>
+<text class="svg-accent" text-anchor="middle" x="760" y="350">随机变量 X[n₀]</text>
+<rect fill="#eef5fb" height="50" rx="10" stroke="#b9d0e5" width="290" x="115" y="385"></rect>
+<text class="svg-label" text-anchor="middle" x="260" y="416">沿一条曲线：一次实现随时间变化</text>
+<rect fill="#fff6ee" height="50" rx="10" stroke="#e4c2a7" width="310" x="520" y="385"></rect>
+<text class="svg-label" text-anchor="middle" x="675" y="416">固定时刻：跨实现观察概率分布</text>
+</svg>
+<figcaption>图 1　随机过程的两种观察方向。教学重绘，对应课件 Slides 17–19。</figcaption>
+</figure>
+<p>这两个视角非常关键。<strong>时间平均</strong>沿着一条样本曲线走；<strong>集合平均</strong>则在固定时刻跨许多样本曲线取平均。后面的“各态历经性”就是在讨论什么时候这两种平均能够相等。</p>
+<h3 id="2-2-时域离散随机信号">2.2 时域离散随机信号</h3>
+<p>若以等间隔对 $X(t)$ 采样，得到</p>
+<p>$$
+X[0],X[1],X[2],\ldots,
+$$</p>
+<p>就形成随机序列 $X[n]$。注意：$X[n]$ 不是一串固定数字，而是“一串随 $n$ 变化的随机变量”。一次具体实验得到的</p>
+<p>$$
+x_i[0],x_i[1],x_i[2],\ldots
+$$</p>
+<p>才是一条确定的样本序列。</p>
+<h3 id="2-3-为什么一维分布还不够">2.3 为什么一维分布还不够</h3>
+<p>只知道某个时刻的</p>
+<p>$$
+F_{X[n]}(x;n)
+$$</p>
+<p>只能说明“第 $n$ 个时刻单独看是什么分布”，不能说明两个时刻之间有没有关联。</p>
+<p>因此要引入二维联合分布：</p>
+<p>$$
+F_{X[n_1],X[n_2]}(x_1,x_2;n_1,n_2),
+$$</p>
+<p>继续扩展到 $N$ 维分布。理论上，要完整描述一般随机过程，需要任意有限维联合分布的一整套信息；工程上这通常过于复杂，所以绝大多数现代信号处理算法转而依赖<strong>一阶和二阶统计量</strong>。</p>
+<p>这一步是本章的第一个降维思想：</p>
+<blockquote class="callout">
+<p>从“完整概率分布”退一步，用均值、相关函数和功率谱描述最重要的统计结构。</p>
+</blockquote>
+<hr/>
+<h2 id="3-二阶统计量-后续整门课的共同语言">3. 二阶统计量：后续整门课的共同语言</h2>
+
+<h3 id="3-1-均值函数与方差函数">3.1 均值函数与方差函数</h3>
+<p>一般随机序列的均值可能随时间变化：</p>
+<p>$$
+\mu_X[n]=\mathrm E\{X[n]\}.
+$$</p>
+<p>方差为</p>
+<p>$$
+\sigma_X^2[n]=\mathrm E\{|X[n]-\mu_X[n]|^2\}.
+$$</p>
+<h3 id="3-2-自相关与自协方差">3.2 自相关与自协方差</h3>
+<p>本笔记统一采用</p>
+<p>$$
+R_{XX}[n_1,n_2]
+=\mathrm E\{X[n_1]X^*[n_2]\}.
+$$</p>
+<p>自协方差为</p>
+<p>$$
+\begin{aligned}
+C_{XX}[n_1,n_2]
+&amp;=\mathrm E\{(X[n_1]-\mu_X[n_1])\\
+&amp;\qquad\quad\cdot(X[n_2]-\mu_X[n_2])^*\}.
+\end{aligned}
+$$</p>
+<p>显然</p>
+<p>$$
+C_{XX}[n_1,n_2]
+=R_{XX}[n_1,n_2]-\mu_X[n_1]\mu_X^*[n_2].
+$$</p>
+<p>相关函数既包含“波动之间是否相似”，也包含非零均值带来的直流项；协方差则把均值去掉，更专注于随机波动之间的关联。</p>
+<h3 id="3-3-互相关-正交与不相关">3.3 互相关、正交与不相关</h3>
+<p>两个随机序列的互相关可写为</p>
+<p>$$
+R_{XY}[n_1,n_2]
+=\mathrm E\{X[n_1]Y^*[n_2]\},
+$$</p>
+<p>互协方差为</p>
+<p>$$
+C_{XY}[n_1,n_2]
+=R_{XY}[n_1,n_2]-\mu_X[n_1]\mu_Y^*[n_2].
+$$</p>
+<p>课程中要区分两个概念：</p>
+<ul>
+<li>$R_{XY}=0$：正交；</li>
+<li>$C_{XY}=0$：不相关。</li>
+</ul>
+<p>当两个序列均为零均值时，二者重合。</p>
+<h3 id="3-4-随机相位信号告诉我们什么">3.4 随机相位信号告诉我们什么</h3>
+<p>课件用随机相位谐波说明一个重要事实：即使每个时刻的均值为 0，信号也可能具有强烈的时间结构。随机相位把“绝对相位”平均掉了，但同一条谐波在相隔 $m$ 个采样点时仍有确定的相位差，因此自相关函数仍会保留周期性。</p>
+<p>这就是相关函数的价值：</p>
+<blockquote class="callout">
+<p><strong>均值看不见的结构，相关函数往往还能看见。</strong></p>
+</blockquote>
+<hr/>
+<h2 id="4-平稳性-为什么过去的统计规律可以用于未来">4. 平稳性：为什么过去的统计规律可以用于未来</h2>
+
+<h3 id="4-1-严平稳与宽平稳">4.1 严平稳与宽平稳</h3>
+<p><strong>严平稳（strict-sense stationary, SSS）</strong>要求任意阶联合分布对整体时间平移都不变。也就是说，对任意 $n_1,\ldots,n_k$ 和平移量 $n_0$，</p>
+<p>$$
+\begin{aligned}
+&amp;(X[n_1],\ldots,X[n_k])\\
+&amp;\qquad\overset{d}{=}(X[n_1+n_0],\ldots,X[n_k+n_0]).
+\end{aligned}
+$$</p>
+<p>它是非常强的条件。</p>
+<p>工程上更常用<strong>宽平稳（wide-sense stationary, WSS）</strong>。若二阶矩存在，只需满足：</p>
+<ol>
+<li>均值与时间无关：
+   $$\mu_X[n]=\mu_X;$$</li>
+<li>均方值有限；</li>
+<li>自相关只与时间差有关：
+   $$R_{XX}[n_1,n_2]=R_{XX}[n_1-n_2].$$</li>
+</ol>
+<p>严平稳在二阶矩存在时会推出宽平稳；反过来一般不成立。</p>
+<h3 id="4-2-wss-后-相关函数只剩一个自变量">4.2 WSS 后，相关函数只剩一个自变量</h3>
+<p>定义滞后 $m$ 后，</p>
+<p>$$
+\boxed{R_{XX}[m]=\mathrm E\{X[n+m]X^*[n]\}.}
+$$</p>
+<p>此时绝对时间 $n$ 消失，只保留两点的相对间隔 $m$。这意味着我们在任何时间段统计出来的二阶规律都可以复用，这是“平稳”最核心的工程意义。</p>
+<h3 id="4-3-hermitian-对称">4.3 Hermitian 对称</h3>
+<p>由定义可得</p>
+<p>$$
+R_{XX}[-m]=R_{XX}^*[m].
+$$</p>
+<p>证明非常短：</p>
+<p>$$
+\begin{aligned}
+R_{XX}^*[m]
+&amp;=\left(\mathrm E\{X[n+m]X^*[n]\}\right)^*\\
+&amp;=\mathrm E\{X^*[n+m]X[n]\}\\
+&amp;=R_{XX}[-m].
+\end{aligned}
+$$</p>
+<p>如果 $X[n]$ 为实序列，就退化为</p>
+<p>$$
+R_{XX}[-m]=R_{XX}[m],
+$$</p>
+<p>即自相关是偶函数。</p>
+<h3 id="4-4-自相关还有哪些重要性质">4.4 自相关还有哪些重要性质</h3>
+<p>由 Cauchy–Schwarz 不等式可得</p>
+<p>$$
+|R_{XX}[m]|\le R_{XX}[0].
+$$</p>
+<p>所以零滞后处的自相关幅值最大，而且</p>
+<p>$$
+R_{XX}[0]=\mathrm E\{|X[n]|^2\}
+$$</p>
+<p>就是平均功率。</p>
+<p>对于很多具有“短记忆”的随机过程，随着 $|m|$ 增大，协方差</p>
+<p>$$
+C_{XX}[m]\to0,
+$$</p>
+<p>意味着相距足够远的样本越来越不相关。但这不是所有平稳过程的定义要求，例如随机正弦等过程可以长期保留周期相关结构。</p>
+<h3 id="4-5-平稳不等于-值不变">4.5 平稳不等于“值不变”</h3>
+<p>平稳说的是<strong>概率规律不随时间平移而改变</strong>，不是说样本值不随时间变。白噪声每个采样点都可能剧烈变化，却可以是平稳过程；相反，$X(t)=tZ$ 即使由一个固定随机变量 $Z$ 生成，由于方差随 $t^2$ 改变，也不是 WSS。</p>
+<hr/>
+<h2 id="5-各态历经性-为什么一条长记录能代表总体">5. 各态历经性：为什么一条长记录能代表总体</h2>
+
+<h3 id="5-1-集合平均">5.1 集合平均</h3>
+<p>集合平均要求在固定时刻 $n$，对大量独立实现进行平均：</p>
+<p>$$
+\mathrm E\{X[n]\}
+\approx \frac1M\sum_{i=1}^{M}x_i[n].
+$$</p>
+<p>理论上 $M\to\infty$ 才得到真正的集合平均。现实中我们往往根本拿不到无穷多次重复实验。</p>
+<h3 id="5-2-时间平均">5.2 时间平均</h3>
+<p>如果手里只有一条很长的样本序列 $x[n]$，可以计算</p>
+<p>$$
+\bar x_T
+=\lim_{N\to\infty}\frac1N\sum_{n=0}^{N-1}x[n],
+$$</p>
+<p>以及时间自相关</p>
+<p>$$
+\bar R_x[m]
+=\lim_{N\to\infty}\frac1N\sum_{n=0}^{N-1}x[n+m]x^*[n].
+$$</p>
+<h3 id="5-3-各态历经的核心">5.3 各态历经的核心</h3>
+<p>如果一条足够长的实现所给出的时间平均，等于跨无穷多实现的集合平均，就称过程在相应统计量上具有遍历性。</p>
+<figure class="diagram" id="fig-ergodic">
+<svg aria-label="集合平均与时间平均及遍历性" role="img" viewbox="0 0 940 430">
+<defs><marker id="a2" markerheight="8" markerwidth="8" orient="auto" refx="7" refy="4"><path d="M0,0 L8,4 L0,8 z" fill="#315f91"></path></marker></defs>
+<rect fill="#fbfdff" height="428" rx="18" stroke="#dce6f0" width="938" x="1" y="1"></rect>
+<text class="svg-title" text-anchor="middle" x="215" y="48">集合平均：固定时刻，跨很多实现</text>
+<text class="svg-title" text-anchor="middle" x="725" y="48">时间平均：固定一条实现，沿时间</text>
+<line stroke="#60788f" stroke-width="2" x1="80" x2="400" y1="315" y2="315"></line><line stroke="#60788f" stroke-width="2" x1="80" x2="80" y1="315" y2="80"></line>
+<path d="M85 180 C140 110,195 250,250 170 S350 120,395 195" fill="none" stroke="#1f6fb2" stroke-width="3"></path>
+<path d="M85 235 C145 160,195 220,250 135 S340 245,395 170" fill="none" stroke="#d2782e" stroke-width="3"></path>
+<path d="M85 135 C145 225,195 105,255 230 S345 175,395 125" fill="none" stroke="#708aa1" stroke-width="3"></path>
+<line stroke="#315f91" stroke-dasharray="6 6" stroke-width="2" x1="245" x2="245" y1="80" y2="315"></line>
+<circle cx="245" cy="176" fill="#1f6fb2" r="5"></circle><circle cx="245" cy="143" fill="#d2782e" r="5"></circle><circle cx="245" cy="221" fill="#708aa1" r="5"></circle>
+<text class="svg-accent" text-anchor="middle" x="245" y="340">n=n₀</text>
+<line stroke="#60788f" stroke-width="2" x1="545" x2="870" y1="315" y2="315"></line><line stroke="#60788f" stroke-width="2" x1="545" x2="545" y1="315" y2="80"></line>
+<path d="M550 210 C600 105,650 285,700 175 S805 100,865 215" fill="none" stroke="#1f6fb2" stroke-width="4"></path>
+<line marker-end="url(#a2)" stroke="#315f91" stroke-width="2" x1="585" x2="835" y1="345" y2="345"></line>
+<text class="svg-accent" text-anchor="middle" x="710" y="375">N → 足够长</text>
+<line marker-end="url(#a2)" stroke="#315f91" stroke-width="3" x1="410" x2="525" y1="205" y2="205"></line>
+<text class="svg-accent" text-anchor="middle" x="468" y="183">遍历性</text>
+<text class="svg-label" text-anchor="middle" x="468" y="232">两种统计结果相同</text>
+<rect fill="#eef5fb" height="32" rx="10" stroke="#b9d0e5" width="440" x="250" y="385"></rect>
+<text class="svg-label" text-anchor="middle" x="470" y="407">直觉：用一条足够长的记录，“以时间换空间”</text>
+</svg>
+<figcaption>图 2　集合平均与时间平均。遍历性使单条长记录可以代表总体统计量；平稳本身并不保证遍历。</figcaption>
+</figure>
+<p>教师备注里用一句很好的话概括：<strong>“以时间换空间。”</strong></p>
+<p>但要注意：</p>
+<blockquote class="callout">
+<p>WSS 只保证统计量不随绝对时间变化；遍历性还要求单条长记录能够代表总体。平稳不自动推出遍历。</p>
+</blockquote>
+<p>这一区别解释了为什么现实中用一条记录估计均值、自相关之前，必须隐含或显式假设某种遍历性。</p>
+<hr/>
+<h2 id="6-随机信号采样-nyquist-定理仍然成立-但对象变成-psd">6. 随机信号采样：Nyquist 定理仍然成立，但对象变成 PSD</h2>
+
+<p>对于连续时间 WSS 过程，如果功率谱满足</p>
+<p>$$
+S_{XX}(\Omega)=0,\qquad |\Omega|\ge\Omega_c,
+$$</p>
+<p>则称其为带限随机信号。</p>
+<p>采样角频率需满足</p>
+<p>$$
+\boxed{\Omega_s\ge2\Omega_c,}
+$$</p>
+<p>等价地</p>
+<p>$$
+T_s\le\frac{\pi}{\Omega_c}.
+$$</p>
+<p>在临界带限条件下，可在均方意义上通过样本重建：</p>
+<p>$$
+\hat X(t)
+=\sum_{n=-\infty}^{\infty}
+X(nT_s)
+\frac{\sin[\Omega_c(t-nT_s)]}{\Omega_c(t-nT_s)},
+$$</p>
+<p>并满足</p>
+<p>$$
+\mathrm E\{|X(t)-\hat X(t)|^2\}=0.
+$$</p>
+<p>这里的“相等”不是要求每条随机样本在所有意义下逐点完全一致，而是均方误差为 0。</p>
+<h3 id="6-1-如果噪声不是带限的怎么办">6.1 如果噪声不是带限的怎么办</h3>
+<p>真实噪声往往并不天然带限。课程给出的工程回答是：</p>
+<ol>
+<li>先用模拟抗混叠滤波器限制感兴趣频带；</li>
+<li>再按滤波后的最高频率选择采样率。</li>
+</ol>
+<p>这也是“如何对随机信号采样”这类面试题真正想考的地方：不是简单背一句 $f_s\ge2f_{\max}$，而是先意识到随机信号的频带要用<strong>功率谱</strong>描述。</p>
+<hr/>
+<h2 id="7-从相关函数到功率谱-wiener-khinchin-定理">7. 从相关函数到功率谱：Wiener–Khinchin 定理</h2>
+
+<h3 id="7-1-为什么不直接对随机序列做-能量谱">7.1 为什么不直接对随机序列做“能量谱”</h3>
+<p>平稳随机序列往往无限长，因此总能量通常发散。直接把它当能量信号做 Fourier 变换并不能得到稳定的能量谱描述。</p>
+<p>但自相关函数描述的是二阶统计规律。对于合适的 WSS 过程，自相关的 Fourier 变换存在，并形成<strong>功率谱密度</strong>。</p>
+<h3 id="7-2-wiener-khinchin-对">7.2 Wiener–Khinchin 对</h3>
+<p>$$
+\boxed{
+S_{XX}(e^{j\omega})
+=\sum_{m=-\infty}^{\infty}R_{XX}[m]e^{-j\omega m}
+}
+$$</p>
+<p>以及逆变换</p>
+<p>$$
+\boxed{
+R_{XX}[m]
+=\frac{1}{2\pi}\int_{-\pi}^{\pi}
+S_{XX}(e^{j\omega})e^{j\omega m}\,\mathrm d\omega.
+}
+$$</p>
+<p>令 $m=0$：</p>
+<p>$$
+R_{XX}[0]
+=\frac{1}{2\pi}\int_{-\pi}^{\pi}S_{XX}(e^{j\omega})\,\mathrm d\omega.
+$$</p>
+<p>因此：</p>
+<blockquote class="callout">
+<p><strong>PSD 在频率上的面积，等于随机序列的平均功率。</strong></p>
+</blockquote>
+<h3 id="7-3-psd-的性质">7.3 PSD 的性质</h3>
+<p>任何 WSS 序列都有</p>
+<p>$$
+S_{XX}(e^{j\omega})\ge0.
+$$</p>
+<p>若 $X[n]$ 为实序列，则</p>
+<p>$$
+S_{XX}(e^{j\omega})=S_{XX}(e^{-j\omega}),
+$$</p>
+<p>即 PSD 为偶函数。</p>
+<p>对于复序列，PSD 仍然实且非负，但不一定关于 $\omega=0$ 偶对称。</p>
+<h3 id="7-4-三种谱的直觉">7.4 三种谱的直觉</h3>
+<figure class="diagram" id="fig-spectra">
+<svg aria-label="白噪声谱线谱和ARMA谱对比" role="img" viewbox="0 0 960 410">
+<rect fill="#fbfdff" height="408" rx="18" stroke="#dce6f0" width="958" x="1" y="1"></rect>
+<text class="svg-title" text-anchor="middle" x="175" y="45">白噪声：平谱</text><text class="svg-title" text-anchor="middle" x="480" y="45">随机谐波：线谱</text><text class="svg-title" text-anchor="middle" x="790" y="45">ARMA：连续峰谷谱</text>
+<g stroke="#60788f" stroke-width="2"><line x1="55" x2="300" y1="315" y2="315"></line><line x1="55" x2="55" y1="315" y2="85"></line><line x1="355" x2="605" y1="315" y2="315"></line><line x1="355" x2="355" y1="315" y2="85"></line><line x1="665" x2="915" y1="315" y2="315"></line><line x1="665" x2="665" y1="315" y2="85"></line></g>
+<line stroke="#1f6fb2" stroke-width="5" x1="70" x2="285" y1="175" y2="175"></line>
+<text class="svg-blue" text-anchor="middle" x="177" y="155">Sww(ω)=常数</text>
+<line stroke="#1f6fb2" stroke-width="5" x1="405" x2="405" y1="315" y2="145"></line><line stroke="#1f6fb2" stroke-width="5" x1="555" x2="555" y1="315" y2="145"></line>
+<circle cx="405" cy="145" fill="#1f6fb2" r="5"></circle><circle cx="555" cy="145" fill="#1f6fb2" r="5"></circle>
+<text class="svg-label" text-anchor="middle" x="405" y="340">−ω₀</text><text class="svg-label" text-anchor="middle" x="555" y="340">+ω₀</text>
+<path d="M680 292 C710 285,720 215,742 126 C755 82,770 230,795 260 C815 282,830 275,844 205 C854 155,868 112,878 195 C888 265,900 280,910 287" fill="none" stroke="#1f6fb2" stroke-width="4"></path>
+<text class="svg-accent" x="745" y="108">极点附近 → 峰</text><text class="svg-orange" x="805" y="295">零点附近 → 谷</text>
+<text class="svg-label" text-anchor="middle" x="175" y="373">时间上不相关 → 功率均匀分散</text><text class="svg-label" text-anchor="middle" x="480" y="373">功率集中在离散频率</text><text class="svg-label" text-anchor="middle" x="790" y="373">极点与零点共同塑造谱形</text>
+</svg>
+<figcaption>图 3　三类功率谱的直觉对比。教学重绘，对应课件 Slides 63–65。</figcaption>
+</figure>
+<p><strong>白噪声</strong>：</p>
+<p>$$
+R_{WW}[m]=\sigma_W^2\delta[m]
+\quad\Longleftrightarrow\quad
+S_{WW}(e^{j\omega})=\sigma_W^2.
+$$</p>
+<p>不同时间样本不相关，所以所有频率上功率均匀分布。</p>
+<p>若白噪声还是联合高斯的，则“不相关”进一步推出“独立”。</p>
+<p><strong>线谱</strong>：随机相位正弦的功率集中在有限几个频率上，对应若干谱线。</p>
+<p><strong>ARMA 连续谱</strong>：极点和零点共同塑造连续谱，既可以出现峰，也可以出现谷。它把“统计谱形”与“线性系统模型”联系起来，为 1.6 节做铺垫。</p>
+<hr/>
+<h2 id="8-有限数据下的统计量估计">8. 有限数据下的统计量估计</h2>
+
+<p>真实问题里，我们并不知道 $\mu_X,R_{XX},S_{XX}$ 的真值，只拥有有限个观测样本。因此必须从“随机过程统计量”转入“估计量”。</p>
+<h3 id="8-1-无偏性-有效性-一致性">8.1 无偏性、有效性、一致性</h3>
+<p>设待估参数为 $\theta$，估计量为 $\hat\theta$。</p>
+<p>偏差定义为</p>
+<p>$$
+b_\theta=\mathrm E\{\hat\theta\}-\theta.
+$$</p>
+<p>若 $b_\theta=0$，称为无偏；若</p>
+<p>$$
+\lim_{N\to\infty}\mathrm E\{\hat\theta\}=\theta,
+$$</p>
+<p>则称为渐近无偏。</p>
+<p>对两个无偏估计量，方差越小，估计结果越集中，通常称为更有效。</p>
+<p>一致性强调样本数增加后估计量真正收敛到参数真值。均方意义下常写成</p>
+<p>$$
+\lim_{N\to\infty}
+\mathrm E\{|\hat\theta-\theta|^2\}=0.
+$$</p>
+<p>最重要的关系是</p>
+<p>$$
+\boxed{
+\operatorname{MSE}(\hat\theta)
+=\operatorname{var}(\hat\theta)+|b_\theta|^2.
+}
+$$</p>
+<figure class="diagram" id="fig-bias-variance">
+<svg aria-label="偏差方差和均方误差的关系" role="img" viewbox="0 0 940 430">
+<rect fill="#fbfdff" height="428" rx="18" stroke="#dce6f0" width="938" x="1" y="1"></rect>
+<text class="svg-title" text-anchor="middle" x="235" y="45">估计器 A：偏差小，但方差较大</text><text class="svg-title" text-anchor="middle" x="705" y="45">估计器 B：略有偏差，但方差更小</text>
+<line stroke="#60788f" stroke-width="2" x1="65" x2="420" y1="310" y2="310"></line><line stroke="#60788f" stroke-width="2" x1="525" x2="880" y1="310" y2="310"></line>
+<line stroke="#c96d25" stroke-dasharray="7 6" stroke-width="2" x1="245" x2="245" y1="75" y2="330"></line><line stroke="#c96d25" stroke-dasharray="7 6" stroke-width="2" x1="705" x2="705" y1="75" y2="330"></line>
+<text class="svg-orange" text-anchor="middle" x="245" y="350">真值 θ</text><text class="svg-orange" text-anchor="middle" x="705" y="350">真值 θ</text>
+<path d="M75 305 C125 300,145 275,170 220 C190 165,218 125,248 115 C280 125,305 165,326 220 C350 275,375 300,410 305" fill="rgba(31,111,178,.11)" stroke="#1f6fb2" stroke-width="4"></path>
+<path d="M535 305 C590 305,615 295,635 255 C650 205,667 165,683 145 C700 125,718 137,735 170 C750 205,765 260,785 285 C805 303,840 305,870 305" fill="rgba(31,111,178,.11)" stroke="#1f6fb2" stroke-width="4"></path>
+<line stroke="#315f91" stroke-width="2" x1="680" x2="680" y1="105" y2="310"></line>
+<text class="svg-accent" text-anchor="middle" x="680" y="92">E{θ̂}</text>
+<line stroke="#315f91" stroke-width="2" x1="680" x2="705" y1="375" y2="375"></line><text class="svg-label" text-anchor="middle" x="692" y="400">bias</text>
+<rect fill="#eef5fb" height="48" rx="12" stroke="#b9d0e5" width="400" x="270" y="365"></rect>
+<text class="svg-accent" text-anchor="middle" x="470" y="396">MSE = variance + bias²</text>
+</svg>
+<figcaption>图 4　Bias–Variance–MSE 的概念图。无偏不是唯一目标，实际设计常在偏差与方差之间折中。</figcaption>
+</figure>
+<p>这说明“无偏”并不等于“最好”。有时允许少量偏差，可以显著降低方差，使总 MSE 更小。</p>
+<h3 id="8-2-均值估计">8.2 均值估计</h3>
+<p>最自然的样本均值是</p>
+<p>$$
+\hat\mu_X=\frac1N\sum_{n=0}^{N-1}x[n].
+$$</p>
+<p>若过程均值为常数，则</p>
+<p>$$
+\mathrm E\{\hat\mu_X\}=\mu_X,
+$$</p>
+<p>所以它是无偏估计。</p>
+<p>如果样本相互不相关且方差为 $\sigma_X^2$，则</p>
+<p>$$
+\operatorname{var}(\hat\mu_X)=\frac{\sigma_X^2}{N}.
+$$</p>
+<p>若样本之间相关，方差会出现额外的相关项。直觉上：虽然记录了 $N$ 个数字，但相邻样本如果“很像”，独立信息量就少于 $N$。</p>
+<h3 id="8-3-方差估计-为什么有-n-和-n-1">8.3 方差估计：为什么有 $N$ 和 $N-1$</h3>
+<p>如果均值 $\mu_X$ 已知，可使用</p>
+<p>$$
+\hat\sigma_X^2
+=\frac1N\sum_{n=0}^{N-1}|x[n]-\mu_X|^2.
+$$</p>
+<p>如果均值未知、要用样本均值 $\bar x$ 代替，则常见无偏估计为</p>
+<p>$$
+\boxed{
+\hat\sigma_X^2
+=\frac{1}{N-1}\sum_{n=0}^{N-1}|x[n]-\bar x|^2.
+}
+$$</p>
+<p>少掉的 1 个自由度来自约束</p>
+<p>$$
+\sum_{n=0}^{N-1}(x[n]-\bar x)=0.
+$$</p>
+<h3 id="8-4-自相关-无偏估计和有偏估计为什么都存在">8.4 自相关：无偏估计和有偏估计为什么都存在</h3>
+<p>对于 $m\ge0$，无偏形式常写为</p>
+<p>$$
+\hat R_u[m]
+=\frac{1}{N-m}\sum_{n=0}^{N-m-1}x[n+m]x^*[n].
+$$</p>
+<p>它用真实存在的 $N-m$ 对样本做平均，因此</p>
+<p>$$
+\mathrm E\{\hat R_u[m]\}=R_{XX}[m].
+$$</p>
+<p>另一种形式固定除以 $N$：</p>
+<p>$$
+\hat R_b[m]
+=\frac1N\sum_{n=0}^{N-m-1}x[n+m]x^*[n].
+$$</p>
+<p>其期望为</p>
+<p>$$
+\mathrm E\{\hat R_b[m]\}
+=\left(1-\frac{m}{N}\right)R_{XX}[m],
+$$</p>
+<p>即真实相关函数乘上 Bartlett 三角窗。</p>
+<p>虽然它是有偏的，但随着 $N\to\infty$，固定 $m$ 下偏差趋于 0；同时它往往具有更小的估计方差，并且由它形成的相关矩阵/谱估计具有更好的结构性质。因此工程上“有偏自相关估计”并不是低级近似，而是典型的 bias–variance tradeoff。</p>
+<hr/>
+<h2 id="9-平稳随机序列通过-lti-系统">9. 平稳随机序列通过 LTI 系统</h2>
+
+<p>设稳定 LTI 系统冲激响应为 $h[n]$，输入 WSS 随机序列 $X[n]$：</p>
+<p>$$
+Y[n]=\sum_{k=-\infty}^{\infty}h[k]X[n-k].
+$$</p>
+<figure class="diagram" id="fig-lti-random">
+<svg aria-label="平稳随机序列通过LTI系统的统计量传播" role="img" viewbox="0 0 960 390">
+<defs><marker id="a5" markerheight="8" markerwidth="8" orient="auto" refx="7" refy="4"><path d="M0,0 L8,4 L0,8 z" fill="#60788f"></path></marker></defs>
+<rect fill="#fbfdff" height="388" rx="18" stroke="#dce6f0" width="958" x="1" y="1"></rect>
+<rect fill="#eef5fb" height="125" rx="16" stroke="#9dbbd6" width="235" x="55" y="90"></rect><rect fill="#fff" height="105" rx="16" stroke="#9dbbd6" width="210" x="365" y="100"></rect><rect fill="#eef5fb" height="125" rx="16" stroke="#9dbbd6" width="250" x="650" y="90"></rect>
+<text class="svg-title" text-anchor="middle" x="172" y="122">输入 WSS：X[n]</text><text class="svg-label" text-anchor="middle" x="172" y="155">均值 μX</text><text class="svg-label" text-anchor="middle" x="172" y="180">自相关 RXX[m]</text><text class="svg-label" text-anchor="middle" x="172" y="205">功率谱 SXX(eʲω)</text>
+<text class="svg-title" text-anchor="middle" x="470" y="140">LTI 系统</text><text class="svg-accent" text-anchor="middle" x="470" y="175">h[n] ↔ H(eʲω)</text>
+<text class="svg-title" text-anchor="middle" x="775" y="122">输出 WSS：Y[n]</text><text class="svg-label" text-anchor="middle" x="775" y="155">均值 μY</text><text class="svg-label" text-anchor="middle" x="775" y="180">自相关 RYY[m]</text><text class="svg-label" text-anchor="middle" x="775" y="205">功率谱 SYY(eʲω)</text>
+<line marker-end="url(#a5)" stroke="#60788f" stroke-width="3" x1="290" x2="360" y1="153" y2="153"></line><line marker-end="url(#a5)" stroke="#60788f" stroke-width="3" x1="575" x2="645" y1="153" y2="153"></line>
+<rect fill="#f6f9fc" height="82" rx="14" stroke="#d1dde7" width="730" x="115" y="265"></rect>
+<text class="svg-accent" text-anchor="middle" x="480" y="295">时域统计：RYY[m] = RXX[m] * Rhh[m]</text>
+<text class="svg-accent" text-anchor="middle" x="480" y="328">频域统计：SYY(eʲω) = |H(eʲω)|² SXX(eʲω)</text>
+</svg>
+<figcaption>图 5　WSS 随机序列通过稳定 LTI 系统时的统计量传播。课件 Slides 89–98 的结构化重绘。</figcaption>
+</figure>
+<h3 id="9-1-输出均值">9.1 输出均值</h3>
+<p>利用期望的线性性：</p>
+<p>$$
+\begin{aligned}
+\mu_Y
+&amp;=\mathrm E\{Y[n]\}\\
+&amp;=\sum_k h[k]\mathrm E\{X[n-k]\}\\
+&amp;=\mu_X\sum_k h[k]\\
+&amp;=\boxed{\mu_X H(e^{j0})}.
+\end{aligned}
+$$</p>
+<h3 id="9-2-输出自相关">9.2 输出自相关</h3>
+<p>定义确定性序列 $h[n]$ 的自相关</p>
+<p>$$
+R_{hh}[m]=\sum_k h[k+m]h^*[k].
+$$</p>
+<p>可以推导出</p>
+<p>$$
+\boxed{R_{YY}[m]=(R_{XX}*R_{hh})[m].}
+$$</p>
+<p>这就是课件强调的“相关卷积定理”的核心形式：<strong>卷积后的相关，可以由输入相关与系统自身相关再做一次卷积得到。</strong></p>
+<h3 id="9-3-输出功率谱">9.3 输出功率谱</h3>
+<p>对上式做 DTFT：</p>
+<p>$$
+\boxed{
+S_{YY}(e^{j\omega})
+=|H(e^{j\omega})|^2S_{XX}(e^{j\omega}).
+}
+$$</p>
+<p>这条式子极其重要：LTI 系统对随机信号的功率谱作用，不是乘 $H$，而是乘<strong>幅频响应平方</strong> $|H|^2$。</p>
+<h3 id="9-4-例-白噪声通过一阶系统">9.4 例：白噪声通过一阶系统</h3>
+<p>课件考虑</p>
+<p>$$
+y[n]=x[n]+a y[n-1],\qquad |a|&lt;1,
+$$</p>
+<p>因此</p>
+<p>$$
+H(z)=\frac{1}{1-a z^{-1}}.
+$$</p>
+<p>若 $x[n]$ 是零均值白噪声，方差为 $\sigma_X^2$：</p>
+<p>$$
+S_{XX}(e^{j\omega})=\sigma_X^2.
+$$</p>
+<p>输出功率谱为</p>
+<p>$$
+\boxed{
+S_{YY}(e^{j\omega})
+=\frac{\sigma_X^2}{1+a^2-2a\cos\omega}.
+}
+$$</p>
+<p>相应自相关为</p>
+<p>$$
+\boxed{
+R_{YY}[m]
+=\frac{\sigma_X^2}{1-a^2}a^{|m|}.
+}
+$$</p>
+<p>这里写成 $a^{|m|}$，是因为实 WSS 自相关必须是偶函数。课件抽取文本在正滞后推导中显示 $a^m$，对负滞后应由对称性补齐为 $a^{|m|}$。</p>
+<p>这个例子正好展示同一问题的两条路线：</p>
+<ul>
+<li>时域：利用差分方程 + 相关性递推；</li>
+<li>频域：利用 $S_{YY}=|H|^2S_{XX}$。</li>
+</ul>
+<p>二者必须给出同一统计结果。</p>
+<hr/>
+<h2 id="10-时间序列模型-把统计规律变成-生成系统">10. 时间序列模型：把统计规律变成“生成系统”</h2>
+
+<h3 id="10-1-arma-是统一模型">10.1 ARMA 是统一模型</h3>
+<p>课件把平稳随机序列写成</p>
+<p>$$
+\begin{aligned}
+X[n]+\sum_{k=1}^{p}a_kX[n-k]
+&amp;=W[n]\\
+&amp;\quad+\sum_{k=1}^{q}b_kW[n-k].
+\end{aligned}
+$$</p>
+<p>其中 $W[n]$ 是零均值白噪声，方差 $\sigma_W^2$。</p>
+<p>定义</p>
+<p>$$
+\begin{aligned}
+A(z)&amp;=1+\sum_{k=1}^{p}a_kz^{-k},\\
+B(z)&amp;=1+\sum_{k=1}^{q}b_kz^{-k}.
+\end{aligned}
+$$</p>
+<p>则</p>
+<p>$$
+H(z)=\frac{X(z)}{W(z)}=\frac{B(z)}{A(z)}.
+$$</p>
+<p>于是</p>
+<p>$$
+\boxed{
+S_{XX}(e^{j\omega})
+=\sigma_W^2
+\frac{|B(e^{j\omega})|^2}{|A(e^{j\omega})|^2}.
+}
+$$</p>
+<figure class="diagram" id="fig-arma">
+<svg aria-label="AR MA ARMA生成模型及谱形直觉" role="img" viewbox="0 0 980 520">
+<defs><marker id="a6" markerheight="8" markerwidth="8" orient="auto" refx="7" refy="4"><path d="M0,0 L8,4 L0,8 z" fill="#60788f"></path></marker></defs>
+<rect fill="#fbfdff" height="518" rx="18" stroke="#dce6f0" width="978" x="1" y="1"></rect>
+<text class="svg-title" text-anchor="middle" x="490" y="42">同一个思想：白噪声 W[n] 经过不同线性模型，生成不同随机谱形</text>
+<g>
+<rect fill="#eef5fb" height="150" rx="15" stroke="#9dbbd6" width="255" x="45" y="85"></rect><rect fill="#eef5fb" height="150" rx="15" stroke="#9dbbd6" width="255" x="360" y="85"></rect><rect fill="#eef5fb" height="150" rx="15" stroke="#9dbbd6" width="255" x="675" y="85"></rect>
+<text class="svg-title" text-anchor="middle" x="172" y="116">MA(q)：全零点</text><text class="svg-title" text-anchor="middle" x="487" y="116">AR(p)：全极点</text><text class="svg-title" text-anchor="middle" x="802" y="116">ARMA(p,q)</text>
+<text class="svg-label" x="72" y="155">W[n]</text><text class="svg-accent" x="185" y="155">B(z)</text><text class="svg-label" x="265" y="155">X[n]</text>
+<line marker-end="url(#a6)" stroke="#60788f" stroke-width="2" x1="115" x2="172" y1="150" y2="150"></line><line marker-end="url(#a6)" stroke="#60788f" stroke-width="2" x1="220" x2="255" y1="150" y2="150"></line>
+<text class="svg-label" x="387" y="155">W[n]</text><text class="svg-accent" x="478" y="155">1/A(z)</text><text class="svg-label" x="580" y="155">X[n]</text>
+<line marker-end="url(#a6)" stroke="#60788f" stroke-width="2" x1="430" x2="465" y1="150" y2="150"></line><line marker-end="url(#a6)" stroke="#60788f" stroke-width="2" x1="530" x2="568" y1="150" y2="150"></line>
+<text class="svg-label" x="697" y="155">W[n]</text><text class="svg-accent" x="785" y="155">B(z)/A(z)</text><text class="svg-label" x="895" y="155">X[n]</text>
+<line marker-end="url(#a6)" stroke="#60788f" stroke-width="2" x1="740" x2="772" y1="150" y2="150"></line><line marker-end="url(#a6)" stroke="#60788f" stroke-width="2" x1="850" x2="887" y1="150" y2="150"></line>
+<text class="svg-orange" text-anchor="middle" x="172" y="205">零点靠近单位圆 → 谱谷</text><text class="svg-blue" text-anchor="middle" x="487" y="205">极点靠近单位圆 → 谱峰</text><text class="svg-accent" text-anchor="middle" x="802" y="205">峰和谷都能描述</text>
+</g>
+<g stroke="#60788f" stroke-width="2"><line x1="65" x2="290" y1="420" y2="420"></line><line x1="65" x2="65" y1="420" y2="275"></line><line x1="375" x2="600" y1="420" y2="420"></line><line x1="375" x2="375" y1="420" y2="275"></line><line x1="685" x2="910" y1="420" y2="420"></line><line x1="685" x2="685" y1="420" y2="275"></line></g>
+<path d="M75 330 C110 320,125 350,150 405 C170 445,195 330,220 318 C245 315,260 330,282 338" fill="none" stroke="#1f6fb2" stroke-width="4"></path>
+<path d="M385 405 C420 395,445 370,465 285 C478 245,492 370,515 400 C540 415,565 408,592 400" fill="none" stroke="#1f6fb2" stroke-width="4"></path>
+<path d="M695 395 C725 380,740 305,755 270 C770 245,785 390,805 408 C825 420,840 350,852 300 C865 255,880 380,900 395" fill="none" stroke="#1f6fb2" stroke-width="4"></path>
+<text class="svg-label" text-anchor="middle" x="177" y="465">MA：更擅长刻画“谷”</text><text class="svg-label" text-anchor="middle" x="487" y="465">AR：更擅长刻画“峰”</text><text class="svg-label" text-anchor="middle" x="797" y="465">ARMA：峰谷兼有</text>
+</svg>
+<figcaption>图 6　AR、MA、ARMA 的生成结构与谱形直觉。教学重绘，对应课件 Slides 108–126。</figcaption>
+</figure>
+<h3 id="10-2-ma-零点塑造-谷">10.2 MA：零点塑造“谷”</h3>
+<p>令 $A(z)=1$：</p>
+<p>$$
+X[n]=\sum_{k=0}^{q}b_kW[n-k],
+$$</p>
+<p>得到 MA($q$) 模型。</p>
+<p>$$
+S_{XX}(e^{j\omega})
+=\sigma_W^2|B(e^{j\omega})|^2.
+$$</p>
+<p>零点靠近单位圆时，对应频率的幅度被压低，因此谱中出现深谷。</p>
+<h3 id="10-3-ar-极点塑造-峰">10.3 AR：极点塑造“峰”</h3>
+<p>令 $B(z)=1$：</p>
+<p>$$
+X[n]+\sum_{k=1}^{p}a_kX[n-k]=W[n],
+$$</p>
+<p>得到 AR($p$) 模型。</p>
+<p>$$
+S_{XX}(e^{j\omega})
+=\frac{\sigma_W^2}{|A(e^{j\omega})|^2}.
+$$</p>
+<p>极点靠近单位圆时，分母在对应角频率附近变小，于是 PSD 出现尖峰。</p>
+<p>因此有一个非常好用的谱形直觉：</p>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>结构</th>
+<th>常见谱形特征</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MA</td>
+<td>全零点</td>
+<td>适合形成谱谷</td>
+</tr>
+<tr>
+<td>AR</td>
+<td>全极点</td>
+<td>适合形成谱峰</td>
+</tr>
+<tr>
+<td>ARMA</td>
+<td>极点 + 零点</td>
+<td>同时描述峰和谷</td>
+</tr>
+</tbody>
+</table>
+<h3 id="10-4-阶数和-滤波器长度-不是同一回事">10.4 阶数和“滤波器长度”不是同一回事</h3>
+<p>FIR/MA 的冲激响应有限，因此长度是系数个数；若 MA($q$) 有 $q+1$ 个系数，模型阶数是 $q$。</p>
+<p>IIR/AR/ARMA 的冲激响应一般无限长，因此不能把“冲激响应长度”当模型阶数。AR($p$) 的阶数来自递推差分方程中最远的历史状态 $X[n-p]$。</p>
+<h3 id="10-5-wold-与-kolmogorov-为什么这些模型有普遍意义">10.5 Wold 与 Kolmogorov：为什么这些模型有普遍意义</h3>
+<p>课程引用 Wold 分解来说明：具有适当条件的平稳随机过程可以看成“确定性部分 + 白噪声经过线性系统形成的随机部分”。这使 MA($\infty$) 成为非常普遍的表示。</p>
+<p>另一方面，在可逆条件下，MA 过程也可写成无限阶 AR：</p>
+<p>$$
+X(z)=B(z)W(z),
+$$</p>
+<p>若 $B^{-1}(z)$ 稳定存在，令</p>
+<p>$$
+B^{-1}(z)=1+g_1z^{-1}+g_2z^{-2}+\cdots,
+$$</p>
+<p>则</p>
+<p>$$
+X[n]+g_1X[n-1]+g_2X[n-2]+\cdots=W[n].
+$$</p>
+<p>这就是“足够高阶 AR 可以逼近很多平稳随机序列”的直觉来源。</p>
+<h3 id="10-6-ar-的相关方程-yule-walker">10.6 AR 的相关方程：Yule–Walker</h3>
+<p>由</p>
+<p>$$
+X[n]+\sum_{k=1}^{p}a_kX[n-k]=W[n]
+$$</p>
+<p>两边乘 $X^*[n-m]$ 并取期望。对于 $m\ge1$，当前创新 $W[n]$ 与过去 $X[n-m]$ 正交，因此</p>
+<p>$$
+\boxed{
+\begin{aligned}
+R_{XX}[m]+\sum_{k=1}^{p}a_kR_{XX}[m-k]&amp;=0,\\
+m&amp;\ge1.
+\end{aligned}}
+$$</p>
+<p>当 $m=0$ 时，右侧留下创新方差：</p>
+<p>$$
+R_{XX}[0]+\sum_{k=1}^{p}a_kR_{XX}[-k]
+=\sigma_W^2.
+$$</p>
+<p>这组方程将在后续 Wiener 预测中再次出现。它表明：</p>
+<blockquote class="callout">
+<p>AR 系数、相关函数、线性预测器，本质上是同一个二阶统计结构的不同表达。</p>
+</blockquote>
+<h3 id="10-7-从功率谱反推模型-谱分解">10.7 从功率谱反推模型：谱分解</h3>
+<p>如果 PSD 是有理谱，可以写成</p>
+<p>$$
+S_{XX}(z)
+=\sigma_W^2H(z)H^*\!\left(\frac{1}{z^*}\right).
+$$</p>
+<p>由于实平稳过程的谱具有共轭倒数成对结构，一个 PSD 往往存在多种代数因子。要把它解释成<strong>因果、稳定、可逆</strong>的生成模型，通常选取单位圆内的极点和零点构造最小相位谱因子 $H(z)$。</p>
+<p>这一步把第一章几条线真正闭环：</p>
+<p>$$
+\boxed{
+\begin{gathered}
+R_{XX}[m]\\
+\updownarrow\;\text{DTFT}\\
+S_{XX}(e^{j\omega})\\
+\updownarrow\;\text{谱分解}\\
+H(z)\text{ + 白噪声模型}
+\end{gathered}}
+$$</p>
+<hr/>
+<h2 id="11-第一章总复盘-把概念放回一张地图">11. 第一章总复盘：把概念放回一张地图</h2>
+<p>第一章不是六段互不相关的知识，而是一条逐步压缩随机信息的链：</p>
+<ol>
+<li><strong>随机过程</strong>给出完整概率描述框架；</li>
+<li><strong>均值/相关函数</strong>把问题压缩到一阶、二阶统计；</li>
+<li><strong>平稳性</strong>让这些统计规律能够跨时间复用；</li>
+<li><strong>遍历性</strong>让一条长记录可以估计总体统计量；</li>
+<li><strong>Wiener–Khinchin</strong>把相关结构搬到频域，得到 PSD；</li>
+<li><strong>有限样本估计</strong>解决“真统计量未知”的现实问题；</li>
+<li><strong>LTI 传播规律</strong>告诉我们随机统计量经过系统怎样变化；</li>
+<li><strong>AR/MA/ARMA</strong>进一步把统计规律压缩成一个白噪声驱动的生成模型。</li>
+</ol>
+<p>如果只记住四条主公式，优先记这四条：</p>
+<p>$$
+R_{XX}[m]=\mathrm E\{X[n+m]X^*[n]\},
+$$</p>
+<p>$$
+S_{XX}(e^{j\omega})
+=\sum_mR_{XX}[m]e^{-j\omega m},
+$$</p>
+<p>$$
+S_{YY}(e^{j\omega})
+=|H(e^{j\omega})|^2S_{XX}(e^{j\omega}),
+$$</p>
+<p>$$
+S_{XX}(e^{j\omega})
+=\sigma_W^2\frac{|B(e^{j\omega})|^2}{|A(e^{j\omega})|^2}.
+$$</p>
+<p>它们分别回答：</p>
+<ul>
+<li>时间上的依赖怎样描述？</li>
+<li>时间相关怎样变成频率功率分布？</li>
+<li>统计信号经过系统会怎样？</li>
+<li>一个随机序列怎样由白噪声和模型生成？</li>
+</ul>
+<p>下一章 Wiener 滤波会直接使用这里的 $R_{XX}$、$S_{XX}$、谱分解和 MSE 概念，把“描述随机信号”推进到“设计最优线性估计器”。</p>
+<hr/>
+<h2 id="来源说明">来源说明</h2>
+<ul>
+<li>主线：<code>Chapter 1(2).pptx</code>，Slides 1–128，包含授课备注。</li>
+<li>辅助核验：<code>时域离散随机信号处理.pdf</code>（260 页扫描型教材），按需用于公式/图形核验，不进行盲目整本 OCR。</li>
+<li>本笔记对 PPT 中纯文本抽取失真的公式进行了数学结构重建，并统一了复随机序列共轭、相关函数、PSD、ARMA 等符号。凡属于标准数学补充而非课件逐字内容，均服务于解释原课件知识链，不冒充原文。</li>
+</ul>
+<section class="source-panel">
+<strong>来源追溯</strong><br>
+主线资料：根目录 <code>现代数字信号处理/Chapter 1(2).pptx</code>，共 128 张幻灯片，包含授课备注。辅助资料：<code>时域离散随机信号处理.pdf</code>，共 260 页，为扫描型教材，仅在公式或图形存在歧义时按需核验。<br><br>
+本章不是逐页抄录，而是依据课件 1.1–1.6 的知识依赖重构。课件文本抽取中失真的分式、上下标与共轭符号已按原上下文和标准随机信号处理定义重建；补充的 Yule–Walker 等连接性推导用于帮助理解后续 Wiener 预测，并非冒充课件逐字内容。
+</section>
+<div class="footer">学习笔记项目 · 现代数字信号处理 · ChatGPT-AgentDock / Codex 协作工作流 · 2026-09-25</div>
+</main></div>
+<script>const bar=document.getElementById('progress');const links=[...document.querySelectorAll('.toc a')];
+function update(){const d=document.documentElement;const m=d.scrollHeight-d.clientHeight;bar.style.width=(m?d.scrollTop/m*100:0)+'%';}
+window.addEventListener('scroll',update,{passive:true});update();
+const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+e.target.id));}})},{rootMargin:'-15% 0px -72% 0px'});
+document.querySelectorAll('h2[id],h3[id]').forEach(h=>obs.observe(h));
+</script>
+</body></html>

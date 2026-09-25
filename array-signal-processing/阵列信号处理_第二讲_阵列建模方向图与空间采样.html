@@ -1,0 +1,522 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"><title>阵列信号处理｜第二讲：阵列建模、方向图与空间采样</title><script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']]},svg:{fontCache:'global'}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script><style>:root{--ink:#20303d;--muted:#627385;--line:#dce5ed;--paper:#fff;--soft:#f6f9fc;--blue:#1f6fb2;--blue2:#315f91;--orange:#c96d25;--shadow:0 12px 34px rgba(41,63,82,.08);}
+*{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;background:#f3f6f9;color:var(--ink);font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;line-height:1.82;font-size:16px}
+#progress{position:fixed;top:0;left:0;height:3px;background:var(--blue);width:0;z-index:50}
+.layout{display:grid;grid-template-columns:280px minmax(0,860px);gap:32px;max-width:1210px;margin:0 auto;padding:34px 24px 80px}
+.sidebar{position:sticky;top:22px;height:calc(100vh - 44px);overflow:auto;padding:18px 16px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.92);box-shadow:var(--shadow)}
+.brand{font-weight:700;color:#173c5c;margin:3px 8px 14px} .toc{display:flex;flex-direction:column;gap:2px} .toc a{text-decoration:none;color:#536779;border-radius:8px;padding:7px 9px;font-size:13px;line-height:1.4} .toc a:hover,.toc a.active{background:#edf4fa;color:#174e7e} .toc-sub{padding-left:22px!important;font-size:12.5px!important}
+.article{background:var(--paper);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:54px 68px;min-width:0}
+.hero{border-bottom:1px solid var(--line);padding-bottom:30px;margin-bottom:36px} .eyebrow{color:var(--blue);font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase} h1{font-size:35px;line-height:1.25;margin:10px 0 15px;color:#17344d} .lead{font-size:17px;color:#596d7f;max-width:720px;margin:0} .meta{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px} .chip{font-size:12px;padding:5px 9px;border-radius:999px;background:#edf4fa;color:#315f91;border:1px solid #d2e2ef}
+h2{font-size:25px;line-height:1.35;color:#183e5d;margin:54px 0 18px;padding-top:4px} h3{font-size:19px;line-height:1.4;color:#28516f;margin:34px 0 12px} p{margin:12px 0} strong{color:#193b56} code{font-family:"Cascadia Mono",Consolas,monospace;background:#f0f4f7;border:1px solid #e1e8ee;padding:.08em .34em;border-radius:5px;font-size:.92em}
+hr{border:0;border-top:1px solid var(--line);margin:42px 0} ul,ol{padding-left:1.55em} li{margin:.35em 0}
+blockquote.callout{margin:22px 0;padding:14px 18px;border-left:4px solid var(--blue);background:#f3f8fc;border-radius:0 10px 10px 0;color:#405669}
+table{width:100%;border-collapse:collapse;margin:20px 0 28px;font-size:14.5px} th,td{border:1px solid #dce5ed;padding:10px 12px;text-align:left;vertical-align:top} th{background:#eef5fa;color:#294f6d} tr:nth-child(even) td{background:#fbfcfd}
+.diagram{margin:28px 0 34px;padding:16px;border:1px solid var(--line);border-radius:16px;background:#fbfdff;overflow:hidden} .diagram svg{width:100%;height:auto;display:block} figcaption{text-align:center;color:#657889;font-size:13px;margin-top:10px} .svg-label{font:16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#415466} .svg-title{font:600 17px "Segoe UI","Microsoft YaHei",sans-serif;fill:#294f6d} .svg-accent{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#315f91} .svg-blue{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#1f6fb2} .svg-orange{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#c96d25}
+.formula-note{font-size:13px;color:var(--muted)} mjx-container{color:#172a3a} mjx-container[display="true"]{margin:1.35em 0!important;max-width:100%;overflow-x:auto;overflow-y:hidden;padding:.18em .25em .24em;text-align:center;scrollbar-width:thin;scrollbar-color:#c7d5e1 transparent} mjx-container[display="true"]>svg{display:inline-block;vertical-align:middle} mjx-container:not([display="true"]){font-size:1.01em}
+.source-panel{margin-top:52px;padding:22px;border:1px solid var(--line);background:#f8fafc;border-radius:14px;color:#526779;font-size:14px} .source-panel a{color:var(--blue)}
+.footer{margin-top:38px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:#7a8997;text-align:center}
+@media(max-width:980px){.layout{grid-template-columns:1fr;max-width:900px}.sidebar{position:relative;top:0;height:auto;max-height:340px}.article{padding:42px 34px}}
+@media(max-width:600px){body{font-size:15px}.layout{padding:12px 8px 50px}.sidebar{display:none}.article{padding:30px 20px;border-radius:12px}h1{font-size:28px}h2{font-size:22px}.diagram{padding:5px}mjx-container[display="true"]{font-size:.96em;margin:1.1em 0!important}}
+@media print{body{background:white;font-size:10.5pt}#progress,.sidebar{display:none!important}.layout{display:block;max-width:none;padding:0}.article{border:0;box-shadow:none;padding:0}.hero{margin-top:0}h2,h3{break-after:avoid-page}.diagram,table,blockquote,mjx-container[display="true"]{break-inside:avoid}mjx-container[display="true"]{overflow:visible}a{color:inherit;text-decoration:none}}
+</style></head><body><div id="progress"></div><div class="layout"><aside class="sidebar"><div class="brand">阵列信号处理</div><nav class="toc"><a class="toc-main" href="#0-为什么阵列处理首先关心波长">0. 为什么阵列处理首先关心波长</a>
+<a class="toc-main" href="#1-窄带假设-为什么一个时延可以只写成一个相位">1. 窄带假设：为什么一个时延可以只写成一个相位</a>
+<a class="toc-sub" href="#1-1-两种-窄带-判断">1.1 两种“窄带”判断</a>
+<a class="toc-sub" href="#1-2-窄带近似到底省掉了什么">1.2 窄带近似到底省掉了什么</a>
+<a class="toc-main" href="#2-远场假设-为什么来波可以看成平行平面波">2. 远场假设：为什么来波可以看成平行平面波</a>
+<a class="toc-sub" href="#2-1-近场中每个阵元到信源距离都不一样">2.1 近场中每个阵元到信源距离都不一样</a>
+<a class="toc-sub" href="#2-2-远场条件就是让二次项小到可以忽略">2.2 远场条件就是让二次项小到可以忽略</a>
+<a class="toc-sub" href="#2-3-窄带和远场解决的是两个不同问题">2.3 窄带和远场解决的是两个不同问题</a>
+<a class="toc-main" href="#3-噪声-为什么阵列课里会反复出现协方差矩阵">3. 噪声：为什么阵列课里会反复出现协方差矩阵</a>
+<a class="toc-main" href="#4-ula-单源模型-从几何到导向矢量">4. ULA 单源模型：从几何到导向矢量</a>
+<a class="toc-sub" href="#4-1-统一编号约定">4.1 统一编号约定</a>
+<a class="toc-sub" href="#4-2-导向矢量">4.2 导向矢量</a>
+<a class="toc-sub" href="#4-3-导向矢量的物理意义">4.3 导向矢量的物理意义</a>
+<a class="toc-main" href="#5-多源模型-为什么会出现-vandermonde-导向矩阵">5. 多源模型：为什么会出现 Vandermonde 导向矩阵</a>
+<a class="toc-main" href="#6-二阶统计-从瞬时数据到协方差结构">6. 二阶统计：从瞬时数据到协方差结构</a>
+<a class="toc-sub" href="#6-1-为什么-mathbf-r-x-是-hermitian">6.1 为什么 $\mathbf R_x$ 是 Hermitian</a>
+<a class="toc-main" href="#7-阵列方向图-权值如何-选择空间方向">7. 阵列方向图：权值如何“选择空间方向”</a>
+<a class="toc-sub" href="#7-1-把主瓣指向-theta-0">7.1 把主瓣指向 $\theta_0$</a>
+<a class="toc-main" href="#8-栅瓣-空间采样出现了-混叠">8. 栅瓣：空间采样出现了“混叠”</a>
+<a class="toc-main" href="#9-波束宽度-孔径为什么决定角分辨率">9. 波束宽度：孔径为什么决定角分辨率</a>
+<a class="toc-sub" href="#9-1-扫描越偏-波束越宽">9.1 扫描越偏，波束越宽</a>
+<a class="toc-main" href="#10-空间频率-把-角度-改写成-离散频率">10. 空间频率：把“角度”改写成“离散频率”</a>
+<a class="toc-main" href="#11-从均匀线阵推广到任意阵列">11. 从均匀线阵推广到任意阵列</a>
+<a class="toc-main" href="#12-第二讲总复盘-第三讲需要带走什么">12. 第二讲总复盘：第三讲需要带走什么</a>
+<a class="toc-sub" href="#12-1-课件-matlab-作业应该验证什么">12.1 课件 MATLAB 作业应该验证什么</a>
+<a class="toc-main" href="#来源说明">来源说明</a></nav></aside><main class="article"><header class="hero"><div class="eyebrow">ARRAY SIGNAL PROCESSING · LECTURE 02</div><h1>第二讲：阵列建模、方向图与空间采样</h1><p class="lead">从窄带/远场假设出发，建立 ULA 导向矢量、协方差模型、阵列方向图、栅瓣、波束宽度与空间 Nyquist 之间的一条完整主线。</p><div class="meta"><span class="chip">73 页课程 PDF</span><span class="chip">ULA · Steering Vector</span><span class="chip">6 张教学示意图</span><span class="chip">Pattern · Spatial Sampling</span></div></header><blockquote class="callout">
+<p>阵列处理最关键的一步，是把“多个天线收到的多路波形”变成一个结构清晰的数学模型。第二讲真正要建立的是一条主线：<strong>波长决定相位尺度 → 窄带假设把时延变成相位 → 远场假设把球面波变成平面波 → 导向矢量描述角度 → 协方差描述统计结构 → 权值形成方向图 → 空间采样决定是否混叠。</strong></p>
+</blockquote>
+
+<h2 id="0-为什么阵列处理首先关心波长">0. 为什么阵列处理首先关心波长</h2>
+<p>电磁波频率与波长满足</p>
+<p>$$
+\boxed{\lambda=\frac{c}{f_{\mathrm c}}.}
+$$</p>
+<p>同样的物理阵元间距 $d$，放在不同载频下，其“电尺寸” $d/\lambda$ 完全不同。阵列处理真正敏感的不是“相隔几厘米”，而是<strong>相隔多少个波长</strong>。</p>
+<p>例如，相邻阵元的相位差最终总会出现</p>
+<p>$$
+\frac{2\pi d}{\lambda}\sin\theta.
+$$</p>
+<p>所以雷达工作频段不仅影响传播和器件，还直接改变阵列的角度敏感度、空间采样率和栅瓣位置。</p>
+<p>课件 Pages 4–8 罗列了常见雷达频段。学习阵列信号处理时不必死记每个频段边界，更值得抓住的是：</p>
+<blockquote class="callout">
+<p><strong>频率越高，波长越短；固定物理孔径能容纳更多“半波长阵元”，因此可获得更大的电孔径。</strong></p>
+</blockquote>
+<hr/>
+<h2 id="1-窄带假设-为什么一个时延可以只写成一个相位">1. 窄带假设：为什么一个时延可以只写成一个相位</h2>
+
+<h3 id="1-1-两种-窄带-判断">1.1 两种“窄带”判断</h3>
+<p>课件先给出工程上常用的相对带宽标准：</p>
+<p>$$
+\frac{B}{f_{\mathrm c}}&lt;0.1.
+$$</p>
+<p>这里 $B$ 是信号带宽，$f_{\mathrm c}$ 是中心频率。它说明包络变化速度远慢于载波振荡。</p>
+<p>但对阵列来说，更直接的条件是：信号扫过整个阵列孔径的最大时延差，必须远小于包络能够分辨的时间尺度 $1/B$。</p>
+<p>若阵列孔径</p>
+<p>$$
+D=(M-1)d,
+$$</p>
+<p>则最坏情况下传播时间差量级为 $D/c$，所以要求</p>
+<p>$$
+\boxed{\frac{BD}{c}\ll1.}
+$$</p>
+<h3 id="1-2-窄带近似到底省掉了什么">1.2 窄带近似到底省掉了什么</h3>
+<p>设复包络为 $s(t)$。第 $m$ 个阵元相对参考阵元有时延 $\tau_m$，严格来说应写</p>
+<p>$$
+ s(t-\tau_m)e^{j2\pi f_{\mathrm c}(t-\tau_m)}.
+$$</p>
+<p>窄带条件下，包络在 $\tau_m$ 这么短的时间内变化很小：</p>
+<p>$$
+ s(t-\tau_m)\approx s(t).
+$$</p>
+<p>于是阵元间差异主要只剩载波相位：</p>
+<p>$$
+ e^{-j2\pi f_{\mathrm c}\tau_m}.
+$$</p>
+<p>这一步意义极大：</p>
+<blockquote class="callout">
+<p><strong>宽带阵列问题本来是“各阵元收到不同延迟的波形”；窄带以后，它被压缩成“各阵元收到同一个波形，只差复数相位因子”。</strong></p>
+</blockquote>
+<figure class="diagram"><svg aria-label="宽带时延与窄带相位等效" role="img" viewbox="0 0 960 400">
+<defs><marker id="l2a" markerheight="8" markerwidth="8" orient="auto" refx="7" refy="4"><path d="M0,0 L8,4 L0,8z" fill="#60788f"></path></marker></defs><rect fill="#fbfdff" height="398" rx="18" stroke="#dce6f0" width="958" x="1" y="1"></rect>
+<text class="svg-title" text-anchor="middle" x="480" y="42">窄带近似：把阵元间“真实时延”压缩成“复相位差”</text>
+<text class="svg-title" text-anchor="middle" x="235" y="82">宽带：包络也发生可见平移</text><text class="svg-title" text-anchor="middle" x="725" y="82">窄带：包络近似不变，只剩相位差</text>
+<path d="M65 225 C95 225,105 135,145 135 C185 135,195 225,225 225" fill="none" stroke="#1f6fb2" stroke-width="4"></path><path d="M145 285 C175 285,185 195,225 195 C265 195,275 285,305 285" fill="none" stroke="#d2782e" stroke-width="4"></path>
+<line marker-end="url(#l2a)" stroke="#60788f" stroke-width="2" x1="145" x2="225" y1="110" y2="110"></line><text class="svg-label" text-anchor="middle" x="185" y="101">τm</text>
+<path d="M550 220 C585 220,595 140,635 140 C675 140,685 220,720 220" fill="none" stroke="#1f6fb2" stroke-width="4"></path><path d="M550 280 C585 280,595 200,635 200 C675 200,685 280,720 280" fill="none" stroke="#d2782e" stroke-width="4"></path><text class="svg-accent" text-anchor="middle" x="820" y="178">s(t−τm)≈s(t)</text><text class="svg-orange" text-anchor="middle" x="820" y="230">差异 → e⁻ʲ²πfcτm</text><line stroke="#dce5ed" x1="485" x2="485" y1="95" y2="335"></line>
+<text class="svg-label" text-anchor="middle" x="235" y="340">必须保留波形延迟</text><text class="svg-label" text-anchor="middle" x="725" y="340">阵列模型可只保留相对复相位</text></svg><figcaption>图 1　宽带真实时延与窄带相位等效的区别。教学重绘，对应第二讲 Pages 10–11。</figcaption></figure>
+<hr/>
+<h2 id="2-远场假设-为什么来波可以看成平行平面波">2. 远场假设：为什么来波可以看成平行平面波</h2>
+
+<h3 id="2-1-近场中每个阵元到信源距离都不一样">2.1 近场中每个阵元到信源距离都不一样</h3>
+<p>设信源距参考阵元为 $R$，ULA 阵元间距为 $d$，第 $m$ 个阵元相对参考阵元位置为 $md$。若入射角为 $\theta$，几何距离满足</p>
+<p>$$
+R_m
+=\sqrt{R^2+m^2d^2-2Rmd\sin\theta}.
+$$</p>
+<p>因此波程差为</p>
+<p>$$
+\Delta R_m=R_m-R.
+$$</p>
+<p>当 $R$ 很大时，对根号做 Taylor 展开：</p>
+<p>$$
+\Delta R_m
+\approx-md\sin\theta
++\frac{m^2d^2\cos^2\theta}{2R}
++\cdots.
+$$</p>
+<p>第一项是<strong>线性相位项</strong>，第二项体现波前曲率。</p>
+<h3 id="2-2-远场条件就是让二次项小到可以忽略">2.2 远场条件就是让二次项小到可以忽略</h3>
+<p>记阵列物理孔径</p>
+<p>$$
+D=(M-1)d.
+$$</p>
+<p>课件给出的远场判据可写成常见 Fraunhofer 形式</p>
+<p>$$
+\boxed{R\gtrsim\frac{2D^2}{\lambda}.}
+$$</p>
+<p>满足条件时，波前曲率在阵列孔径内引入的附加相位足够小，近似只保留</p>
+<p>$$
+\Delta R_m\approx-md\sin\theta.
+$$</p>
+<p>于是球面波可以近似成平面波。</p>
+<figure class="diagram"><svg aria-label="近场球面波与远场平面波" role="img" viewbox="0 0 960 430">
+<defs><marker id="l2b" markerheight="8" markerwidth="8" orient="auto" refx="7" refy="4"><path d="M0,0 L8,4 L0,8z" fill="#60788f"></path></marker></defs><rect fill="#fbfdff" height="428" rx="18" stroke="#dce6f0" width="958" x="1" y="1"></rect>
+<text class="svg-title" text-anchor="middle" x="480" y="42">远场近似：波前曲率在阵列孔径内足够小</text><text class="svg-title" text-anchor="middle" x="230" y="78">近场：球面波</text><text class="svg-title" text-anchor="middle" x="725" y="78">远场：平面波</text>
+<circle cx="85" cy="215" fill="#d2782e" r="9"></circle><text class="svg-orange" text-anchor="middle" x="85" y="190">信源</text><path d="M110 140 Q210 215 110 290" fill="none" stroke="#1f6fb2" stroke-width="3"></path><path d="M145 105 Q285 215 145 325" fill="none" stroke="#1f6fb2" stroke-width="3"></path><path d="M185 85 Q360 215 185 345" fill="none" stroke="#1f6fb2" stroke-width="3"></path>
+<line stroke="#60788f" stroke-width="3" x1="355" x2="355" y1="120" y2="320"></line><g fill="#315f91"><circle cx="355" cy="135" r="6"></circle><circle cx="355" cy="195" r="6"></circle><circle cx="355" cy="255" r="6"></circle><circle cx="355" cy="315" r="6"></circle></g><text class="svg-label" text-anchor="middle" x="355" y="365">孔径 D</text>
+<g stroke="#1f6fb2" stroke-width="3"><line x1="560" x2="870" y1="120" y2="120"></line><line x1="560" x2="870" y1="175" y2="175"></line><line x1="560" x2="870" y1="230" y2="230"></line><line x1="560" x2="870" y1="285" y2="285"></line></g><line stroke="#60788f" stroke-width="3" x1="835" x2="835" y1="95" y2="315"></line><g fill="#315f91"><circle cx="835" cy="120" r="6"></circle><circle cx="835" cy="175" r="6"></circle><circle cx="835" cy="230" r="6"></circle><circle cx="835" cy="285" r="6"></circle></g>
+<text class="svg-label" text-anchor="middle" x="230" y="395">相位含线性项 + 波前曲率（二次项）</text><text class="svg-accent" text-anchor="middle" x="725" y="395">R ≳ 2D²/λ → 相位沿阵列近似线性</text></svg><figcaption>图 2　近场球面波与远场平面波。远场条件让阵列上的相位曲率可忽略。</figcaption></figure>
+<h3 id="2-3-窄带和远场解决的是两个不同问题">2.3 窄带和远场解决的是两个不同问题</h3>
+<ul>
+<li><strong>窄带假设</strong>：让不同阵元之间的<strong>时间延迟</strong>可以等效成相位差；</li>
+<li><strong>远场假设</strong>：让不同阵元的相位差随阵元位置呈<strong>线性变化</strong>。</li>
+</ul>
+<p>二者同时成立，才得到后面经典 ULA 的 Vandermonde 导向矢量。</p>
+<hr/>
+<h2 id="3-噪声-为什么阵列课里会反复出现协方差矩阵">3. 噪声：为什么阵列课里会反复出现协方差矩阵</h2>
+
+<p>课件区分了加性噪声和乘性噪声。经典窄带阵列模型通常把接收机热噪声建模为</p>
+<ul>
+<li>加性；</li>
+<li>零均值；</li>
+<li>宽平稳；</li>
+<li>高斯；</li>
+<li>空间白；</li>
+<li>不同阵元噪声互不相关。</li>
+</ul>
+<p>因此若</p>
+<p>$$
+\mathbf n[n]
+=\begin{bmatrix}
+n_0[n]&amp;n_1[n]&amp;\cdots&amp;n_{M-1}[n]
+\end{bmatrix}^{\mathrm T},
+$$</p>
+<p>则理想白噪声满足</p>
+<p>$$
+\mathrm E\{\mathbf n[n]\}=\mathbf0,
+$$</p>
+<p>$$
+\boxed{
+\mathrm E\{\mathbf n[n]\mathbf n^{\mathrm H}[n]\}
+=\sigma_n^2\mathbf I.
+}
+$$</p>
+<p>这条式子告诉我们：白噪声在任何阵列方向上都没有偏好，它不会天然形成某个低维“方向子空间”。这正是第三讲 MUSIC 能把噪声子空间和信号子空间分开的重要基础。</p>
+<hr/>
+<h2 id="4-ula-单源模型-从几何到导向矢量">4. ULA 单源模型：从几何到导向矢量</h2>
+
+<h3 id="4-1-统一编号约定">4.1 统一编号约定</h3>
+<p>课件主要采用“第 1 阵元为参考”的写法。为让后续公式更简洁，本笔记改用 0-based 编号：</p>
+<p>$$
+m=0,1,\ldots,M-1.
+$$</p>
+<p>在远场、窄带条件下，第 $m$ 个阵元相对参考阵元的相位差取</p>
+<p>$$
+\phi_m(\theta)
+=m\frac{2\pi d}{\lambda}\sin\theta.
+$$</p>
+<p>记</p>
+<p>$$
+\mu(\theta)
+=\frac{2\pi d}{\lambda}\sin\theta,
+$$</p>
+<p>则</p>
+<p>$$
+\phi_m=m\mu.
+$$</p>
+<h3 id="4-2-导向矢量">4.2 导向矢量</h3>
+<p>单个方向 $\theta$ 的 ULA 导向矢量写为</p>
+<p>$$
+\boxed{
+\mathbf a(\theta)
+=\begin{bmatrix}
+1&amp;e^{j\mu(\theta)}&amp;\cdots&amp;e^{j(M-1)\mu(\theta)}
+\end{bmatrix}^{\mathrm T}.
+}
+$$</p>
+<p>于是单源接收模型为</p>
+<p>$$
+\boxed{
+\mathbf x[n]
+=\mathbf a(\theta)s[n]+\mathbf n[n].
+}
+$$</p>
+<figure class="diagram"><svg aria-label="ULA导向矢量相位梯度" role="img" viewbox="0 0 960 380">
+<defs><marker id="l2c" markerheight="8" markerwidth="8" orient="auto" refx="7" refy="4"><path d="M0,0 L8,4 L0,8z" fill="#315f91"></path></marker></defs><rect fill="#fbfdff" height="378" rx="18" stroke="#dce6f0" width="958" x="1" y="1"></rect>
+<text class="svg-title" text-anchor="middle" x="480" y="42">导向矢量 = 某个入射角在各阵元上留下的“相位指纹”</text><line stroke="#60788f" stroke-width="2" x1="120" x2="835" y1="250" y2="250"></line>
+<g fill="#1f6fb2"><circle cx="170" cy="250" r="9"></circle><circle cx="310" cy="250" r="9"></circle><circle cx="450" cy="250" r="9"></circle><circle cx="590" cy="250" r="9"></circle><circle cx="730" cy="250" r="9"></circle></g><g class="svg-label"><text text-anchor="middle" x="170" y="282">m=0</text><text text-anchor="middle" x="310" y="282">1</text><text text-anchor="middle" x="450" y="282">2</text><text text-anchor="middle" x="590" y="282">3</text><text text-anchor="middle" x="730" y="282">4</text></g>
+<g marker-end="url(#l2c)" stroke="#d2782e" stroke-width="3"><line x1="155" x2="185" y1="210" y2="150"></line><line x1="295" x2="325" y1="210" y2="150"></line><line x1="435" x2="465" y1="210" y2="150"></line><line x1="575" x2="605" y1="210" y2="150"></line><line x1="715" x2="745" y1="210" y2="150"></line></g><line stroke="#60788f" stroke-width="2" x1="170" x2="310" y1="320" y2="320"></line><text class="svg-label" text-anchor="middle" x="240" y="345">d</text><text class="svg-accent" text-anchor="middle" x="480" y="105">每跨一个阵元，相位增加 μ(θ)=2πd sinθ/λ</text><text class="svg-label" text-anchor="middle" x="480" y="135">a(θ)=[1, eʲμ, eʲ²μ, …]ᵀ</text></svg><figcaption>图 3　ULA 导向矢量的相位梯度。每个方向都对应唯一的空间复相位模板（无混叠时）。</figcaption></figure>
+<h3 id="4-3-导向矢量的物理意义">4.3 导向矢量的物理意义</h3>
+<p>$\mathbf a(\theta)$ 不是一个“抽象数学向量”，而是：</p>
+<blockquote class="callout">
+<p><strong>当一个单位幅度平面波从角度 $\theta$ 入射时，阵列各个通道之间应当呈现的相对复相位模板。</strong></p>
+</blockquote>
+<p>所以后面的波束扫描、CBF、Capon、MUSIC，本质都在问：实测数据中有没有出现某个 $\mathbf a(\theta)$ 所描述的空间相位模式？</p>
+<hr/>
+<h2 id="5-多源模型-为什么会出现-vandermonde-导向矩阵">5. 多源模型：为什么会出现 Vandermonde 导向矩阵</h2>
+
+<p>若有 $P$ 个窄带远场信源，方向分别为</p>
+<p>$$
+\theta_1,\theta_2,\ldots,\theta_P,
+$$</p>
+<p>定义</p>
+<p>$$
+\mathbf s[n]
+=\begin{bmatrix}
+s_1[n]&amp;\cdots&amp;s_P[n]
+\end{bmatrix}^{\mathrm T},
+$$</p>
+<p>以及导向矩阵</p>
+<p>$$
+\mathbf A(\boldsymbol\theta)
+=\begin{bmatrix}
+\mathbf a(\theta_1)&amp;\cdots&amp;\mathbf a(\theta_P)
+\end{bmatrix}.
+$$</p>
+<p>则统一模型为</p>
+<p>$$
+\boxed{
+\mathbf x[n]
+=\mathbf A(\boldsymbol\theta)\mathbf s[n]+
+\mathbf n[n].
+}
+$$</p>
+<p>对 ULA，每一列都是</p>
+<p>$$
+1,z_p,z_p^2,\ldots,z_p^{M-1},
+$$</p>
+<p>其中</p>
+<p>$$
+z_p=e^{j\mu(\theta_p)}.
+$$</p>
+<p>因此 $\mathbf A$ 是 Vandermonde 型矩阵。理想情况下，如果各 $\theta_p$ 不同、$M&gt;P$，这些列向量线性独立，导向矩阵列满秩。</p>
+<p>这条结构会在第三讲非常重要：</p>
+<ul>
+<li>$\operatorname{span}(\mathbf A)$ 就是信号子空间；</li>
+<li>MUSIC 依赖它和噪声子空间正交；</li>
+<li>若信源相干导致 $\mathbf R_s$ 秩下降，则经典子空间分离会受破坏。</li>
+</ul>
+<hr/>
+<h2 id="6-二阶统计-从瞬时数据到协方差结构">6. 二阶统计：从瞬时数据到协方差结构</h2>
+
+<p>对模型</p>
+<p>$$
+\mathbf x=\mathbf A\mathbf s+\mathbf n,
+$$</p>
+<p>定义阵列协方差</p>
+<p>$$
+\mathbf R_x
+=\mathrm E\{\mathbf x\mathbf x^{\mathrm H}\}.
+$$</p>
+<p>若信号和噪声不相关，且噪声为空间白噪声：</p>
+<p>$$
+\begin{aligned}
+\mathbf R_x
+&amp;=\mathbf A\mathrm E\{\mathbf s\mathbf s^{\mathrm H}\}\mathbf A^{\mathrm H}
++\mathrm E\{\mathbf n\mathbf n^{\mathrm H}\}\\
+&amp;=\boxed{
+\mathbf A\mathbf R_s\mathbf A^{\mathrm H}
++\sigma_n^2\mathbf I}.
+\end{aligned}
+$$</p>
+<p>这条式子是第二、第三讲之间最重要的桥。</p>
+<h3 id="6-1-为什么-mathbf-r-x-是-hermitian">6.1 为什么 $\mathbf R_x$ 是 Hermitian</h3>
+<p>由定义</p>
+<p>$$
+\mathbf R_x^{\mathrm H}
+=\left(\mathrm E\{\mathbf x\mathbf x^{\mathrm H}\}\right)^{\mathrm H}
+=\mathrm E\{\mathbf x\mathbf x^{\mathrm H}\}
+=\mathbf R_x.
+$$</p>
+<p>因此它具有：</p>
+<ol>
+<li>特征值为实数；</li>
+<li>不同特征值对应特征向量可正交；</li>
+<li>可作酉特征分解
+   $$
+   \mathbf R_x
+   =\mathbf U\boldsymbol\Lambda\mathbf U^{\mathrm H}.
+   $$</li>
+</ol>
+<p>第三讲 MUSIC 正是利用这组特征向量把空间拆成信号部分和噪声部分。</p>
+<hr/>
+<h2 id="7-阵列方向图-权值如何-选择空间方向">7. 阵列方向图：权值如何“选择空间方向”</h2>
+
+<p>阵列加权输出为</p>
+<p>$$
+\boxed{y[n]=\mathbf w^{\mathrm H}\mathbf x[n].}
+$$</p>
+<p>若只考虑一个单位幅度平面波，则阵列对方向 $\theta$ 的复响应是</p>
+<p>$$
+B(\theta)=\mathbf w^{\mathrm H}\mathbf a(\theta).
+$$</p>
+<p>归一化幅度方向图</p>
+<p>$$
+F(\theta)
+=\frac{|B(\theta)|}
+{\max_\theta |B(\theta)|}.
+$$</p>
+<h3 id="7-1-把主瓣指向-theta-0">7.1 把主瓣指向 $\theta_0$</h3>
+<p>最直观的“相位共轭匹配”权值可取</p>
+<p>$$
+\mathbf w
+=\frac1M\mathbf a(\theta_0).
+$$</p>
+<p>令</p>
+<p>$$
+\psi
+=\frac{2\pi d}{\lambda}
+(\sin\theta-\sin\theta_0),
+$$</p>
+<p>则均匀加权 ULA 的归一化方向图为</p>
+<p>$$
+\boxed{
+F(\theta)
+=\left|
+\frac{\sin(M\psi/2)}
+{M\sin(\psi/2)}
+\right|.
+}
+$$</p>
+<figure class="diagram"><svg aria-label="阵列方向图主瓣旁瓣和栅瓣" role="img" viewbox="0 0 960 410">
+<rect fill="#fbfdff" height="408" rx="18" stroke="#dce6f0" width="958" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="480" y="42">阵列方向图：空间匹配响应的主瓣、旁瓣与栅瓣</text><line stroke="#60788f" stroke-width="2" x1="85" x2="880" y1="325" y2="325"></line><line stroke="#60788f" stroke-width="2" x1="85" x2="85" y1="325" y2="85"></line>
+<path d="M95 313 C145 312,170 300,205 285 C235 270,260 300,295 306 C345 315,370 270,405 235 C430 205,455 108,480 90 C505 108,530 205,555 235 C590 270,615 315,665 306 C700 300,725 270,755 285 C790 300,815 312,870 313" fill="none" stroke="#1f6fb2" stroke-width="4"></path>
+<text class="svg-blue" text-anchor="middle" x="480" y="78">主瓣 θ₀</text><text class="svg-label" x="270" y="270">旁瓣</text><text class="svg-label" x="690" y="270">旁瓣</text><line stroke="#d2782e" stroke-dasharray="6 5" stroke-width="3" x1="835" x2="835" y1="105" y2="325"></line><text class="svg-orange" text-anchor="middle" x="835" y="95">若空间混叠：栅瓣≈主瓣</text><text class="svg-label" text-anchor="middle" x="480" y="372">均匀加权主瓣较窄；压旁瓣加权通常会牺牲主瓣宽度</text></svg><figcaption>图 4　方向图的读法。栅瓣不是普通低旁瓣，而是空间采样混叠导致的等价方向。</figcaption></figure>
+<p>这就是有限长度离散 Fourier 核的空间版本。因此阵列方向图与 DFT 窗函数旁瓣问题高度同构：</p>
+<ul>
+<li>均匀加权：主瓣窄，但旁瓣较高；</li>
+<li>Chebyshev 等幅度加权：可压低旁瓣，但主瓣变宽。</li>
+</ul>
+<p>课件 Pages 52–53 的仿真正是在展示这种典型 trade-off。</p>
+<hr/>
+<h2 id="8-栅瓣-空间采样出现了-混叠">8. 栅瓣：空间采样出现了“混叠”</h2>
+
+<p>方向图达到与主瓣同级的峰值，需要阵元间相位增量相差整数个 $2\pi$：</p>
+<p>$$
+\psi=2\pi q,
+\qquad q\in\mathbb Z.
+$$</p>
+<p>因此不同角度可能产生相同离散空间相位序列，这就是栅瓣的根源。</p>
+<p>对指向 $\theta_0$ 的 ULA，避免可见角区间出现额外等高主峰的常用条件写成</p>
+<p>$$
+\boxed{
+\frac{d}{\lambda}
+&lt;\frac{1}{1+|\sin\theta_0|}.
+}
+$$</p>
+<p>如果希望整个 $[-90^\circ,90^\circ]$ 可见区都不发生空间混叠，最稳妥的统一选择是</p>
+<p>$$
+\boxed{d\le\frac{\lambda}{2}.}
+$$</p>
+<p>这不是一个“经验口号”，而是空间 Nyquist 条件。</p>
+<hr/>
+<h2 id="9-波束宽度-孔径为什么决定角分辨率">9. 波束宽度：孔径为什么决定角分辨率</h2>
+
+<p>法线方向 $\theta_0=0$，均匀加权 ULA 主瓣附近可近似为 sinc 形状。课件给出的半功率波束宽度（HPBW）近似为</p>
+<p>$$
+\boxed{
+\theta_{\mathrm{HPBW}}
+\approx0.886\frac{\lambda}{Md}
+\quad\text{rad}.
+}
+$$</p>
+<p>换成角度约为</p>
+<p>$$
+\theta_{\mathrm{HPBW}}
+\approx50.8^\circ\frac{\lambda}{Md}.
+$$</p>
+<p>这里课件使用 $Md$ 作为大阵列孔径近似；严格物理孔径是 $(M-1)d$，当 $M$ 较大时二者差别很小。</p>
+<h3 id="9-1-扫描越偏-波束越宽">9.1 扫描越偏，波束越宽</h3>
+<p>波束指向 $\theta_0$ 时，局部角度到 $\sin\theta$ 的映射斜率为 $\cos\theta_0$，因此</p>
+<p>$$
+\boxed{
+\theta_{\mathrm{HPBW}}
+\approx
+0.886\frac{\lambda}
+{Md\cos\theta_0}.
+}
+$$</p>
+<p>这说明：</p>
+<ul>
+<li>阵元越多、孔径越大 → 主瓣越窄；</li>
+<li>波长越短 → 同样物理孔径分辨率越高；</li>
+<li>扫描角越偏离法线 → 波束展宽、角分辨率下降。</li>
+</ul>
+<figure class="diagram"><svg aria-label="孔径与扫描角对波束宽度影响" role="img" viewbox="0 0 960 420">
+<rect fill="#fbfdff" height="418" rx="18" stroke="#dce6f0" width="958" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="480" y="42">半功率波束宽度：孔径越大越窄，偏扫越大越宽</text><text class="svg-title" text-anchor="middle" x="235" y="80">增大孔径 D</text><text class="svg-title" text-anchor="middle" x="720" y="80">扫描离开法线 θ₀↑</text>
+<line stroke="#60788f" stroke-width="2" x1="65" x2="420" y1="320" y2="320"></line><path d="M90 315 C155 310,185 275,215 115 C245 275,275 310,400 315" fill="none" stroke="#708aa1" stroke-width="3"></path><path d="M90 315 C180 314,205 280,235 105 C265 280,290 314,400 315" fill="none" stroke="#1f6fb2" stroke-width="4"></path><text class="svg-blue" text-anchor="middle" x="235" y="355">D↑ → HPBW↓</text>
+<line stroke="#60788f" stroke-width="2" x1="535" x2="895" y1="320" y2="320"></line><path d="M555 315 C635 310,670 260,700 120 C730 260,765 310,875 315" fill="none" stroke="#1f6fb2" stroke-width="4"></path><path d="M555 315 C610 310,650 270,730 145 C805 270,835 310,875 315" fill="none" stroke="#d2782e" stroke-width="3"></path><text class="svg-orange" text-anchor="middle" x="720" y="355">|θ₀|↑ → 1/cosθ₀ 展宽</text><text class="svg-label" text-anchor="middle" x="480" y="393">课程近似：HPBW ≈ 0.886 λ/(Md cosθ₀)</text></svg><figcaption>图 5　孔径和扫描角对波束宽度的影响。有限孔径决定有限角分辨率。</figcaption></figure>
+<p>课件用 Rayleigh 判据和衍射故事强调的核心，就是<strong>有限孔径必然带来有限角分辨率</strong>。</p>
+<hr/>
+<h2 id="10-空间频率-把-角度-改写成-离散频率">10. 空间频率：把“角度”改写成“离散频率”</h2>
+
+<p>时间采样中，正弦波沿时间积累相位；阵列采样中，平面波沿空间位置积累相位。</p>
+<p>波数</p>
+<p>$$
+k=\frac{2\pi}{\lambda}.
+$$</p>
+<p>沿 ULA 轴方向的空间波数分量为</p>
+<p>$$
+k_x
+=\frac{2\pi}{\lambda}\sin\theta.
+$$</p>
+<p>阵元间距为 $d$ 时，每移动一个阵元产生的离散空间相位增量</p>
+<p>$$
+\boxed{
+\mu
+=k_xd
+=\frac{2\pi d}{\lambda}\sin\theta.
+}
+$$</p>
+<figure class="diagram"><svg aria-label="空间采样与空间频率混叠" role="img" viewbox="0 0 960 410">
+<defs><marker id="l2f" markerheight="8" markerwidth="8" orient="auto" refx="7" refy="4"><path d="M0,0 L8,4 L0,8z" fill="#60788f"></path></marker></defs><rect fill="#fbfdff" height="408" rx="18" stroke="#dce6f0" width="958" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="480" y="42">时间采样 ↔ 空间采样：d≤λ/2 就是空间 Nyquist</text>
+<text class="svg-title" text-anchor="middle" x="235" y="85">时间域</text><line stroke="#60788f" stroke-width="2" x1="80" x2="410" y1="245" y2="245"></line><path d="M85 205 C110 130,135 130,160 205 S210 280,235 205 S285 130,310 205 S360 280,400 205" fill="none" stroke="#1f6fb2" stroke-width="3"></path><g fill="#d2782e"><circle cx="100" cy="164" r="5"></circle><circle cx="165" cy="217" r="5"></circle><circle cx="230" cy="218" r="5"></circle><circle cx="295" cy="156" r="5"></circle><circle cx="360" cy="277" r="5"></circle></g><text class="svg-label" text-anchor="middle" x="235" y="310">采样间隔 Ts 太大 → 时间频率混叠</text>
+<text class="svg-title" text-anchor="middle" x="720" y="85">空间域</text><line stroke="#60788f" stroke-width="2" x1="555" x2="890" y1="245" y2="245"></line><path d="M560 205 C590 135,620 135,650 205 S710 275,740 205 S800 135,830 205 S865 270,885 220" fill="none" stroke="#1f6fb2" stroke-width="3"></path><g fill="#d2782e"><circle cx="575" cy="174" r="6"></circle><circle cx="645" cy="193" r="6"></circle><circle cx="715" cy="263" r="6"></circle><circle cx="785" cy="143" r="6"></circle><circle cx="855" cy="259" r="6"></circle></g><line marker-end="url(#l2f)" stroke="#60788f" stroke-width="2" x1="575" x2="645" y1="330" y2="330"></line><text class="svg-label" text-anchor="middle" x="610" y="355">d</text><text class="svg-accent" text-anchor="middle" x="720" y="310">μ=2πd sinθ/λ；d&gt;λ/2 → 空间混叠/栅瓣</text></svg><figcaption>图 6　时间采样和空间采样的类比。空间混叠表现为不同角度产生相同离散相位序列。</figcaption></figure>
+<p>于是角度估计可以重新理解成：</p>
+<blockquote class="callout">
+<p><strong>从阵列的离散空间采样序列中估计其空间频率。</strong></p>
+</blockquote>
+<p>这也解释了为什么 CBF 可以看成空域 Fourier 扫描，为什么 $d&gt;\lambda/2$ 会发生空间频率混叠，以及为什么第三讲的高分辨率算法本质上是在超越普通 Fourier 主瓣宽度的限制。</p>
+<hr/>
+<h2 id="11-从均匀线阵推广到任意阵列">11. 从均匀线阵推广到任意阵列</h2>
+
+<p>ULA 的关键其实不是“排成直线”，而是每个阵元都有已知空间位置。</p>
+<p>设第 $m$ 个阵元位置向量为</p>
+<p>$$
+\mathbf r_m
+=\begin{bmatrix}x_m&amp;y_m&amp;z_m\end{bmatrix}^{\mathrm T},
+$$</p>
+<p>来波方向单位向量为 $\mathbf u(\theta,\varphi)$，则几何时延可统一写成</p>
+<p>$$
+\tau_m
+=\frac{\mathbf r_m^{\mathrm T}\mathbf u}{c}.
+$$</p>
+<p>相应导向矢量元素</p>
+<p>$$
+\boxed{
+ a_m(\theta,\varphi)
+=\exp\!\left(j\frac{2\pi}{\lambda}
+\mathbf r_m^{\mathrm T}\mathbf u\right).
+}
+$$</p>
+<p>因此平面阵、圆阵和任意稀疏阵都只是“阵元坐标集合不同”；后面的 CBF/Capon/MUSIC 公式本身仍然可以写成同一套 $\mathbf a(\theta,\varphi)$ 语言。</p>
+<hr/>
+<h2 id="12-第二讲总复盘-第三讲需要带走什么">12. 第二讲总复盘：第三讲需要带走什么</h2>
+<p>第二讲看起来跨越频段、噪声、几何、矩阵、方向图和采样，其实只是在为第三讲准备五个对象：</p>
+<p>$$
+\boxed{
+\begin{gathered}
+\text{几何位置}\to\text{导向矢量 }\mathbf a(\theta)\\
+\downarrow\\
+\mathbf x=\mathbf A\mathbf s+\mathbf n\\
+\downarrow\\
+\mathbf R_x=\mathbf A\mathbf R_s\mathbf A^H+\sigma_n^2\mathbf I\\
+\downarrow\\
+\mathbf w^H\mathbf a(\theta)\text{ 描述空间响应}
+\end{gathered}}
+$$</p>
+<p>进入第三讲以后：</p>
+<ul>
+<li>CBF 直接拿 $\mathbf a(\theta)$ 去匹配数据；</li>
+<li>Capon 用 $\mathbf R_x^{-1}$ 自适应压低其他方向功率；</li>
+<li>MUSIC 对 $\mathbf R_x$ 特征分解，利用 $\mathbf a(\theta)$ 与噪声子空间的正交性定位谱峰。</li>
+</ul>
+<h3 id="12-1-课件-matlab-作业应该验证什么">12.1 课件 MATLAB 作业应该验证什么</h3>
+<p>Page 73 要求绘制 ULA 方向图。真正值得验证的不是“代码能跑出一条曲线”，而是三条规律：</p>
+<ol>
+<li>固定 $d=\lambda/2$，增加 $M$，HPBW 是否近似按 $1/M$ 缩小；</li>
+<li>固定 $M$，增大 $d$，主瓣会变窄，但何时开始出现栅瓣；</li>
+<li>波束从 $0^\circ$ 扫到 $30^\circ$、$60^\circ$ 时，是否出现课件预测的扫描展宽。</li>
+</ol>
+<hr/>
+<h2 id="来源说明">来源说明</h2>
+<ul>
+<li>主线资料：<code>阵列信号处理/阵列信号处理 第二讲.pdf</code>，PDF 物理页 1–73。</li>
+<li>核心追溯：Pages 4–11（波长/窄带）、13–17（远近场）、19–23（噪声）、25–40（阵列模型与协方差）、42–66（方向图与波束宽度）、68–72（空间频率与任意阵列）、73（作业）。</li>
+<li>PDF 数学文本存在字体编码与二维版式丢失。最终公式按页内语义与统一符号重建；0-based 阵元编号、相位正负号和 <code>Md</code>/<code>(M-1)d</code> 的约定差异已在正文中明确。</li>
+</ul><section class="source-panel"><strong>来源追溯</strong><br>主线资料：<code>阵列信号处理/阵列信号处理 第二讲.pdf</code>，PDF 物理页 1–73。核心范围：Pages 4–11 波长/窄带，13–17 远近场，19–23 噪声，25–40 阵列模型与协方差，42–66 方向图与波束宽度，68–72 空间频率与任意阵列，73 作业。PDF 数学文本层存在二维版式损失，最终公式按同页语义和统一符号重建。</section><div class="footer">学习笔记项目 · 阵列信号处理 · ChatGPT-AgentDock / Codex 协作工作流 · 2026-09-25</div></main></div><script>const bar=document.getElementById('progress');const links=[...document.querySelectorAll('.toc a')];
+function update(){const d=document.documentElement;const m=d.scrollHeight-d.clientHeight;bar.style.width=(m?d.scrollTop/m*100:0)+'%';}
+window.addEventListener('scroll',update,{passive:true});update();
+const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+e.target.id));}})},{rootMargin:'-15% 0px -72% 0px'});
+document.querySelectorAll('h2[id],h3[id]').forEach(h=>obs.observe(h));
+</script></body></html>

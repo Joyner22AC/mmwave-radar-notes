@@ -1,0 +1,610 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"><title>阵列信号处理｜第三讲：空间谱估计——CBF、Capon 与 MUSIC</title><script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']]},svg:{fontCache:'global'}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script><style>:root{--ink:#20303d;--muted:#627385;--line:#dce5ed;--paper:#fff;--soft:#f6f9fc;--blue:#1f6fb2;--blue2:#315f91;--orange:#c96d25;--shadow:0 12px 34px rgba(41,63,82,.08);}
+*{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;background:#f3f6f9;color:var(--ink);font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;line-height:1.82;font-size:16px}
+#progress{position:fixed;top:0;left:0;height:3px;background:var(--blue);width:0;z-index:50}
+.layout{display:grid;grid-template-columns:280px minmax(0,860px);gap:32px;max-width:1210px;margin:0 auto;padding:34px 24px 80px}
+.sidebar{position:sticky;top:22px;height:calc(100vh - 44px);overflow:auto;padding:18px 16px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.92);box-shadow:var(--shadow)}
+.brand{font-weight:700;color:#173c5c;margin:3px 8px 14px} .toc{display:flex;flex-direction:column;gap:2px} .toc a{text-decoration:none;color:#536779;border-radius:8px;padding:7px 9px;font-size:13px;line-height:1.4} .toc a:hover,.toc a.active{background:#edf4fa;color:#174e7e} .toc-sub{padding-left:22px!important;font-size:12.5px!important}
+.article{background:var(--paper);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:54px 68px;min-width:0}
+.hero{border-bottom:1px solid var(--line);padding-bottom:30px;margin-bottom:36px} .eyebrow{color:var(--blue);font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase} h1{font-size:35px;line-height:1.25;margin:10px 0 15px;color:#17344d} .lead{font-size:17px;color:#596d7f;max-width:720px;margin:0} .meta{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px} .chip{font-size:12px;padding:5px 9px;border-radius:999px;background:#edf4fa;color:#315f91;border:1px solid #d2e2ef}
+h2{font-size:25px;line-height:1.35;color:#183e5d;margin:54px 0 18px;padding-top:4px} h3{font-size:19px;line-height:1.4;color:#28516f;margin:34px 0 12px} p{margin:12px 0} strong{color:#193b56} code{font-family:"Cascadia Mono",Consolas,monospace;background:#f0f4f7;border:1px solid #e1e8ee;padding:.08em .34em;border-radius:5px;font-size:.92em}
+hr{border:0;border-top:1px solid var(--line);margin:42px 0} ul,ol{padding-left:1.55em} li{margin:.35em 0}
+blockquote.callout{margin:22px 0;padding:14px 18px;border-left:4px solid var(--blue);background:#f3f8fc;border-radius:0 10px 10px 0;color:#405669}
+table{width:100%;border-collapse:collapse;margin:20px 0 28px;font-size:14.5px} th,td{border:1px solid #dce5ed;padding:10px 12px;text-align:left;vertical-align:top} th{background:#eef5fa;color:#294f6d} tr:nth-child(even) td{background:#fbfcfd}
+.diagram{margin:28px 0 34px;padding:16px;border:1px solid var(--line);border-radius:16px;background:#fbfdff;overflow:hidden} .diagram svg{width:100%;height:auto;display:block} figcaption{text-align:center;color:#657889;font-size:13px;margin-top:10px} .svg-label{font:16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#415466} .svg-title{font:600 17px "Segoe UI","Microsoft YaHei",sans-serif;fill:#294f6d} .svg-accent{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#315f91} .svg-blue{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#1f6fb2} .svg-orange{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#c96d25}
+.formula-note{font-size:13px;color:var(--muted)} mjx-container{color:#172a3a} mjx-container[display="true"]{margin:1.35em 0!important;max-width:100%;overflow-x:auto;overflow-y:hidden;padding:.18em .25em .24em;text-align:center;scrollbar-width:thin;scrollbar-color:#c7d5e1 transparent} mjx-container[display="true"]>svg{display:inline-block;vertical-align:middle} mjx-container:not([display="true"]){font-size:1.01em}
+.source-panel{margin-top:52px;padding:22px;border:1px solid var(--line);background:#f8fafc;border-radius:14px;color:#526779;font-size:14px} .source-panel a{color:var(--blue)}
+.footer{margin-top:38px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:#7a8997;text-align:center}
+@media(max-width:980px){.layout{grid-template-columns:1fr;max-width:900px}.sidebar{position:relative;top:0;height:auto;max-height:340px}.article{padding:42px 34px}}
+@media(max-width:600px){body{font-size:15px}.layout{padding:12px 8px 50px}.sidebar{display:none}.article{padding:30px 20px;border-radius:12px}h1{font-size:28px}h2{font-size:22px}.diagram{padding:5px}mjx-container[display="true"]{font-size:.96em;margin:1.1em 0!important}}
+@media print{body{background:white;font-size:10.5pt}#progress,.sidebar{display:none!important}.layout{display:block;max-width:none;padding:0}.article{border:0;box-shadow:none;padding:0}.hero{margin-top:0}h2,h3{break-after:avoid-page}.diagram,table,blockquote,mjx-container[display="true"]{break-inside:avoid}mjx-container[display="true"]{overflow:visible}a{color:inherit;text-decoration:none}}
+</style></head><body><div id="progress"></div><div class="layout"><aside class="sidebar"><div class="brand">阵列信号处理</div><nav class="toc"><a class="toc-main" href="#0-doa-估计到底在估什么">0. DOA 估计到底在估什么</a>
+<a class="toc-main" href="#1-有限快拍下-先估计协方差矩阵">1. 有限快拍下，先估计协方差矩阵</a>
+<a class="toc-sub" href="#1-1-快拍数为什么重要">1.1 快拍数为什么重要</a>
+<a class="toc-main" href="#2-cbf-最直接的空间匹配扫描">2. CBF：最直接的空间匹配扫描</a>
+<a class="toc-sub" href="#2-1-从波束输出到空间谱">2.1 从波束输出到空间谱</a>
+<a class="toc-sub" href="#2-2-cbf-的两个等价直觉">2.2 CBF 的两个等价直觉</a>
+<a class="toc-sub" href="#2-3-cbf-的局限-分辨率受有限孔径限制">2.3 CBF 的局限：分辨率受有限孔径限制</a>
+<a class="toc-main" href="#3-capon-mvdr-不要把扫描方向以外的功率也放进来">3. Capon / MVDR：不要把扫描方向以外的功率也放进来</a>
+<a class="toc-main" href="#4-从约束优化推导-mvdr-权值">4. 从约束优化推导 MVDR 权值</a>
+<a class="toc-sub" href="#4-1-构造-lagrangian">4.1 构造 Lagrangian</a>
+<a class="toc-sub" href="#4-2-capon-谱">4.2 Capon 谱</a>
+<a class="toc-sub" href="#4-3-为什么谱峰对应信号方向">4.3 为什么谱峰对应信号方向</a>
+<a class="toc-main" href="#5-为什么-music-要先学-子空间">5. 为什么 MUSIC 要先学“子空间”</a>
+<a class="toc-sub" href="#5-1-正交投影矩阵">5.1 正交投影矩阵</a>
+<a class="toc-main" href="#6-music-的关键-协方差矩阵自己把空间分成两块">6. MUSIC 的关键：协方差矩阵自己把空间分成两块</a>
+<a class="toc-sub" href="#6-1-为什么真实导向矢量一定和噪声子空间正交">6.1 为什么真实导向矢量一定和噪声子空间正交</a>
+<a class="toc-main" href="#7-music-伪谱-寻找-最接近噪声子空间正交-的方向">7. MUSIC 伪谱：寻找“最接近噪声子空间正交”的方向</a>
+<a class="toc-sub" href="#7-1-为什么叫-伪谱">7.1 为什么叫“伪谱”</a>
+<a class="toc-sub" href="#7-2-信号子空间形式">7.2 信号子空间形式</a>
+<a class="toc-main" href="#8-三种算法其实是在问三个不同的问题">8. 三种算法其实是在问三个不同的问题</a>
+<a class="toc-sub" href="#8-1-capon-与-music-为什么看起来越来越像">8.1 Capon 与 MUSIC 为什么看起来越来越像</a>
+<a class="toc-main" href="#9-snr-快拍数-阵元数和角间隔分别在影响什么">9. SNR、快拍数、阵元数和角间隔分别在影响什么</a>
+<a class="toc-sub" href="#9-1-snr">9.1 SNR</a>
+<a class="toc-sub" href="#9-2-快拍数-n">9.2 快拍数 $N$</a>
+<a class="toc-sub" href="#9-3-阵元数-m">9.3 阵元数 $M$</a>
+<a class="toc-sub" href="#9-4-两源角间隔">9.4 两源角间隔</a>
+<a class="toc-main" href="#10-相关-不相关-正交-独立-不要混成同一个词">10. 相关、不相关、正交、独立：不要混成同一个词</a>
+<a class="toc-sub" href="#10-1-相关函数与协方差">10.1 相关函数与协方差</a>
+<a class="toc-sub" href="#10-2-正交-vs-不相关">10.2 正交 vs 不相关</a>
+<a class="toc-sub" href="#10-3-独立">10.3 独立</a>
+<a class="toc-sub" href="#10-4-相干">10.4 相干</a>
+<a class="toc-main" href="#11-相干源为什么会让经典-music-失效">11. 相干源为什么会让经典 MUSIC 失效</a>
+<a class="toc-main" href="#12-从实现角度看三种算法">12. 从实现角度看三种算法</a>
+<a class="toc-sub" href="#12-1-cbf">12.1 CBF</a>
+<a class="toc-sub" href="#12-2-capon">12.2 Capon</a>
+<a class="toc-sub" href="#12-3-music">12.3 MUSIC</a>
+<a class="toc-main" href="#13-第三讲总复盘-三种算法的统一视角">13. 第三讲总复盘：三种算法的统一视角</a>
+<a class="toc-sub" href="#13-1-课件作业真正应该比较什么">13.1 课件作业真正应该比较什么</a>
+<a class="toc-main" href="#来源说明">来源说明</a></nav></aside><main class="article"><header class="hero"><div class="eyebrow">ARRAY SIGNAL PROCESSING · LECTURE 03</div><h1>第三讲：空间谱估计——CBF、Capon 与 MUSIC</h1><p class="lead">从样本协方差出发，对比空间匹配、最小方差无失真响应与子空间正交三条 DOA 路线，并解释相干源导致的经典 MUSIC 秩亏问题。</p><div class="meta"><span class="chip">81 页课程 PDF</span><span class="chip">CBF · MVDR · MUSIC</span><span class="chip">7 张教学示意图</span><span class="chip">DOA · Subspace</span></div></header><blockquote class="callout">
+<p>第三讲解决一个核心问题：<strong>给定阵列接收数据，如何从“各阵元之间的空间相位/统计结构”反推出信号从哪些方向到达？</strong> 三种方法形成一条很清晰的升级路线：CBF 做空间匹配；Capon 在保持扫描方向无失真的同时最小化其他方向功率；MUSIC 则进一步把协方差矩阵分解成信号子空间与噪声子空间，利用正交性构造高分辨率伪谱。</p>
+</blockquote>
+
+<h2 id="0-doa-估计到底在估什么">0. DOA 估计到底在估什么</h2>
+
+<p>DOA（Direction of Arrival，波达方向）估计的输入不是“一个角度”，而是一段阵列快拍数据：</p>
+<p>$$
+\mathbf x[n]
+=\mathbf A(\boldsymbol\theta)\mathbf s[n]
++\mathbf n[n].
+$$</p>
+<p>其中未知量包括信源方向</p>
+<p>$$
+\boldsymbol\theta
+=\begin{bmatrix}
+\theta_1&amp;\cdots&amp;\theta_P
+\end{bmatrix}^{\mathrm T}.
+$$</p>
+<p>第二讲已经建立了关键映射：</p>
+<p>$$
+\theta
+\longmapsto
+\mathbf a(\theta).
+$$</p>
+<p>所以空间谱估计真正做的是：</p>
+<blockquote class="callout">
+<p><strong>在候选角度上不断生成导向矢量，再判断哪个空间相位模板最符合实测数据的统计结构。</strong></p>
+</blockquote>
+<p>课件给出的发展脉络也正好对应算法思想升级：</p>
+<ul>
+<li>CBF：把 Fourier/匹配滤波思想直接搬到空间域；</li>
+<li>Capon/MVDR：把 Wiener 最小方差思想搬到空间域；</li>
+<li>MUSIC：利用协方差特征分解和子空间正交性超越普通主瓣分辨限制。</li>
+</ul>
+<figure class="diagram"><svg viewbox="0 0 960 330"><defs><marker id="l3a" markerheight="8" markerwidth="8" orient="auto" refx="7" refy="4"><path d="M0,0 L8,4 L0,8z" fill="#60788f"></path></marker></defs><rect fill="#fbfdff" height="328" rx="18" stroke="#dce6f0" width="958" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="480" y="42">空间谱估计的三层升级</text><g fill="#eef5fb" stroke="#9dbbd6"><rect height="120" rx="14" width="220" x="65" y="100"></rect><rect height="120" rx="14" width="220" x="370" y="100"></rect><rect height="120" rx="14" width="220" x="675" y="100"></rect></g><text class="svg-title" text-anchor="middle" x="175" y="137">CBF</text><text class="svg-label" text-anchor="middle" x="175" y="170">匹配导向矢量</text><text class="svg-label" text-anchor="middle" x="175" y="198">空域 Fourier</text><text class="svg-title" text-anchor="middle" x="480" y="137">Capon / MVDR</text><text class="svg-label" text-anchor="middle" x="480" y="170">无失真约束</text><text class="svg-label" text-anchor="middle" x="480" y="198">最小输出方差</text><text class="svg-title" text-anchor="middle" x="785" y="137">MUSIC</text><text class="svg-label" text-anchor="middle" x="785" y="170">协方差 EVD</text><text class="svg-label" text-anchor="middle" x="785" y="198">子空间正交</text><g marker-end="url(#l3a)" stroke="#60788f" stroke-width="2.5"><line x1="285" x2="360" y1="160" y2="160"></line><line x1="590" x2="665" y1="160" y2="160"></line></g><text class="svg-accent" text-anchor="middle" x="480" y="285">同一 a(θ) 与 R̂x，不同算法只是“怎样使用统计信息”不同</text></svg><figcaption>图 1　CBF、Capon 和 MUSIC 的思想升级路线。</figcaption></figure>
+<hr/>
+<h2 id="1-有限快拍下-先估计协方差矩阵">1. 有限快拍下，先估计协方差矩阵</h2>
+
+<p>理论协方差是</p>
+<p>$$
+\mathbf R_x
+=\mathrm E\{\mathbf x[n]\mathbf x^{\mathrm H}[n]\}.
+$$</p>
+<p>但真实数据只有有限 $N$ 个快拍，因此通常用样本协方差</p>
+<p>$$
+\boxed{
+\hat{\mathbf R}_x
+=\frac1N\sum_{n=1}^{N}
+\mathbf x[n]\mathbf x^{\mathrm H}[n].
+}
+$$</p>
+<p>这一步是三种算法共同的统计入口。</p>
+<h3 id="1-1-快拍数为什么重要">1.1 快拍数为什么重要</h3>
+<p>$N$ 很小时，$\hat{\mathbf R}_x$ 与真实 $\mathbf R_x$ 偏差较大：</p>
+<ul>
+<li>谱峰位置会抖动；</li>
+<li>小特征值估计不稳定；</li>
+<li>信号/噪声子空间分界变模糊；</li>
+<li>若 $N<m$，样本协方差最多只有秩 $n$，直接求逆可能出现问题。<="" li="">
+</m$，样本协方差最多只有秩></li></ul>
+<p>课件 Page 59 的性能曲线正是在强调：<strong>算法公式本身不变，但协方差估得好不好，会直接决定实际性能。</strong></p>
+<hr/>
+<h2 id="2-cbf-最直接的空间匹配扫描">2. CBF：最直接的空间匹配扫描</h2>
+
+<h3 id="2-1-从波束输出到空间谱">2.1 从波束输出到空间谱</h3>
+<p>阵列输出</p>
+<p>$$
+y[n]
+=\mathbf w^{\mathrm H}\mathbf x[n].
+$$</p>
+<p>输出功率为</p>
+<p>$$
+\begin{aligned}
+P_y
+&amp;=\mathrm E\{|y[n]|^2\}\\
+&amp;=\mathbf w^{\mathrm H}
+\mathbf R_x\mathbf w.
+\end{aligned}
+$$</p>
+<p>CBF 在扫描角 $\theta$ 时直接令权值与导向矢量匹配：</p>
+<p>$$
+\mathbf w(\theta)\propto\mathbf a(\theta).
+$$</p>
+<p>于是空间谱可写为</p>
+<p>$$
+\boxed{
+P_{\mathrm{CBF}}(\theta)
+=\mathbf a^{\mathrm H}(\theta)
+\hat{\mathbf R}_x
+\mathbf a(\theta).
+}
+$$</p>
+<p>实际画图时通常再做峰值归一化或 dB 化。</p>
+<h3 id="2-2-cbf-的两个等价直觉">2.2 CBF 的两个等价直觉</h3>
+<p>课件给出两个非常值得记住的物理解释：</p>
+<ol>
+<li><strong>空域 Fourier 扫描</strong>：导向矢量就是某个空间频率的复指数模板；</li>
+<li><strong>按角度相参积累</strong>：假设某个角度后，把各阵元相位“拨正”再相加。</li>
+</ol>
+<figure class="diagram"><svg viewbox="0 0 960 400"><rect fill="#fbfdff" height="398" rx="18" stroke="#dce6f0" width="958" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="480" y="42">CBF：扫描角正确时“拨正相位”后相干叠加</text><text class="svg-title" text-anchor="middle" x="235" y="83">候选角 = 真实 DOA</text><text class="svg-title" text-anchor="middle" x="725" y="83">候选角错误</text><g stroke="#1f6fb2" stroke-width="4"><line x1="95" x2="250" y1="145" y2="145"></line><line x1="95" x2="250" y1="190" y2="190"></line><line x1="95" x2="250" y1="235" y2="235"></line><line x1="95" x2="250" y1="280" y2="280"></line></g><g stroke="#d2782e" stroke-width="4"><line x1="295" x2="390" y1="145" y2="145"></line><line x1="295" x2="390" y1="190" y2="190"></line><line x1="295" x2="390" y1="235" y2="235"></line><line x1="295" x2="390" y1="280" y2="280"></line></g><text class="svg-accent" text-anchor="middle" x="340" y="320">同相 → 和幅度大</text><g stroke="#1f6fb2" stroke-width="4"><line x1="575" x2="700" y1="145" y2="145"></line><line x1="575" x2="675" y1="190" y2="170"></line><line x1="575" x2="640" y1="235" y2="275"></line><line x1="575" x2="620" y1="280" y2="215"></line></g><path d="M745 205 L810 145 M745 205 L795 260 M745 205 L825 210 M745 205 L770 125" stroke="#d2782e" stroke-width="4"></path><text class="svg-orange" text-anchor="middle" x="790" y="320">相位不齐 → 部分相消</text></svg><figcaption>图 2　CBF 的相参积累直觉：候选导向矢量和真实空间相位模式匹配时输出最大。</figcaption></figure>
+<p>如果扫描角等于真实来向，各阵元相位被正确补偿，叠加最强；扫描错了，相位对不齐，能量互相抵消。</p>
+<h3 id="2-3-cbf-的局限-分辨率受有限孔径限制">2.3 CBF 的局限：分辨率受有限孔径限制</h3>
+<p>第二讲已经知道有限孔径的方向图有有限主瓣宽度，因此两个角度太近的信号，其 CBF 谱峰会融合。</p>
+<p>课件 Page 13 用 $M=16,d=\lambda/2$ 的例子展示：目标间隔变小时，普通 CBF 会逐渐失去分峰能力。</p>
+<p>所以 CBF 的问题不是“有没有峰”，而是：</p>
+<blockquote class="callout">
+<p><strong>它的分辨力仍受普通波束主瓣 / Rayleigh 限制。</strong></p>
+</blockquote>
+<hr/>
+<h2 id="3-capon-mvdr-不要把扫描方向以外的功率也放进来">3. Capon / MVDR：不要把扫描方向以外的功率也放进来</h2>
+
+<p>CBF 的权值只看几何模板，并不根据当前干扰和噪声分布自适应改变。Capon 的思路更聪明：</p>
+<blockquote class="callout">
+<p>对当前扫描方向 $\theta$，强制该方向无失真通过；在这个约束下，让总输出功率尽可能小。</p>
+</blockquote>
+<p>数学上：</p>
+<p>$$
+\boxed{
+\begin{aligned}
+\min_{\mathbf w}\quad
+&amp;\mathbf w^{\mathrm H}\mathbf R_x\mathbf w\\
+\text{s.t.}\quad
+&amp;\mathbf w^{\mathrm H}\mathbf a(\theta)=1.
+\end{aligned}}
+$$</p>
+<p>这里的约束保证候选方向不被滤掉，而目标函数会迫使权值尽量压制来自其他空间结构的功率。</p>
+<figure class="diagram"><svg viewbox="0 0 960 390"><rect fill="#fbfdff" height="388" rx="18" stroke="#dce6f0" width="958" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="480" y="42">MVDR：扫描方向“无失真”，其他方向尽量压低</text><circle cx="480" cy="285" fill="#315f91" r="12"></circle><g stroke-width="4"><line stroke="#1f6fb2" x1="480" x2="480" y1="285" y2="95"></line><line stroke="#d2782e" x1="480" x2="310" y1="285" y2="165"></line><line stroke="#d2782e" x1="480" x2="655" y1="285" y2="180"></line></g><path d="M220 300 C300 285,350 270,405 235 C440 215,460 115,480 90 C500 115,520 215,555 235 C610 270,660 285,740 300" fill="none" stroke="#1f6fb2" stroke-width="4"></path><path d="M280 175 C300 205,320 235,350 260 M625 190 C645 225,655 250,665 276" stroke="#fff" stroke-width="9"></path><text class="svg-blue" text-anchor="middle" x="480" y="78">wᴴa(θ)=1</text><text class="svg-orange" x="295" y="142">干扰</text><text class="svg-orange" x="665" y="158">干扰</text><text class="svg-accent" text-anchor="middle" x="480" y="350">min wᴴRw：在不削弱扫描方向的前提下“挖零陷”</text></svg><figcaption>图 3　MVDR 约束的几何直觉。主视方向保持单位增益，协方差结构决定其他方向的自适应抑制。</figcaption></figure>
+<hr/>
+<h2 id="4-从约束优化推导-mvdr-权值">4. 从约束优化推导 MVDR 权值</h2>
+
+<h3 id="4-1-构造-lagrangian">4.1 构造 Lagrangian</h3>
+<p>对复权向量，可写</p>
+<p>$$
+\mathcal L
+=\mathbf w^{\mathrm H}\mathbf R_x\mathbf w
++\lambda^*
+(\mathbf w^{\mathrm H}\mathbf a-1)
++\lambda
+(\mathbf a^{\mathrm H}\mathbf w-1).
+$$</p>
+<p>对 $\mathbf w^*$ 使用 Wirtinger 导数：</p>
+<p>$$
+\frac{\partial\mathcal L}
+{\partial\mathbf w^*}
+=\mathbf R_x\mathbf w
++\lambda^*\mathbf a
+=\mathbf0.
+$$</p>
+<p>因此</p>
+<p>$$
+\mathbf w
+=\mu\mathbf R_x^{-1}\mathbf a,
+$$</p>
+<p>其中 $\mu$ 为归一化常数。</p>
+<p>代回约束</p>
+<p>$$
+\mathbf w^{\mathrm H}\mathbf a=1,
+$$</p>
+<p>得到</p>
+<p>$$
+\boxed{
+\mathbf w_{\mathrm{MVDR}}(\theta)
+=\frac{
+\mathbf R_x^{-1}\mathbf a(\theta)}
+{\mathbf a^{\mathrm H}(\theta)
+\mathbf R_x^{-1}\mathbf a(\theta)}.
+}
+$$</p>
+<h3 id="4-2-capon-谱">4.2 Capon 谱</h3>
+<p>把最优权代回最小输出功率：</p>
+<p>$$
+\boxed{
+P_{\mathrm{Capon}}(\theta)
+=\frac{1}
+{\mathbf a^{\mathrm H}(\theta)
+\mathbf R_x^{-1}
+\mathbf a(\theta)}.
+}
+$$</p>
+<p>实际使用中用样本协方差 $\hat{\mathbf R}_x$ 替代理论协方差。</p>
+<h3 id="4-3-为什么谱峰对应信号方向">4.3 为什么谱峰对应信号方向</h3>
+<p>若某候选方向确实有强信号存在，那么要求这个方向“无失真通过”时，系统无法把该信号功率压掉，最小可达输出功率仍然较大，于是形成谱峰。</p>
+<p>若扫描方向没有真实信号，MVDR 可以利用其他自由度把大部分功率压低，谱值就较小。</p>
+<p>这就是 Capon 相比 CBF 分辨率更高的直觉来源：</p>
+<blockquote class="callout">
+<p><strong>CBF 只是把目标方向相干叠加；Capon 还主动学习协方差结构并给其他方向“打零陷”。</strong></p>
+</blockquote>
+<hr/>
+<h2 id="5-为什么-music-要先学-子空间">5. 为什么 MUSIC 要先学“子空间”</h2>
+
+<p>课件用了较多页介绍向量空间、基、正交、投影、投影矩阵和酉矩阵。它们不是为了线性代数本身，而是为了理解下面这句话：</p>
+<blockquote class="callout">
+<p><strong>协方差矩阵的特征向量，可以把阵列观测空间分成“由信号解释的方向”和“只剩噪声的方向”。</strong></p>
+</blockquote>
+<h3 id="5-1-正交投影矩阵">5.1 正交投影矩阵</h3>
+<p>若 $\mathbf U_S$ 的列是一组正交归一基，则到信号子空间的正交投影为</p>
+<p>$$
+\mathbf P_S
+=\mathbf U_S\mathbf U_S^{\mathrm H}.
+$$</p>
+<p>相应的正交补空间投影为</p>
+<p>$$
+\boxed{
+\mathbf P_N
+=\mathbf I-
+\mathbf U_S\mathbf U_S^{\mathrm H}.
+}
+$$</p>
+<p>如果把 $\mathbf U_N$ 直接写成噪声子空间基，也有</p>
+<p>$$
+\mathbf P_N
+=\mathbf U_N\mathbf U_N^{\mathrm H}.
+$$</p>
+<figure class="diagram"><svg viewbox="0 0 940 420"><rect fill="#fbfdff" height="418" rx="18" stroke="#dce6f0" width="938" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="470" y="42">MUSIC 的线性代数：观测空间 = 信号子空间 ⊕ 噪声子空间</text><path d="M120 320 L580 320 L725 220 L265 220 Z" fill="#eef5fb" stroke="#9dbbd6" stroke-width="2"></path><text class="svg-accent" text-anchor="middle" x="420" y="365">Signal subspace  span(A)</text><path d="M420 270 L700 90" stroke="#d2782e" stroke-width="4"></path><text class="svg-orange" x="710" y="88">Noise subspace</text><path d="M420 270 L555 245" stroke="#1f6fb2" stroke-width="4"></path><text class="svg-blue" x="565" y="240">a(θp)</text><path d="M420 270 L520 130" stroke="#708aa1" stroke-width="3"></path><text class="svg-label" x="530" y="128">任意候选 a(θ)</text><path d="M490 252 L505 270 L485 282" fill="none" stroke="#60788f" stroke-width="2"></path><text class="svg-label" text-anchor="middle" x="470" y="395">真实导向矢量位于信号子空间，因此与噪声子空间正交</text></svg><figcaption>图 4　信号子空间与噪声子空间的正交几何图。</figcaption></figure>
+<hr/>
+<h2 id="6-music-的关键-协方差矩阵自己把空间分成两块">6. MUSIC 的关键：协方差矩阵自己把空间分成两块</h2>
+
+<p>从理想模型</p>
+<p>$$
+\mathbf R_x
+=\mathbf A\mathbf R_s\mathbf A^{\mathrm H}
++\sigma_n^2\mathbf I
+$$</p>
+<p>出发。</p>
+<p>若有 $P$ 个互不相干/使 $\mathbf R_s$ 满秩的信源，并且 $P<m$，那么信号项< p="">
+<p>$$
+\mathbf A\mathbf R_s\mathbf A^{\mathrm H}
+$$</p>
+<p>的秩最多为 $P$。</p>
+<p>对 $\mathbf R_x$ 做特征分解：</p>
+<p>$$
+\mathbf R_x
+=\mathbf U\boldsymbol\Lambda\mathbf U^{\mathrm H}.
+$$</p>
+<p>按特征值从大到小排列，可写成</p>
+<p>$$
+\boxed{
+\mathbf R_x
+=\mathbf U_S\boldsymbol\Lambda_S\mathbf U_S^{\mathrm H}
++\mathbf U_N\boldsymbol\Lambda_N\mathbf U_N^{\mathrm H}.
+}
+$$</p>
+<p>理想白噪声下：</p>
+<ul>
+<li>前 $P$ 个较大特征值对应信号子空间；</li>
+<li>后 $M-P$ 个特征值等于或聚集在 $\sigma_n^2$ 附近，对应噪声子空间。</li>
+</ul>
+<h3 id="6-1-为什么真实导向矢量一定和噪声子空间正交">6.1 为什么真实导向矢量一定和噪声子空间正交</h3>
+<p>取噪声子空间任一特征向量 $\mathbf u_n$：</p>
+<p>$$
+\mathbf R_x\mathbf u_n
+=\sigma_n^2\mathbf u_n.
+$$</p>
+<p>代入模型：</p>
+<p>$$
+\mathbf A\mathbf R_s\mathbf A^{\mathrm H}\mathbf u_n
++\sigma_n^2\mathbf u_n
+=\sigma_n^2\mathbf u_n.
+$$</p>
+<p>于是</p>
+<p>$$
+\mathbf A\mathbf R_s\mathbf A^{\mathrm H}\mathbf u_n
+=\mathbf0.
+$$</p>
+<p>当 $\mathbf R_s$ 满秩且不同 DOA 使 $\mathbf A$ 列满秩时，可以推出</p>
+<p>$$
+\mathbf A^{\mathrm H}\mathbf u_n
+=\mathbf0.
+$$</p>
+<p>因此所有真实信号导向矢量都满足</p>
+<p>$$
+\boxed{
+\mathbf U_N^{\mathrm H}
+\mathbf a(\theta_p)
+=\mathbf0.
+}
+$$</p>
+<p>这就是 MUSIC 的全部核心。</p>
+<hr/>
+<h2 id="7-music-伪谱-寻找-最接近噪声子空间正交-的方向">7. MUSIC 伪谱：寻找“最接近噪声子空间正交”的方向</h2>
+
+<p>对任意候选角 $\theta$，计算它在噪声子空间中的投影能量：</p>
+<p>$$
+D(\theta)
+=\mathbf a^{\mathrm H}(\theta)
+\mathbf U_N\mathbf U_N^{\mathrm H}
+\mathbf a(\theta).
+$$</p>
+<p>若 $\theta$ 恰好是真实 DOA，则理论上</p>
+<p>$$
+D(\theta_p)=0.
+$$</p>
+<p>因此把它取倒数就形成尖峰：</p>
+<p>$$
+\boxed{
+P_{\mathrm{MUSIC}}(\theta)
+=\frac{1}
+{\mathbf a^{\mathrm H}(\theta)
+\mathbf U_N\mathbf U_N^{\mathrm H}
+\mathbf a(\theta)}.
+}
+$$</p>
+<figure class="diagram"><svg viewbox="0 0 960 390"><rect fill="#fbfdff" height="388" rx="18" stroke="#dce6f0" width="958" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="480" y="42">MUSIC：投影能量的“谷”取倒数，变成 DOA 的尖峰</text><line stroke="#60788f" stroke-width="2" x1="75" x2="420" y1="285" y2="285"></line><path d="M85 130 C150 130,190 150,220 270 C250 150,290 130,410 130" fill="none" stroke="#708aa1" stroke-width="4"></path><text class="svg-title" text-anchor="middle" x="245" y="90">噪声子空间投影 D(θ)</text><text class="svg-orange" text-anchor="middle" x="220" y="315">真实 θp → D≈0</text><line stroke="#60788f" stroke-width="2" x1="540" x2="885" y1="285" y2="285"></line><path d="M550 275 C630 275,675 265,705 245 C730 225,745 92,760 75 C775 92,790 225,815 245 C835 265,855 275,875 275" fill="none" stroke="#1f6fb2" stroke-width="4"></path><text class="svg-title" text-anchor="middle" x="715" y="90">PMUSIC(θ)=1/D(θ)</text><text class="svg-blue" text-anchor="middle" x="760" y="315">真实 θp → 尖峰</text></svg><figcaption>图 5　MUSIC 伪谱的形成：真实来向在噪声子空间上的投影趋近零，取倒数后产生尖锐谱峰。</figcaption></figure>
+<h3 id="7-1-为什么叫-伪谱">7.1 为什么叫“伪谱”</h3>
+<p>MUSIC 的纵轴不是阵列真实输出功率。它衡量的是：</p>
+<blockquote class="callout">
+<p><strong>候选导向矢量距离噪声子空间正交条件有多近。</strong></p>
+</blockquote>
+<p>因此谱峰位置有明确 DOA 意义，但谱峰高度不应该像 CBF/Capon 那样直接解释成信号功率。</p>
+<h3 id="7-2-信号子空间形式">7.2 信号子空间形式</h3>
+<p>因为完整特征向量矩阵为酉矩阵：</p>
+<p>$$
+\mathbf U_S\mathbf U_S^{\mathrm H}
++\mathbf U_N\mathbf U_N^{\mathrm H}
+=\mathbf I,
+$$</p>
+<p>所以</p>
+<p>$$
+\mathbf U_N\mathbf U_N^{\mathrm H}
+=\mathbf I-
+\mathbf U_S\mathbf U_S^{\mathrm H}.
+$$</p>
+<p>这说明 MUSIC 可以用噪声子空间或信号子空间实现，本质都是计算正交补投影。</p>
+<hr/>
+<h2 id="8-三种算法其实是在问三个不同的问题">8. 三种算法其实是在问三个不同的问题</h2>
+
+<figure class="diagram"><svg viewbox="0 0 980 420"><rect fill="#fbfdff" height="418" rx="18" stroke="#dce6f0" width="978" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="490" y="42">概念谱形对比：两目标逐渐靠近时的分辨能力</text><line stroke="#60788f" stroke-width="2" x1="80" x2="900" y1="330" y2="330"></line><path d="M90 320 C190 315,270 300,355 180 C390 130,430 155,470 205 C510 155,550 130,585 180 C670 300,750 315,890 320" fill="none" stroke="#708aa1" stroke-width="4"></path><path d="M90 320 C250 318,345 300,395 115 C420 70,440 285,470 305 C500 285,520 70,545 115 C595 300,690 318,890 320" fill="none" stroke="#d2782e" stroke-width="3"></path><path d="M90 320 C300 319,385 310,410 80 C420 48,430 308,470 316 C510 308,520 48,530 80 C555 310,640 319,890 320" fill="none" stroke="#1f6fb2" stroke-width="3"></path><text class="svg-label" x="700" y="105">CBF：宽峰</text><text class="svg-orange" x="700" y="140">Capon：更窄</text><text class="svg-blue" x="700" y="175">MUSIC：尖锐伪谱</text><text class="svg-label" text-anchor="middle" x="490" y="382">示意图只表达分辨率趋势，不代表课件某组具体数值</text></svg><figcaption>图 6　三种方法的概念谱形对比。MUSIC 的尖峰是正交性伪谱，不是更大的真实输出功率。</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>核心问题</th>
+<th>典型谱式</th>
+<th>主要特征</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CBF</td>
+<td>这个角度的模板与数据匹不匹配？</td>
+<td>$\mathbf a^H\mathbf R\mathbf a$</td>
+<td>简单稳健，分辨率受孔径限制</td>
+</tr>
+<tr>
+<td>Capon / MVDR</td>
+<td>保持该方向无失真时，最小剩余功率是多少？</td>
+<td>$1/(\mathbf a^H\mathbf R^{-1}\mathbf a)$</td>
+<td>自适应抑制干扰，分辨率较高</td>
+</tr>
+<tr>
+<td>MUSIC</td>
+<td>这个角度的模板是否与噪声子空间正交？</td>
+<td>$1/(\mathbf a^H\mathbf U_N\mathbf U_N^H\mathbf a)$</td>
+<td>高分辨率，但依赖模型阶数与子空间估计</td>
+</tr>
+</tbody>
+</table>
+<h3 id="8-1-capon-与-music-为什么看起来越来越像">8.1 Capon 与 MUSIC 为什么看起来越来越像</h3>
+<p>把协方差逆矩阵按特征分解展开：</p>
+<p>$$
+\mathbf R_x^{-1}
+=\sum_{i=1}^{P}
+\frac{1}{\lambda_i}
+\mathbf e_i\mathbf e_i^{\mathrm H}
++\frac{1}{\sigma_n^2}
+\mathbf U_N\mathbf U_N^{\mathrm H}.
+$$</p>
+<p>高 SNR 时，信号特征值 $\lambda_i$ 很大，所以 $1/\lambda_i$ 很小，近似有</p>
+<p>$$
+\mathbf R_x^{-1}
+\approx
+\frac1{\sigma_n^2}
+\mathbf U_N\mathbf U_N^{\mathrm H}.
+$$</p>
+<p>于是 Capon 分母</p>
+<p>$$
+\mathbf a^H\mathbf R_x^{-1}\mathbf a
+$$</p>
+<p>在高 SNR 时接近噪声子空间投影能量。这解释了课件 Pages 54–56 给出的 Capon/MUSIC 联系。</p>
+<hr/>
+<h2 id="9-snr-快拍数-阵元数和角间隔分别在影响什么">9. SNR、快拍数、阵元数和角间隔分别在影响什么</h2>
+
+<p>课件用了多组 RMSE 和空间谱曲线比较算法。不要只记“谁更好”，更重要的是看清四个旋钮：</p>
+<h3 id="9-1-snr">9.1 SNR</h3>
+<p>SNR 降低时：</p>
+<ul>
+<li>信号特征值和噪声特征值的间隔缩小；</li>
+<li>MUSIC 的子空间分界更难；</li>
+<li>Capon 的协方差逆也更受估计误差影响；</li>
+<li>谱峰变钝、偏移、甚至漏检。</li>
+</ul>
+<h3 id="9-2-快拍数-n">9.2 快拍数 $N$</h3>
+<p>$N$ 增加时，样本协方差更稳定：</p>
+<p>$$
+\hat{\mathbf R}_x
+\to\mathbf R_x.
+$$</p>
+<p>因此三种方法都会受益，尤其依赖 EVD 的 MUSIC。</p>
+<h3 id="9-3-阵元数-m">9.3 阵元数 $M$</h3>
+<p>在 $d$ 固定为 $\lambda/2$ 时，增加 $M$ 等于扩大物理孔径：</p>
+<ul>
+<li>CBF 主瓣变窄；</li>
+<li>Capon/MUSIC 可利用的空间自由度增加；</li>
+<li>可分辨角间隔通常变小。</li>
+</ul>
+<h3 id="9-4-两源角间隔">9.4 两源角间隔</h3>
+<p>当两源逐渐靠近，最先失败的是普通 CBF；Capon 和 MUSIC 往往能继续分峰，但在低 SNR、少快拍或模型失配下也会出现阈值效应。</p>
+<p>课件 Page 61 的总结强调：MUSIC 通常具有更高分辨能力，但需要估计信源个数，稳健性并不自动优于 Capon。</p>
+<hr/>
+<h2 id="10-相关-不相关-正交-独立-不要混成同一个词">10. 相关、不相关、正交、独立：不要混成同一个词</h2>
+
+<p>第三讲补充部分重新回到随机过程基础，是因为子空间方法对<strong>信源间的统计相关结构</strong>非常敏感。</p>
+<h3 id="10-1-相关函数与协方差">10.1 相关函数与协方差</h3>
+<p>互相关</p>
+<p>$$
+R_{xy}
+=\mathrm E\{XY^*\},
+$$</p>
+<p>互协方差</p>
+<p>$$
+C_{xy}
+=\mathrm E\{(X-\mu_X)(Y-\mu_Y)^*\}.
+$$</p>
+<p>若两个变量零均值，则二者一致。</p>
+<h3 id="10-2-正交-vs-不相关">10.2 正交 vs 不相关</h3>
+<ul>
+<li>正交：$R_{xy}=0$；</li>
+<li>不相关：$C_{xy}=0$。</li>
+</ul>
+<p>零均值时二者等价；非零均值时不一定。</p>
+<h3 id="10-3-独立">10.3 独立</h3>
+<p>统计独立要求联合概率分布可以分解：</p>
+<p>$$
+p_{XY}(x,y)
+=p_X(x)p_Y(y).
+$$</p>
+<p>独立是比“不相关”更强的条件；在一般情形下，不相关不能推出独立。</p>
+<h3 id="10-4-相干">10.4 相干</h3>
+<p>阵列处理中“完全相干”通常意味着两个信源之间存在确定复比例关系：</p>
+<p>$$
+s_2[n]=c\,s_1[n].
+$$</p>
+<p>此时两个信源虽然来自不同角度，但在时间统计上不提供两个独立随机自由度。</p>
+<hr/>
+<h2 id="11-相干源为什么会让经典-music-失效">11. 相干源为什么会让经典 MUSIC 失效</h2>
+
+<p>经典 MUSIC 默认 $P$ 个信源对应 $P$ 维信号子空间。这个结论隐含一个关键条件：</p>
+<p>$$
+\boxed{
+\operatorname{rank}(\mathbf R_s)=P.
+}
+$$</p>
+<p>如果两个信源完全相干，例如</p>
+<p>$$
+\mathbf s[n]
+=s_1[n]
+\begin{bmatrix}
+1\\c
+\end{bmatrix},
+$$</p>
+<p>那么对应协方差矩阵只有秩 1，而不是 2。</p>
+<p>于是</p>
+<p>$$
+\operatorname{rank}(\mathbf A\mathbf R_s\mathbf A^H) &lt; P.
+$$</p>
+<p>本应存在的多个信号特征方向“塌缩”成更低维子空间，MUSIC 再按照实际源数去划分信号/噪声子空间时，正交关系就不再满足理想模型。</p>
+<figure class="diagram"><svg viewbox="0 0 960 410"><rect fill="#fbfdff" height="408" rx="18" stroke="#dce6f0" width="958" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="480" y="42">相干源问题：实际源数没变，但信号协方差的秩会塌缩</text><text class="svg-title" text-anchor="middle" x="235" y="82">两个统计独立自由度</text><text class="svg-title" text-anchor="middle" x="725" y="82">两个完全相干源</text><line stroke="#60788f" stroke-width="2" x1="235" x2="235" y1="300" y2="125"></line><line stroke="#60788f" stroke-width="2" x1="150" x2="360" y1="300" y2="300"></line><path d="M235 300 L330 160" stroke="#1f6fb2" stroke-width="5"></path><path d="M235 300 L145 175" stroke="#d2782e" stroke-width="5"></path><text class="svg-accent" text-anchor="middle" x="235" y="340">rank(Rs)=2</text><line stroke="#60788f" stroke-width="2" x1="725" x2="725" y1="300" y2="125"></line><line stroke="#60788f" stroke-width="2" x1="625" x2="840" y1="300" y2="300"></line><path d="M725 300 L820 160" stroke="#1f6fb2" stroke-width="7"></path><path d="M725 300 L790 205" stroke="#d2782e" stroke-dasharray="7 5" stroke-width="4"></path><text class="svg-orange" text-anchor="middle" x="725" y="340">s₂=c s₁ → rank(Rs)=1</text><text class="svg-label" text-anchor="middle" x="480" y="382">经典 MUSIC 依赖信号子空间维数 = 源数；秩亏会破坏这一前提</text></svg><figcaption>图 7　相干源造成信源协方差秩下降，经典 MUSIC 的信号子空间维数不再等于实际源数。</figcaption></figure>
+<p>课件 Pages 74–80 用不同类型信源的谱图展示了这种现象。</p>
+<blockquote class="callout">
+<p><strong>补充说明：</strong>工程上常用空间平滑（spatial smoothing）等方法恢复相干源场景下的有效秩；本课件这一部分主要在解释“为什么会坏”，没有系统展开解相干算法，因此本笔记只把它作为后续接口。</p>
+</blockquote>
+<hr/>
+<h2 id="12-从实现角度看三种算法">12. 从实现角度看三种算法</h2>
+<h3 id="12-1-cbf">12.1 CBF</h3>
+<ol>
+<li>估计 $\hat{\mathbf R}_x$；</li>
+<li>对每个候选角生成 $\mathbf a(\theta)$；</li>
+<li>计算
+   $$
+   P_{\mathrm{CBF}}(\theta)
+   =\mathbf a^H\hat{\mathbf R}_x\mathbf a;
+   $$</li>
+<li>搜索谱峰。</li>
+</ol>
+<h3 id="12-2-capon">12.2 Capon</h3>
+<ol>
+<li>估计 $\hat{\mathbf R}_x$；</li>
+<li>求解线性方程或构造稳定的逆；</li>
+<li>扫描
+   $$
+   P_{\mathrm{Capon}}(\theta)
+   =\frac1{\mathbf a^H\hat{\mathbf R}_x^{-1}\mathbf a};
+   $$</li>
+<li>搜索谱峰。</li>
+</ol>
+<p>实际工程中若协方差病态，常做对角加载；这是稳定化手段，不改变 MVDR 的基本思想。</p>
+<h3 id="12-3-music">12.3 MUSIC</h3>
+<ol>
+<li>估计 $\hat{\mathbf R}_x$；</li>
+<li>特征分解；</li>
+<li>根据已知/估计的信源数 $P$ 选出 $M-P$ 个噪声特征向量；</li>
+<li>构成 $\mathbf U_N$；</li>
+<li>扫描
+   $$
+   P_{\mathrm{MUSIC}}(\theta)
+   =\frac1{\mathbf a^H\mathbf U_N\mathbf U_N^H\mathbf a};
+   $$</li>
+<li>取最大的 $P$ 个谱峰作为 DOA 估计。</li>
+</ol>
+<hr/>
+<h2 id="13-第三讲总复盘-三种算法的统一视角">13. 第三讲总复盘：三种算法的统一视角</h2>
+<p>真正需要带走的不是三条互不相关的公式，而是三个层次：</p>
+<p>$$
+\boxed{
+\begin{gathered}
+\text{CBF：匹配空间模板}\\
+\downarrow\\
+\text{Capon：在无失真约束下最小化剩余功率}\\
+\downarrow\\
+\text{MUSIC：利用信号/噪声子空间正交性}
+\end{gathered}}
+$$</p>
+<p>它们共用同一个基础：</p>
+<ul>
+<li>同一个导向矢量 $\mathbf a(\theta)$；</li>
+<li>同一个阵列模型 $\mathbf x=\mathbf A\mathbf s+\mathbf n$；</li>
+<li>同一个样本协方差 $\hat{\mathbf R}_x$。</li>
+</ul>
+<p>区别只在于<strong>如何使用这些信息</strong>。</p>
+<h3 id="13-1-课件作业真正应该比较什么">13.1 课件作业真正应该比较什么</h3>
+<p>Page 81 要求比较 CBF、Capon、MUSIC。建议输出不只画三张谱，还同时记录：</p>
+<ol>
+<li>估计角度偏差；</li>
+<li>RMSE；</li>
+<li>两源是否被分辨；</li>
+<li>峰旁比或谱峰锐度；</li>
+<li>在不同 $M$、$N$、SNR 和角间隔下的变化。</li>
+</ol>
+<p>这样才能把课件 Pages 53–60 的定性结论变成可复现实验。</p>
+<hr/>
+<h2 id="来源说明">来源说明</h2>
+<ul>
+<li>主线资料：<code>阵列信号处理/阵列信号处理 第三讲.pdf</code>，PDF 物理页 1–81。</li>
+<li>核心追溯：Pages 4–13（空间谱与 CBF）、15–27（Capon/MVDR）、29–50（子空间与 MUSIC）、51–61（算法比较）、62–80（相关/相干源补充）、81（作业）。</li>
+<li>公式文本层存在排版与字符编码损失；最终公式按同页语义和第二讲统一阵列模型重建。</li>
+<li>“空间平滑可处理相干源”属于标准补充说明，课件主体仅展示相干源导致的退化现象；本笔记没有把该补充冒充原课件推导。</li>
+</ul></m$，那么信号项<></p><section class="source-panel"><strong>来源追溯</strong><br>主线资料：<code>阵列信号处理/阵列信号处理 第三讲.pdf</code>，PDF 物理页 1–81。核心范围：Pages 4–13 CBF，15–27 Capon/MVDR，29–50 子空间与 MUSIC，51–61 性能比较，62–80 相关/相干源补充，81 作业。公式按第二讲统一阵列模型重建；空间平滑只作为标明的后续标准补充，不冒充课件原文。</section><div class="footer">学习笔记项目 · 阵列信号处理 · ChatGPT-AgentDock / Codex 协作工作流 · 2026-09-25</div></main></div><script>const bar=document.getElementById('progress');const links=[...document.querySelectorAll('.toc a')];
+function update(){const d=document.documentElement;const m=d.scrollHeight-d.clientHeight;bar.style.width=(m?d.scrollTop/m*100:0)+'%';}
+window.addEventListener('scroll',update,{passive:true});update();
+const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+e.target.id));}})},{rootMargin:'-15% 0px -72% 0px'});
+document.querySelectorAll('h2[id],h3[id]').forEach(h=>obs.observe(h));
+</script></body></html>

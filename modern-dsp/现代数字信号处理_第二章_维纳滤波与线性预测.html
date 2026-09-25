@@ -1,0 +1,692 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"><title>现代数字信号处理｜第二章：维纳滤波与线性预测</title><script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']]},svg:{fontCache:'global'}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script><style>:root{--ink:#20303d;--muted:#627385;--line:#dce5ed;--paper:#fff;--soft:#f6f9fc;--blue:#1f6fb2;--blue2:#315f91;--orange:#c96d25;--shadow:0 12px 34px rgba(41,63,82,.08);}
+*{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;background:#f3f6f9;color:var(--ink);font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;line-height:1.82;font-size:16px}
+#progress{position:fixed;top:0;left:0;height:3px;background:var(--blue);width:0;z-index:50}
+.layout{display:grid;grid-template-columns:280px minmax(0,860px);gap:32px;max-width:1210px;margin:0 auto;padding:34px 24px 80px}
+.sidebar{position:sticky;top:22px;height:calc(100vh - 44px);overflow:auto;padding:18px 16px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.92);box-shadow:var(--shadow)}
+.brand{font-weight:700;color:#173c5c;margin:3px 8px 14px} .toc{display:flex;flex-direction:column;gap:2px} .toc a{text-decoration:none;color:#536779;border-radius:8px;padding:7px 9px;font-size:13px;line-height:1.4} .toc a:hover,.toc a.active{background:#edf4fa;color:#174e7e} .toc-sub{padding-left:22px!important;font-size:12.5px!important}
+.article{background:var(--paper);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:54px 68px;min-width:0}
+.hero{border-bottom:1px solid var(--line);padding-bottom:30px;margin-bottom:36px} .eyebrow{color:var(--blue);font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase} h1{font-size:35px;line-height:1.25;margin:10px 0 15px;color:#17344d} .lead{font-size:17px;color:#596d7f;max-width:720px;margin:0} .meta{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px} .chip{font-size:12px;padding:5px 9px;border-radius:999px;background:#edf4fa;color:#315f91;border:1px solid #d2e2ef}
+h2{font-size:25px;line-height:1.35;color:#183e5d;margin:54px 0 18px;padding-top:4px} h3{font-size:19px;line-height:1.4;color:#28516f;margin:34px 0 12px} p{margin:12px 0} strong{color:#193b56} code{font-family:"Cascadia Mono",Consolas,monospace;background:#f0f4f7;border:1px solid #e1e8ee;padding:.08em .34em;border-radius:5px;font-size:.92em}
+hr{border:0;border-top:1px solid var(--line);margin:42px 0} ul,ol{padding-left:1.55em} li{margin:.35em 0}
+blockquote.callout{margin:22px 0;padding:14px 18px;border-left:4px solid var(--blue);background:#f3f8fc;border-radius:0 10px 10px 0;color:#405669}
+table{width:100%;border-collapse:collapse;margin:20px 0 28px;font-size:14.5px} th,td{border:1px solid #dce5ed;padding:10px 12px;text-align:left;vertical-align:top} th{background:#eef5fa;color:#294f6d} tr:nth-child(even) td{background:#fbfcfd}
+.diagram{margin:28px 0 34px;padding:16px;border:1px solid var(--line);border-radius:16px;background:#fbfdff;overflow:hidden} .diagram svg{width:100%;height:auto;display:block} figcaption{text-align:center;color:#657889;font-size:13px;margin-top:10px} .svg-label{font:16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#415466} .svg-title{font:600 17px "Segoe UI","Microsoft YaHei",sans-serif;fill:#294f6d} .svg-accent{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#315f91} .svg-blue{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#1f6fb2} .svg-orange{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#c96d25}
+.formula-note{font-size:13px;color:var(--muted)} mjx-container{color:#172a3a} mjx-container[display="true"]{margin:1.35em 0!important;max-width:100%;overflow-x:auto;overflow-y:hidden;padding:.18em .25em .24em;text-align:center;scrollbar-width:thin;scrollbar-color:#c7d5e1 transparent} mjx-container[display="true"]>svg{display:inline-block;vertical-align:middle} mjx-container:not([display="true"]){font-size:1.01em}
+.source-panel{margin-top:52px;padding:22px;border:1px solid var(--line);background:#f8fafc;border-radius:14px;color:#526779;font-size:14px} .source-panel a{color:var(--blue)}
+.footer{margin-top:38px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:#7a8997;text-align:center}
+@media(max-width:980px){.layout{grid-template-columns:1fr;max-width:900px}.sidebar{position:relative;top:0;height:auto;max-height:340px}.article{padding:42px 34px}}
+@media(max-width:600px){body{font-size:15px}.layout{padding:12px 8px 50px}.sidebar{display:none}.article{padding:30px 20px;border-radius:12px}h1{font-size:28px}h2{font-size:22px}.diagram{padding:5px}mjx-container[display="true"]{font-size:.96em;margin:1.1em 0!important}}
+@media print{body{background:white;font-size:10.5pt}#progress,.sidebar{display:none!important}.layout{display:block;max-width:none;padding:0}.article{border:0;box-shadow:none;padding:0}.hero{margin-top:0}h2,h3{break-after:avoid-page}.diagram,table,blockquote,mjx-container[display="true"]{break-inside:avoid}mjx-container[display="true"]{overflow:visible}a{color:inherit;text-decoration:none}}
+</style></head><body><div id="progress"></div><div class="layout"><aside class="sidebar"><div class="brand">现代数字信号处理 · 第二章</div><nav class="toc"><a class="toc-main" href="#0-从-滤波-重新理解成-估计">0. 从“滤波”重新理解成“估计”</a>
+<a class="toc-main" href="#1-fir-维纳滤波-先把问题写成向量形式">1. FIR 维纳滤波：先把问题写成向量形式</a>
+<a class="toc-sub" href="#1-1-数据向量和权向量">1.1 数据向量和权向量</a>
+<a class="toc-sub" href="#1-2-mse-展开">1.2 MSE 展开</a>
+<a class="toc-main" href="#2-正交性原理-最优估计的几何本质">2. 正交性原理：最优估计的几何本质</a>
+<a class="toc-sub" href="#2-1-从梯度为零到-误差正交">2.1 从梯度为零到“误差正交”</a>
+<a class="toc-sub" href="#2-2-为什么-正交-会等于-最优">2.2 为什么“正交”会等于“最优”</a>
+<a class="toc-main" href="#3-wiener-hopf-方程与-fir-最优解">3. Wiener–Hopf 方程与 FIR 最优解</a>
+<a class="toc-sub" href="#3-1-矩阵方程">3.1 矩阵方程</a>
+<a class="toc-sub" href="#3-2-最小均方误差">3.2 最小均方误差</a>
+<a class="toc-sub" href="#3-3-课件-m-2-例子的意义">3.3 课件 M=2 例子的意义</a>
+<a class="toc-main" href="#4-为什么频域里会出现一个简单的-谱比值">4. 为什么频域里会出现一个简单的“谱比值”</a>
+<a class="toc-sub" href="#4-1-非因果情形先最简单">4.1 非因果情形先最简单</a>
+<a class="toc-sub" href="#4-2-去噪问题中的经典-wiener-频率响应">4.2 去噪问题中的经典 Wiener 频率响应</a>
+<a class="toc-main" href="#5-因果约束为什么让问题突然变难">5. 因果约束为什么让问题突然变难</a>
+<a class="toc-main" href="#6-谱因子化与白化-因果-wiener-的关键桥梁">6. 谱因子化与白化：因果 Wiener 的关键桥梁</a>
+<a class="toc-sub" href="#6-1-有理谱可以看成白噪声经过生成系统">6.1 有理谱可以看成白噪声经过生成系统</a>
+<a class="toc-sub" href="#6-2-因果-wiener-的标准形式">6.2 因果 Wiener 的标准形式</a>
+<a class="toc-sub" href="#6-3-为什么一定要选最小相位谱因子">6.3 为什么一定要选最小相位谱因子</a>
+<a class="toc-sub" href="#6-4-因果约束必然要付出-mse-代价">6.4 因果约束必然要付出 MSE 代价</a>
+<a class="toc-main" href="#7-从滤波到预测-只差-期望信号放在哪里">7. 从滤波到预测：只差“期望信号放在哪里”</a>
+<a class="toc-sub" href="#7-1-为什么未来能够被预测">7.1 为什么未来能够被预测</a>
+<a class="toc-sub" href="#7-2-预测距离越远-误差通常越大">7.2 预测距离越远，误差通常越大</a>
+<a class="toc-main" href="#8-一步线性预测-wiener-ar-和-yule-walker-在这里汇合">8. 一步线性预测：Wiener、AR 和 Yule–Walker 在这里汇合</a>
+<a class="toc-sub" href="#8-1-p-阶前向预测器">8.1 p 阶前向预测器</a>
+<a class="toc-sub" href="#8-2-为什么-ar-模型和线性预测器是一回事">8.2 为什么 AR 模型和线性预测器是一回事</a>
+<a class="toc-sub" href="#8-3-最小预测误差">8.3 最小预测误差</a>
+<a class="toc-main" href="#9-一份课件作业如何变成可复现-wiener-实验">9. 一份课件作业如何变成可复现 Wiener 实验</a>
+<a class="toc-sub" href="#9-1-实验里最容易踩的坑">9.1 实验里最容易踩的坑</a>
+<a class="toc-main" href="#10-wiener-与-kalman-当前资料能说到哪里">10. Wiener 与 Kalman：当前资料能说到哪里</a>
+<a class="toc-main" href="#11-第二章总复盘-真正要记住的是一条主线">11. 第二章总复盘：真正要记住的是一条主线</a>
+<a class="toc-main" href="#来源说明">来源说明</a></nav></aside><main class="article"><header class="hero"><div class="eyebrow">Modern Digital Signal Processing · Chapter 02</div><h1>维纳滤波与线性预测</h1><p class="lead">从 MMSE 与正交投影出发，串起 Wiener–Hopf、FIR 时域解、非因果谱比值、谱因子化与白化、因果 Wiener，以及线性预测与 Yule–Walker。</p><div class="meta"><span class="chip">106 页维纳课件</span><span class="chip">MMSE · 正交性</span><span class="chip">6 张教学示意图</span><span class="chip">Wiener · Prediction</span></div></header><blockquote class="callout">
+<p>第一章解决的是“怎样描述随机信号”；第二章开始解决“怎样利用这些统计规律做最优估计”。维纳滤波的核心并不是某一条逆矩阵公式，而是一个贯穿后续 Kalman、自适应滤波与线性预测的思想：<strong>在所有允许的线性估计器中，选择均方误差最小的那个。</strong></p>
+</blockquote>
+
+<h2 id="0-从-滤波-重新理解成-估计">0. 从“滤波”重新理解成“估计”</h2>
+<p>设观测信号为</p>
+<p>$$
+x[n]=s[n]+v[n],
+$$</p>
+<p>其中 $s[n]$ 是希望恢复的信号，$v[n]$ 是噪声。经典频率选择性滤波容易让人形成一种直觉：只要把“噪声频带”切掉即可。但真实问题常常是信号和噪声频谱重叠，此时不存在一条理想截止频率能把二者完全分开。</p>
+<p>维纳的处理方式是换一个问题：</p>
+<blockquote class="callout">
+<p>不要求“完全去掉噪声”，而是选择一个线性系统，使输出与期望信号之间的<strong>平均平方误差最小</strong>。</p>
+</blockquote>
+<p>令期望信号为 $d[n]$，估计输出为</p>
+<p>$$
+\hat d[n],
+$$</p>
+<p>误差为</p>
+<p>$$
+e[n]=d[n]-\hat d[n].
+$$</p>
+<p>代价函数定义为</p>
+<p>$$
+\boxed{J=\mathrm E\{|e[n]|^2\}.}
+$$</p>
+<p>因此维纳滤波器的设计目标就是</p>
+<p>$$
+\boxed{
+\min_{\text{线性滤波器}}\;\mathrm E\{|d[n]-\hat d[n]|^2\}.
+}
+$$</p>
+<p>课件 Pages 4–9 将 Wiener 与 Kalman 放在同一“最小均方估计”框架下比较：Wiener 主要针对已知或可估计的平稳统计特性，求固定最优滤波器；Kalman 更偏向状态空间模型中的递推、时变估计。本批资料并没有完整展开 2.5 卡尔曼滤波，因此本章只保留这个接口，不凭空补一套卡尔曼方程。</p>
+<hr/>
+<h2 id="1-fir-维纳滤波-先把问题写成向量形式">1. FIR 维纳滤波：先把问题写成向量形式</h2>
+
+<h3 id="1-1-数据向量和权向量">1.1 数据向量和权向量</h3>
+<p>考虑长度为 $M$ 的 FIR 估计器。定义数据向量</p>
+<p>$$
+\mathbf x[n]
+=
+\begin{bmatrix}
+x[n]&amp;x[n-1]&amp;\cdots&amp;x[n-M+1]
+\end{bmatrix}^{\mathrm T},
+$$</p>
+<p>权向量</p>
+<p>$$
+\mathbf w
+=
+\begin{bmatrix}
+w_0&amp;w_1&amp;\cdots&amp;w_{M-1}
+\end{bmatrix}^{\mathrm T}.
+$$</p>
+<p>对于复信号，采用标准内积写法</p>
+<p>$$
+\boxed{\hat d[n]=\mathbf w^{\mathrm H}\mathbf x[n].}
+$$</p>
+<p>于是</p>
+<p>$$
+e[n]=d[n]-\mathbf w^{\mathrm H}\mathbf x[n].
+$$</p>
+<figure class="diagram" id="fig-wiener-structure"><svg aria-label="FIR Wiener估计器结构" role="img" viewbox="0 0 960 390">
+<defs><marker id="w1" markerheight="8" markerwidth="8" orient="auto" refx="7" refy="4"><path d="M0,0 L8,4 L0,8z" fill="#60788f"></path></marker></defs><rect fill="#fbfdff" height="388" rx="18" stroke="#dce6f0" width="958" x="1" y="1"></rect>
+<text class="svg-title" text-anchor="middle" x="480" y="42">FIR Wiener：用一组观测样本线性估计 d[n]</text>
+<g fill="#eef5fb" stroke="#9dbbd6"><rect height="58" rx="12" width="135" x="55" y="95"></rect><rect height="58" rx="12" width="135" x="55" y="175"></rect><rect height="58" rx="12" width="135" x="55" y="255"></rect><rect height="138" rx="14" width="175" x="305" y="135"></rect><rect height="78" rx="14" width="150" x="590" y="155"></rect></g>
+<text class="svg-label" text-anchor="middle" x="122" y="130">x[n]</text><text class="svg-label" text-anchor="middle" x="122" y="210">x[n−1]</text><text class="svg-label" text-anchor="middle" x="122" y="290">x[n−M+1]</text>
+<text class="svg-title" text-anchor="middle" x="392" y="180">权向量 w</text><text class="svg-accent" text-anchor="middle" x="392" y="215">wᴴx[n]</text><text class="svg-label" text-anchor="middle" x="392" y="245">线性组合</text>
+<text class="svg-title" text-anchor="middle" x="665" y="188">估计 d̂[n]</text><text class="svg-label" text-anchor="middle" x="665" y="215">与 d[n] 比较</text>
+<circle cx="830" cy="195" fill="#fff6ee" r="34" stroke="#d5a77e"></circle><text class="svg-accent" text-anchor="middle" x="830" y="202">e[n]</text>
+<g marker-end="url(#w1)" stroke="#60788f" stroke-width="2.5"><line x1="190" x2="298" y1="124" y2="165"></line><line x1="190" x2="298" y1="204" y2="204"></line><line x1="190" x2="298" y1="284" y2="240"></line><line x1="480" x2="582" y1="204" y2="194"></line><line x1="740" x2="790" y1="194" y2="194"></line></g>
+<line marker-end="url(#w1)" stroke="#d2782e" stroke-width="2.5" x1="830" x2="830" y1="80" y2="158"></line><text class="svg-orange" x="850" y="105">d[n]</text>
+<text class="svg-accent" text-anchor="middle" x="480" y="352">目标：选择 w，使 E{|e[n]|²} 最小</text></svg><figcaption>图 1　FIR Wiener 估计器：观测向量经最优权线性组合得到估计值，再与期望量比较形成误差。</figcaption></figure>
+<h3 id="1-2-mse-展开">1.2 MSE 展开</h3>
+<p>定义</p>
+<p>$$
+\mathbf R_{xx}
+=\mathrm E\{\mathbf x[n]\mathbf x^{\mathrm H}[n]\},
+$$</p>
+<p>以及</p>
+<p>$$
+\mathbf p_{xd}
+=\mathrm E\{\mathbf x[n]d^*[n]\}.
+$$</p>
+<p>期望信号功率为</p>
+<p>$$
+\sigma_d^2=\mathrm E\{|d[n]|^2\}.
+$$</p>
+<p>把误差平方展开：</p>
+<p>$$
+\begin{aligned}
+J(\mathbf w)
+&amp;=\mathrm E\{|d[n]-\mathbf w^{\mathrm H}\mathbf x[n]|^2\}\\
+&amp;=\sigma_d^2
+-\mathbf w^{\mathrm H}\mathbf p_{xd}
+-\mathbf p_{xd}^{\mathrm H}\mathbf w
++\mathbf w^{\mathrm H}\mathbf R_{xx}\mathbf w.
+\end{aligned}
+$$</p>
+<p>这已经是一个标准二次型优化问题。</p>
+<hr/>
+<h2 id="2-正交性原理-最优估计的几何本质">2. 正交性原理：最优估计的几何本质</h2>
+
+<h3 id="2-1-从梯度为零到-误差正交">2.1 从梯度为零到“误差正交”</h3>
+<p>对复权向量使用 Wirtinger 导数，令</p>
+<p>$$
+\frac{\partial J}{\partial\mathbf w^*}=\mathbf 0,
+$$</p>
+<p>得到</p>
+<p>$$
+\mathbf R_{xx}\mathbf w_{\mathrm{opt}}
+=\mathbf p_{xd}.
+$$</p>
+<p>但更重要的是它的等价形式。最优误差</p>
+<p>$$
+e_{\mathrm{opt}}[n]
+=d[n]-\mathbf w_{\mathrm{opt}}^{\mathrm H}\mathbf x[n]
+$$</p>
+<p>满足</p>
+<p>$$
+\boxed{
+\mathrm E\{\mathbf x[n]e_{\mathrm{opt}}^*[n]\}=\mathbf 0.
+}
+$$</p>
+<p>也就是说：</p>
+<blockquote class="callout">
+<p><strong>最优误差与所有被用来构造估计值的观测分量正交。</strong></p>
+</blockquote>
+<p>这就是课件强调的<strong>正交性原理</strong>。</p>
+<h3 id="2-2-为什么-正交-会等于-最优">2.2 为什么“正交”会等于“最优”</h3>
+<p>把 $d[n]$ 想成一个随机向量空间里的向量，所有由 $x[n],x[n-1],\ldots$ 的线性组合构成一个子空间。最好的线性估计，就是把 $d[n]$ 正交投影到这个子空间里。</p>
+<figure class="diagram" id="fig-orthogonal"><svg aria-label="正交投影几何解释" role="img" viewbox="0 0 920 430">
+<defs><marker id="w2" markerheight="8" markerwidth="8" orient="auto" refx="7" refy="4"><path d="M0,0 L8,4 L0,8z" fill="#315f91"></path></marker></defs><rect fill="#fbfdff" height="428" rx="18" stroke="#dce6f0" width="918" x="1" y="1"></rect>
+<path d="M90 335 L700 335 L815 245 L210 245 Z" fill="#eef5fb" stroke="#9dbbd6" stroke-width="2"></path><text class="svg-label" text-anchor="middle" x="465" y="378">由 x[n], x[n−1], … 张成的线性子空间</text>
+<circle cx="505" cy="275" fill="#1f6fb2" r="7"></circle><text class="svg-blue" x="520" y="268">d̂[n]</text><circle cx="675" cy="95" fill="#d2782e" r="7"></circle><text class="svg-orange" x="690" y="88">d[n]</text>
+<line marker-end="url(#w2)" stroke="#315f91" stroke-width="3" x1="675" x2="505" y1="95" y2="275"></line><text class="svg-accent" x="605" y="176">eopt[n]</text>
+<line stroke="#60788f" stroke-width="2" x1="505" x2="370" y1="275" y2="275"></line><path d="M505 275 L480 250 L455 275" fill="none" stroke="#60788f" stroke-width="2"></path>
+<text class="svg-label" x="458" y="225">正交</text><text class="svg-title" text-anchor="middle" x="455" y="52">最优线性估计 = 正交投影</text>
+<text class="svg-accent" text-anchor="middle" x="455" y="405">E{x[n] e*opt[n]} = 0</text></svg><figcaption>图 2　正交性原理的几何直觉：最优估计是期望信号在观测子空间上的投影，误差与整个子空间正交。</figcaption></figure>
+<p>几何上，投影点到 $d[n]$ 的误差向量必然与整个子空间垂直。统计意义下的“垂直”，就是内积</p>
+<p>$$
+\langle x,e\rangle=\mathrm E\{xe^*\}
+$$</p>
+<p>为 0。</p>
+<p>这个观点比死记公式更重要，因为后面的：</p>
+<ul>
+<li>Wiener–Hopf 方程；</li>
+<li>一步线性预测；</li>
+<li>Yule–Walker；</li>
+<li>LMS 的梯度方向；</li>
+<li>Kalman innovation 的正交结构；</li>
+</ul>
+<p>都在反复利用同一个思想。</p>
+<hr/>
+<h2 id="3-wiener-hopf-方程与-fir-最优解">3. Wiener–Hopf 方程与 FIR 最优解</h2>
+
+<h3 id="3-1-矩阵方程">3.1 矩阵方程</h3>
+<p>正交性直接给出</p>
+<p>$$
+\boxed{
+\mathbf R_{xx}\mathbf w_{\mathrm{opt}}
+=\mathbf p_{xd}.
+}
+$$</p>
+<p>这就是 FIR 情况下的 Wiener–Hopf 方程。</p>
+<p>对于 WSS 输入，$\mathbf R_{xx}$ 具有 Hermitian Toeplitz 结构。与其在窄屏上展开一个很宽的矩阵，更紧凑的定义是</p>
+<p>$$
+\boxed{
+[\mathbf R_{xx}]_{ij}
+=r_{xx}[i-j],
+\qquad i,j=0,\ldots,M-1.
+}
+$$</p>
+<p>并由 Hermitian 对称性满足</p>
+<p>$$
+r_{xx}[-m]=r_{xx}^*[m].
+$$</p>
+<p>因此矩阵每一条对角线上的元素相同，主对角线全为 $r_{xx}[0]$，上下对应对角线互为共轭。</p>
+<p>如果 $\mathbf R_{xx}$ 正定可逆：</p>
+<p>$$
+\boxed{
+\mathbf w_{\mathrm{opt}}
+=\mathbf R_{xx}^{-1}\mathbf p_{xd}.
+}
+$$</p>
+<figure class="diagram" id="fig-wiener-hopf"><svg aria-label="Wiener Hopf计算链" role="img" viewbox="0 0 980 330">
+<defs><marker id="w3" markerheight="8" markerwidth="8" orient="auto" refx="7" refy="4"><path d="M0,0 L8,4 L0,8z" fill="#60788f"></path></marker></defs><rect fill="#fbfdff" height="328" rx="18" stroke="#dce6f0" width="978" x="1" y="1"></rect>
+<g fill="#eef5fb" stroke="#9dbbd6"><rect height="95" rx="14" width="160" x="35" y="105"></rect><rect height="95" rx="14" width="185" x="240" y="105"></rect><rect height="95" rx="14" width="180" x="470" y="105"></rect><rect height="95" rx="14" width="235" x="695" y="105"></rect></g>
+<text class="svg-title" text-anchor="middle" x="115" y="140">统计量</text><text class="svg-label" text-anchor="middle" x="115" y="170">rxx, rxd</text><text class="svg-title" text-anchor="middle" x="332" y="137">矩阵化</text><text class="svg-label" text-anchor="middle" x="332" y="167">Rxx · w = pxd</text><text class="svg-title" text-anchor="middle" x="560" y="137">解线性方程</text><text class="svg-accent" text-anchor="middle" x="560" y="167">wopt</text><text class="svg-title" text-anchor="middle" x="812" y="137">性能</text><text class="svg-label" text-anchor="middle" x="812" y="167">Jmin = σd² − pᴴR⁻¹p</text>
+<g marker-end="url(#w3)" stroke="#60788f" stroke-width="2.5"><line x1="195" x2="232" y1="152" y2="152"></line><line x1="425" x2="462" y1="152" y2="152"></line><line x1="650" x2="687" y1="152" y2="152"></line></g><text class="svg-title" text-anchor="middle" x="490" y="52">不要只背 R⁻¹：先看清整个 Wiener–Hopf 信息链</text><text class="svg-accent" text-anchor="middle" x="490" y="275">更多可用相关信息 → 一般可降低最小 MSE，但计算/估计代价也更高</text></svg><figcaption>图 3　FIR Wiener–Hopf 的完整计算链：统计量决定相关矩阵和互相关向量，再决定最优权与最小 MSE。</figcaption></figure>
+<h3 id="3-2-最小均方误差">3.2 最小均方误差</h3>
+<p>将最优权代回 MSE：</p>
+<p>$$
+\begin{aligned}
+J_{\min}
+&amp;=\sigma_d^2
+-\mathbf p_{xd}^{\mathrm H}\mathbf w_{\mathrm{opt}}\\
+&amp;=\boxed{
+\sigma_d^2
+-\mathbf p_{xd}^{\mathrm H}
+\mathbf R_{xx}^{-1}\mathbf p_{xd}}.
+\end{aligned}
+$$</p>
+<p>第二项可以理解成“观测中可被线性解释掉的期望信号功率”。观测与 $d[n]$ 相关得越强，这一项通常越大，剩余误差越小。</p>
+<h3 id="3-3-课件-m-2-例子的意义">3.3 课件 M=2 例子的意义</h3>
+<p>课件 Pages 25–28 给出一个二阶 FIR 例子：期望信号相关函数近似为</p>
+<p>$$
+r_{ss}[m]=0.6^{|m|},
+$$</p>
+<p>噪声为单位方差白噪声，观测</p>
+<p>$$
+x[n]=s[n]+w[n].
+$$</p>
+<p>于是</p>
+<p>$$
+\mathbf R_{xx}
+=
+\begin{bmatrix}
+2&amp;0.6\\
+0.6&amp;2
+\end{bmatrix},
+\qquad
+\mathbf p_{xs}
+=
+\begin{bmatrix}
+1\\0.6
+\end{bmatrix}.
+$$</p>
+<p>求解得到课件给出的近似结果</p>
+<p>$$
+\mathbf w_{\mathrm{opt}}
+\approx
+\begin{bmatrix}
+0.451\\0.165
+\end{bmatrix}.
+$$</p>
+<p>滤波前噪声 MSE 为 1，滤波后最小 MSE 约为 0.45。这里真正值得记的是计算链：</p>
+<p>$$
+\boxed{
+\text{统计量}
+\to\mathbf R_{xx},\mathbf p_{xd}
+\to\mathbf w_{\mathrm{opt}}
+\to J_{\min}.
+}
+$$</p>
+<hr/>
+<h2 id="4-为什么频域里会出现一个简单的-谱比值">4. 为什么频域里会出现一个简单的“谱比值”</h2>
+
+<h3 id="4-1-非因果情形先最简单">4.1 非因果情形先最简单</h3>
+<p>如果暂时不限制 $h[n]$ 必须因果，Wiener–Hopf 方程可以在整个整数轴上写为卷积：</p>
+<p>$$
+r_{xd}[k]
+=\sum_{m=-\infty}^{\infty}
+h[m]r_{xx}[k-m].
+$$</p>
+<p>做 DTFT / 双边 z 变换：</p>
+<p>$$
+S_{xd}=H\,S_{xx}.
+$$</p>
+<p>按照本笔记互谱约定，可写为</p>
+<p>$$
+\boxed{
+H_{\mathrm{nc}}(e^{j\omega})
+=\frac{S_{dx}(e^{j\omega})}
+{S_{xx}(e^{j\omega})}.
+}
+$$</p>
+<p>“nc”表示 noncausal。</p>
+<h3 id="4-2-去噪问题中的经典-wiener-频率响应">4.2 去噪问题中的经典 Wiener 频率响应</h3>
+<p>若</p>
+<p>$$
+x=s+v,\qquad d=s,
+$$</p>
+<p>并且 $s$ 与 $v$ 不相关，那么</p>
+<p>$$
+S_{xx}=S_{ss}+S_{vv},
+\qquad
+S_{dx}=S_{ss}.
+$$</p>
+<p>于是</p>
+<p>$$
+\boxed{
+H_{\mathrm{nc}}(e^{j\omega})
+=
+\frac{S_{ss}(e^{j\omega})}
+{S_{ss}(e^{j\omega})+S_{vv}(e^{j\omega})}.
+}
+$$</p>
+<p>把分子分母同时除以 $S_{vv}$：</p>
+<p>$$
+H_{\mathrm{nc}}
+=
+\frac{\operatorname{SNR}(\omega)}
+{1+\operatorname{SNR}(\omega)}.
+$$</p>
+<figure class="diagram" id="fig-snr"><svg aria-label="Wiener频率响应与SNR关系" role="img" viewbox="0 0 940 400">
+<rect fill="#fbfdff" height="398" rx="18" stroke="#dce6f0" width="938" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="470" y="42">H(ω) = SNR(ω) / [1 + SNR(ω)]：逐频率软加权</text>
+<line stroke="#60788f" stroke-width="2" x1="85" x2="855" y1="315" y2="315"></line><line stroke="#60788f" stroke-width="2" x1="85" x2="85" y1="315" y2="85"></line><text class="svg-label" x="55" y="95">1</text><text class="svg-label" x="862" y="320">ω</text>
+<path d="M100 118 C210 110,260 120,330 140 C400 165,450 210,510 245 C590 290,690 302,840 304" fill="none" stroke="#1f6fb2" stroke-width="5"></path>
+<rect fill="#eef5fb" height="45" rx="10" width="190" x="115" y="335"></rect><rect fill="#f4f7fa" height="45" rx="10" width="190" x="370" y="335"></rect><rect fill="#fff6ee" height="45" rx="10" width="190" x="625" y="335"></rect>
+<text class="svg-blue" text-anchor="middle" x="210" y="364">高 SNR：H≈1</text><text class="svg-label" text-anchor="middle" x="465" y="364">中等 SNR：折中</text><text class="svg-orange" text-anchor="middle" x="720" y="364">低 SNR：H≈0</text>
+</svg><figcaption>图 4　Wiener 去噪的逐频率 SNR 加权。它不是固定的低通/高通，而是根据信号与噪声功率的相对强弱决定保留程度。</figcaption></figure>
+<p>因此 Wiener 滤波不是简单的“低通/高通”：</p>
+<ul>
+<li>某频率处信号远强于噪声，$H\approx1$，尽量保留；</li>
+<li>信号和噪声相近，$0<h<1$，折中衰减；< li="">
+<li>几乎只有噪声，$H\approx0$，强烈抑制。</li>
+</h<1$，折中衰减；<></li></ul>
+<p>这就是它的逐频率最优加权直觉。</p>
+<hr/>
+<h2 id="5-因果约束为什么让问题突然变难">5. 因果约束为什么让问题突然变难</h2>
+
+<p>真实系统通常只能用当前和过去样本，因此要求</p>
+<p>$$
+h[n]=0,\qquad n&lt;0.
+$$</p>
+<p>此时 Wiener–Hopf 方程只允许 $m\ge0$：</p>
+<p>$$
+r_{xd}[k]
+=\sum_{m=0}^{\infty}h[m]r_{xx}[k-m],
+\qquad k\ge0.
+$$</p>
+<p>由于求和区域不是整个整数轴，直接做双边 z 变换后，不能像非因果情况那样简单把卷积两边相除。</p>
+<p>课件的解决思路是：</p>
+<blockquote class="callout">
+<p><strong>先把有色输入白化，使相关矩阵/相关函数“对角化”到最简单的白噪声形式，再求因果最优解。</strong></p>
+</blockquote>
+<hr/>
+<h2 id="6-谱因子化与白化-因果-wiener-的关键桥梁">6. 谱因子化与白化：因果 Wiener 的关键桥梁</h2>
+
+<h3 id="6-1-有理谱可以看成白噪声经过生成系统">6.1 有理谱可以看成白噪声经过生成系统</h3>
+<p>第一章已经看到，一个有理 PSD 可以写成</p>
+<p>$$
+S_{xx}(z)
+=F(z)F^*\!\left(\frac1{z^*}\right),
+$$</p>
+<p>其中选 $F(z)$ 为因果、稳定、最小相位谱因子。</p>
+<p>如果白噪声 $w[n]$ 的 PSD 为 1，那么可以理解为</p>
+<p>$$
+x[n]=f[n]*w[n].
+$$</p>
+<p>反过来用</p>
+<p>$$
+\frac1{F(z)}
+$$</p>
+<p>处理 $x[n]$，就得到白噪声。这就是<strong>白化滤波器</strong>。</p>
+<figure class="diagram" id="fig-whitening"><svg aria-label="谱因子化白化和因果Wiener求解" role="img" viewbox="0 0 980 380">
+<defs><marker id="w5" markerheight="8" markerwidth="8" orient="auto" refx="7" refy="4"><path d="M0,0 L8,4 L0,8z" fill="#60788f"></path></marker></defs><rect fill="#fbfdff" height="378" rx="18" stroke="#dce6f0" width="978" x="1" y="1"></rect>
+<text class="svg-title" text-anchor="middle" x="490" y="42">因果 Wiener：先谱因子化，再白化，再取因果部分</text>
+<g fill="#eef5fb" stroke="#9dbbd6"><rect height="90" rx="14" width="175" x="40" y="125"></rect><rect height="90" rx="14" width="175" x="285" y="125"></rect><rect height="90" rx="14" width="175" x="530" y="125"></rect><rect height="90" rx="14" width="165" x="775" y="125"></rect></g>
+<text class="svg-title" text-anchor="middle" x="127" y="160">有色输入 x[n]</text><text class="svg-label" text-anchor="middle" x="127" y="190">Sxx = F F*</text><text class="svg-title" text-anchor="middle" x="372" y="160">白化 1/F(z)</text><text class="svg-label" text-anchor="middle" x="372" y="190">→ 白噪声域</text><text class="svg-title" text-anchor="middle" x="617" y="156">取 [·]+</text><text class="svg-label" text-anchor="middle" x="617" y="188">只保留因果部分</text><text class="svg-title" text-anchor="middle" x="857" y="156">Hc(z)</text><text class="svg-label" text-anchor="middle" x="857" y="188">物理可实现最优解</text>
+<g marker-end="url(#w5)" stroke="#60788f" stroke-width="2.5"><line x1="215" x2="277" y1="170" y2="170"></line><line x1="460" x2="522" y1="170" y2="170"></line><line x1="705" x2="767" y1="170" y2="170"></line></g>
+<rect fill="#f6f9fc" height="58" rx="12" stroke="#d1dde7" width="580" x="200" y="275"></rect><text class="svg-accent" text-anchor="middle" x="490" y="310">关键条件：谱因子 F(z) 取因果、稳定、最小相位，才能让 1/F(z) 可实现</text></svg><figcaption>图 5　因果 Wiener 的求解逻辑。白化把有色输入转为简单白噪声问题，随后通过因果部分提取满足实时可实现约束。</figcaption></figure>
+<h3 id="6-2-因果-wiener-的标准形式">6.2 因果 Wiener 的标准形式</h3>
+<p>经过谱因子化，因果解可写成</p>
+<p>$$
+\boxed{
+H_{\mathrm c}(z)
+=
+\frac1{F(z)}
+\left[
+\frac{S_{dx}(z)}
+{F^*(1/z^*)}
+\right]_+.
+}
+$$</p>
+<p>这里 $[\cdot]_+$ 表示：</p>
+<ol>
+<li>先对括号中的双边 z 域函数做反变换；</li>
+<li>只保留 $n\ge0$ 的因果部分；</li>
+<li>再做 z 变换。</li>
+</ol>
+<p>如果沿用课件记号</p>
+<p>$$
+S_{xx}(z)
+=\sigma_w^2B(z)B^*\!\left(\frac1{z^*}\right),
+$$</p>
+<p>则</p>
+<p>$$
+H_{\mathrm c}(z)
+=
+\frac{1}{\sigma_w^2B(z)}
+\left[
+\frac{S_{dx}(z)}
+{B^*(1/z^*)}
+\right]_+.
+$$</p>
+<h3 id="6-3-为什么一定要选最小相位谱因子">6.3 为什么一定要选最小相位谱因子</h3>
+<p>如果 $F(z)$ 的零点都在单位圆内，那么：</p>
+<ul>
+<li>$F(z)$ 可以因果稳定；</li>
+<li>$1/F(z)$ 也可以因果稳定；</li>
+<li>白化过程才具有可实现性。</li>
+</ul>
+<p>所以谱分解不是单纯把 PSD “开平方”，而是在多种代数因子中选择满足物理可实现性的那一个。</p>
+<h3 id="6-4-因果约束必然要付出-mse-代价">6.4 因果约束必然要付出 MSE 代价</h3>
+<p>非因果滤波器可以使用未来数据；因果滤波器不能。非因果可选滤波器集合包含因果集合，因此数学上必有</p>
+<p>$$
+\boxed{
+J_{\min,\mathrm{nc}}
+\le
+J_{\min,\mathrm c}.
+}
+$$</p>
+<p>课件 Pages 60–65 的例题用具体留数计算验证了这一点：物理可实现的因果 Wiener 滤波器，其最小 MSE 不会优于允许使用未来样本的非因果滤波器。</p>
+<hr/>
+<h2 id="7-从滤波到预测-只差-期望信号放在哪里">7. 从滤波到预测：只差“期望信号放在哪里”</h2>
+
+<p>维纳滤波一般估计当前的 $d[n]$。维纳预测把期望信号换成未来：</p>
+<p>$$
+d[n]=s[n+N].
+$$</p>
+<p>滤波器仍然用当前及过去的观测</p>
+<p>$$
+x[n],x[n-1],x[n-2],\ldots
+$$</p>
+<p>构造</p>
+<p>$$
+\hat s[n+N].
+$$</p>
+<p>误差为</p>
+<p>$$
+e[n+N]
+=s[n+N]-\hat s[n+N].
+$$</p>
+<figure class="diagram" id="fig-prediction"><svg aria-label="维纳预测时间轴" role="img" viewbox="0 0 940 360">
+<defs><marker id="w6" markerheight="8" markerwidth="8" orient="auto" refx="7" refy="4"><path d="M0,0 L8,4 L0,8z" fill="#315f91"></path></marker></defs><rect fill="#fbfdff" height="358" rx="18" stroke="#dce6f0" width="938" x="1" y="1"></rect>
+<line marker-end="url(#w6)" stroke="#60788f" stroke-width="2" x1="90" x2="855" y1="205" y2="205"></line>
+<g fill="#1f6fb2"><circle cx="160" cy="205" r="7"></circle><circle cx="255" cy="205" r="7"></circle><circle cx="350" cy="205" r="7"></circle><circle cx="445" cy="205" r="8"></circle></g><circle cx="650" cy="205" fill="#d2782e" r="10"></circle><text class="svg-label" text-anchor="middle" x="160" y="235">n−3</text><text class="svg-label" text-anchor="middle" x="255" y="235">n−2</text><text class="svg-label" text-anchor="middle" x="350" y="235">n−1</text><text class="svg-accent" text-anchor="middle" x="445" y="235">n</text><text class="svg-orange" text-anchor="middle" x="650" y="235">n+N</text>
+<rect fill="#eef5fb" height="58" rx="12" stroke="#9dbbd6" width="365" x="120" y="95"></rect><text class="svg-label" text-anchor="middle" x="302" y="130">已知：当前与过去样本 → 提供相关信息</text><line marker-end="url(#w6)" stroke="#315f91" stroke-width="3" x1="470" x2="635" y1="125" y2="185"></line><text class="svg-accent" x="565" y="125">预测</text>
+<text class="svg-title" text-anchor="middle" x="650" y="95">目标：s[n+N]</text><text class="svg-label" text-anchor="middle" x="650" y="278">N 越大，通常相关性越弱、MSE 越大</text><text class="svg-accent" text-anchor="middle" x="470" y="325">N=1 就是一步预测；AR / Yule–Walker 在这里与 Wiener 正交性汇合</text></svg><figcaption>图 6　维纳预测的时间轴：利用当前和过去的相关信息估计未来值；预测步长增大通常意味着更高的不确定性。</figcaption></figure>
+<h3 id="7-1-为什么未来能够被预测">7.1 为什么未来能够被预测</h3>
+<p>课件 Page 78 的一句话是整个预测理论的核心：</p>
+<blockquote class="callout">
+<p>信号可以预测，是因为信号内部存在相关性。</p>
+</blockquote>
+<p>如果 $x[n]$ 是理想白噪声，那么</p>
+<p>$$
+r_{xx}[m]=0,\qquad m\ne0,
+$$</p>
+<p>过去对未来没有线性相关信息，最优线性预测基本无能为力。</p>
+<p>若 $r_{xx}[m]$ 在若干非零滞后仍显著，则历史样本携带未来信息，预测才有意义。</p>
+<h3 id="7-2-预测距离越远-误差通常越大">7.2 预测距离越远，误差通常越大</h3>
+<p>随着预测步长 $N$ 增大，可利用的相关性通常逐渐减弱，因此最小预测误差一般增大。课件 Pages 83–85 也从纯预测的谱因子表达说明了这一趋势。</p>
+<hr/>
+<h2 id="8-一步线性预测-wiener-ar-和-yule-walker-在这里汇合">8. 一步线性预测：Wiener、AR 和 Yule–Walker 在这里汇合</h2>
+
+<h3 id="8-1-p-阶前向预测器">8.1 p 阶前向预测器</h3>
+<p>用最近 $p$ 个样本预测当前值：</p>
+<p>$$
+\hat x[n]
+=-\sum_{k=1}^{p}a_kx[n-k].
+$$</p>
+<p>于是预测误差</p>
+<p>$$
+\boxed{
+e[n]
+=x[n]+\sum_{k=1}^{p}a_kx[n-k].
+}
+$$</p>
+<p>为了使</p>
+<p>$$
+\mathrm E\{|e[n]|^2\}
+$$</p>
+<p>最小，正交性原理要求误差与所有参与预测的历史样本正交：</p>
+<p>$$
+\mathrm E\{e[n]x^*[n-m]\}=0,
+\qquad m=1,\ldots,p.
+$$</p>
+<p>代入误差表达式：</p>
+<p>$$
+\boxed{
+\begin{aligned}
+R_{xx}[m]
++\sum_{k=1}^{p}a_kR_{xx}[m-k]&amp;=0,\\
+m&amp;=1,\ldots,p.
+\end{aligned}}
+$$</p>
+<p>这正是第一章已经出现过的 <strong>Yule–Walker 方程</strong>。</p>
+<h3 id="8-2-为什么-ar-模型和线性预测器是一回事">8.2 为什么 AR 模型和线性预测器是一回事</h3>
+<p>AR($p$) 模型写成</p>
+<p>$$
+x[n]+\sum_{k=1}^{p}a_kx[n-k]=w[n].
+$$</p>
+<p>而一步预测误差正好是</p>
+<p>$$
+e[n]
+=x[n]+\sum_{k=1}^{p}a_kx[n-k].
+$$</p>
+<p>因此在最优线性预测意义下，AR 模型中的白噪声驱动 $w[n]$ 就可以理解为“创新”或“预测误差”：它是不能再由过去线性解释的那部分新信息。</p>
+<p>这就是一个非常关键的统一：</p>
+<p>$$
+\boxed{
+\begin{gathered}
+\text{AR 建模}\\
+\Updownarrow\\
+\text{线性预测}\\
+\Updownarrow\\
+\text{预测误差白化/创新}
+\end{gathered}}
+$$</p>
+<h3 id="8-3-最小预测误差">8.3 最小预测误差</h3>
+<p>在本章符号约定下，最小预测误差功率为</p>
+<p>$$
+\boxed{
+\sigma_e^2
+=R_{xx}[0]
++\sum_{k=1}^{p}a_kR_{xx}[-k].
+}
+$$</p>
+<p>当过程确实来自 p 阶 AR 模型时，这个最小误差就是驱动白噪声的方差。</p>
+<hr/>
+<h2 id="9-一份课件作业如何变成可复现-wiener-实验">9. 一份课件作业如何变成可复现 Wiener 实验</h2>
+
+<p>课件最后给出一个很适合上机验证的任务：</p>
+<ul>
+<li>产生 500 点正弦信号；</li>
+<li>加入零均值高斯噪声，方差为 0.05；</li>
+<li>用 FIR Wiener 滤波恢复信号；</li>
+<li>画出原信号、加噪信号和滤波后信号。</li>
+</ul>
+<p>真正完整的实验应按下面的统计链执行：</p>
+<ol>
+<li>构造期望序列 $d[n]=s[n]$；</li>
+<li>观测 $x[n]=s[n]+v[n]$；</li>
+<li>选择 FIR 阶数 $M$；</li>
+<li>用数据估计 $\mathbf R_{xx}$；</li>
+<li>估计 $\mathbf p_{xd}$；</li>
+<li>解
+   $$
+   \mathbf w_{\mathrm{opt}}
+   =\mathbf R_{xx}^{-1}\mathbf p_{xd};
+   $$</li>
+<li>得到 $\hat d[n]=\mathbf w^H\mathbf x[n]$；</li>
+<li>比较滤波前后 MSE，而不只看“图像似乎更平滑”。</li>
+</ol>
+<h3 id="9-1-实验里最容易踩的坑">9.1 实验里最容易踩的坑</h3>
+<p><strong>坑 1：把理论相关矩阵和样本估计混为一谈。</strong></p>
+<p>理论 Wiener 解假设 $R_{xx}$、$p_{xd}$ 已知；上机时它们只能从有限数据估计，因此最终权值本身也是随机的。</p>
+<p><strong>坑 2：FIR 长度越长不一定越好。</strong></p>
+<p>理论上更多 tap 能利用更多信息，但有限样本下矩阵估计误差、条件数和计算量都会增加。</p>
+<p><strong>坑 3：直接求逆数值上不一定最佳。</strong></p>
+<p>实现时更推荐解线性方程</p>
+<p>$$
+\mathbf R_{xx}\mathbf w=\mathbf p_{xd}
+$$</p>
+<p>而不是显式计算 $\mathbf R_{xx}^{-1}$。</p>
+<hr/>
+<h2 id="10-wiener-与-kalman-当前资料能说到哪里">10. Wiener 与 Kalman：当前资料能说到哪里</h2>
+
+<p>这份 PDF 的目录确实列出了“2.5 卡尔曼滤波”，但实际文件在 Page 105 的 Wiener 上机作业后，Page 106 就结束，没有完整的卡尔曼推导正文。</p>
+<p>因此当前只能忠实保留资料已经给出的比较：</p>
+<table>
+<thead>
+<tr>
+<th>对比维度</th>
+<th>Wiener</th>
+<th>Kalman</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>核心准则</td>
+<td>线性最小均方误差</td>
+<td>线性最小均方估计 / 条件递推</td>
+</tr>
+<tr>
+<td>常见假设</td>
+<td>统计特性平稳或已知</td>
+<td>状态空间模型，可随时间更新</td>
+</tr>
+<tr>
+<td>计算方式</td>
+<td>相关矩阵/谱一次求解固定滤波器</td>
+<td>预测—校正递推</td>
+</tr>
+<tr>
+<td>常见场景</td>
+<td>去噪、反卷积、固定统计环境</td>
+<td>跟踪、动态系统、时变估计</td>
+</tr>
+</tbody>
+</table>
+<p>但本章<strong>不</strong>自行补写状态预测、协方差传播、Kalman gain 和校正方程。等后续有真实 2.5 课件或教材页时，再单独建立卡尔曼专题。</p>
+<hr/>
+<h2 id="11-第二章总复盘-真正要记住的是一条主线">11. 第二章总复盘：真正要记住的是一条主线</h2>
+<p>维纳滤波看起来公式很多，但核心逻辑其实非常短：</p>
+<p>$$
+\boxed{
+\begin{gathered}
+\text{定义线性估计器}\\
+\downarrow\\
+\text{最小化 MSE}\\
+\downarrow\\
+\text{误差与数据正交}\\
+\downarrow\\
+\text{Wiener--Hopf 方程}\\
+\downarrow\\
+\text{时域矩阵解 / 频域谱解 / 预测器}
+\end{gathered}}
+$$</p>
+<p>四条最值得记忆的关系是：</p>
+<p>$$
+\mathrm E\{\mathbf x e_{\mathrm{opt}}^*\}=\mathbf0,
+$$</p>
+<p>$$
+\mathbf w_{\mathrm{opt}}
+=\mathbf R_{xx}^{-1}\mathbf p_{xd},
+$$</p>
+<p>$$
+H_{\mathrm{nc}}
+=\frac{S_{dx}}{S_{xx}},
+$$</p>
+<p>以及一步预测的</p>
+<p>$$
+R_{xx}[m]
++\sum_{k=1}^{p}a_kR_{xx}[m-k]=0.
+$$</p>
+<p>它们不是四个孤立知识点，而是同一个“正交投影 / 最小均方”思想在四种坐标系下的表现：</p>
+<ul>
+<li>向量空间：正交投影；</li>
+<li>时域：Wiener–Hopf；</li>
+<li>频域：谱比值与谱因子化；</li>
+<li>时间序列：线性预测与 Yule–Walker。</li>
+</ul>
+<p>下一步如果进入自适应滤波，本质问题会从“统计量已知时一次求出最优权”变成：</p>
+<blockquote class="callout">
+<p><strong>统计量未知或变化时，怎样让权值在线逐步逼近这个 Wiener 最优解？</strong></p>
+</blockquote>
+<p>这正是 LMS / RLS 的入口。</p>
+<hr/>
+<h2 id="来源说明">来源说明</h2>
+<ul>
+<li>主线资料：<code>现代数字信号处理/维纳滤波(1).pdf</code>，106 页。</li>
+<li>主要追溯：Pages 2–9（引言与 Wiener/Kalman 概念）、10–34（时域解）、35–75（z 域/白化/因果与非因果 Wiener）、76–104（预测）、105（上机作业）。</li>
+<li>PDF 公式文本层存在字体编码和版式丢失，本笔记没有复制乱码公式，而是按页内语义、第一章统一符号和标准 Wiener 理论重建数学结构。</li>
+<li>文件目录列出 2.5 卡尔曼滤波，但实际 106 页内容没有完整展开 2.5，因此当前不虚构缺失章节。</li>
+</ul><section class="source-panel"><strong>来源追溯</strong><br>主线资料：根目录 <code>现代数字信号处理/维纳滤波(1).pdf</code>，共 106 页。主要内容范围：Pages 2–9 引言，10–34 时域解，35–75 z 域/白化/因果与非因果 Wiener，76–104 维纳预测，105 上机作业。<br><br>PDF 文本层中的公式存在字体编码和版式损失，最终公式已按页内语义、第一章统一符号和标准 Wiener 理论重建。目录虽列出“2.5 卡尔曼滤波”，但实际文件没有完整 2.5 正文，因此本章不虚构卡尔曼推导。</section><div class="footer">学习笔记项目 · 现代数字信号处理 · ChatGPT-AgentDock / Codex 协作工作流 · 2026-09-25</div></main></div><script>const bar=document.getElementById('progress');const links=[...document.querySelectorAll('.toc a')];
+function update(){const d=document.documentElement;const m=d.scrollHeight-d.clientHeight;bar.style.width=(m?d.scrollTop/m*100:0)+'%';}
+window.addEventListener('scroll',update,{passive:true});update();
+const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+e.target.id));}})},{rootMargin:'-15% 0px -72% 0px'});
+document.querySelectorAll('h2[id],h3[id]').forEach(h=>obs.observe(h));
+</script></body></html>
