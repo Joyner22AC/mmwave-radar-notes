@@ -119,7 +119,28 @@ $$</p>
 S=\frac{4\,\mathrm{GHz}}{40\,\mu\mathrm{s}}=100\,\mathrm{MHz}\,\mu\mathrm{s}^{-1}
 $$</p>
 <p>这张频率-时间图是后面所有推导的核心：<strong>只要回波相对于发射 Chirp 延迟了 $\tau$，两条平行直线在同一时刻就会出现一个固定的频率差。</strong></p>
-<p>[图 1：Chirp 的频率-时间关系，标出 <code>f_{\mathrm{c}}</code>、<code>B</code>、<code>T_{\mathrm{c}}</code>、<code>S</code>]</p>
+<figure class="diagram" id="fig-chirp">
+<svg aria-label="Chirp 的频率时间关系" role="img" viewbox="0 0 900 420">
+<defs><marker id="arrow1" markerheight="8" markerwidth="8" orient="auto" refx="7" refy="4"><path d="M0,0 L8,4 L0,8 z" fill="#315f91"></path></marker></defs>
+<rect fill="#fbfdff" height="418" rx="18" stroke="#dce6f0" width="898" x="1" y="1"></rect>
+<line marker-end="url(#arrow1)" stroke="#415466" stroke-width="2" x1="95" x2="805" y1="335" y2="335"></line>
+<line marker-end="url(#arrow1)" stroke="#415466" stroke-width="2" x1="95" x2="95" y1="335" y2="70"></line>
+<line stroke="#1f6fb2" stroke-linecap="round" stroke-width="5" x1="130" x2="735" y1="300" y2="105"></line>
+<line stroke="#9aa9b6" stroke-dasharray="6 6" x1="130" x2="130" y1="300" y2="335"></line>
+<line stroke="#9aa9b6" stroke-dasharray="6 6" x1="735" x2="735" y1="105" y2="335"></line>
+<line stroke="#9aa9b6" stroke-dasharray="6 6" x1="95" x2="130" y1="300" y2="300"></line>
+<line stroke="#9aa9b6" stroke-dasharray="6 6" x1="95" x2="735" y1="105" y2="105"></line>
+<line marker-end="url(#arrow1)" stroke="#315f91" stroke-width="2" x1="775" x2="775" y1="300" y2="105"></line>
+<line marker-end="url(#arrow1)" stroke="#315f91" stroke-width="2" x1="775" x2="775" y1="105" y2="300"></line>
+<line marker-end="url(#arrow1)" stroke="#315f91" stroke-width="2" x1="130" x2="735" y1="372" y2="372"></line>
+<line marker-end="url(#arrow1)" stroke="#315f91" stroke-width="2" x1="735" x2="130" y1="372" y2="372"></line>
+<text class="svg-label" x="815" y="343">时间 t</text><text class="svg-label" x="42" y="62">频率 f</text>
+<text class="svg-label" x="42" y="306">f<tspan baseline-shift="sub" font-size="13">c</tspan></text>
+<text class="svg-accent" x="792" y="208">B</text><text class="svg-accent" x="405" y="402">T<tspan baseline-shift="sub" font-size="13">c</tspan></text>
+<text class="svg-accent" x="420" y="188">斜率 S = B / T<tspan baseline-shift="sub" font-size="13">c</tspan></text>
+</svg>
+<figcaption>图 1　线性上升 Chirp：在一个 Chirp 时长内扫过带宽 B，斜率为 S=B/Tc。</figcaption>
+</figure>
 <hr/>
 <h2 id="3-fmcw-怎样把距离编码成-if-频率">3. FMCW 怎样把距离编码成 IF 频率</h2>
 <h3 id="3-1-1tx-1rx-的最基本链路">3.1 1TX-1RX 的最基本链路</h3>
@@ -372,7 +393,22 @@ $$</p>
 <p>$$
 d_{\mathrm{res}}=\frac{c}{2B}
 $$</p>
-<p>[图 4：同带宽不同 <code>T_{\mathrm{c}}</code> 的 Chirp A/B；展示斜率、IF 频差和频率分辨门限同步变化]</p>
+<figure class="diagram" id="fig-ab">
+<svg aria-label="同带宽不同 Chirp 时长的分辨率对比" role="img" viewbox="0 0 900 470">
+<rect fill="#fbfdff" height="468" rx="18" stroke="#dce6f0" width="898" x="1" y="1"></rect>
+<text class="svg-title" x="210" y="48">Chirp A：较长 Tc，较小 S</text><text class="svg-title" x="620" y="48">Chirp B：Tc/2，斜率 2S</text>
+<line stroke="#415466" stroke-width="2" x1="75" x2="410" y1="275" y2="275"></line><line stroke="#415466" stroke-width="2" x1="75" x2="75" y1="275" y2="80"></line>
+<line stroke="#1f6fb2" stroke-width="5" x1="110" x2="370" y1="245" y2="105"></line><line stroke="#d2782e" stroke-width="4" x1="145" x2="405" y1="245" y2="105"></line>
+<line stroke="#415466" stroke-width="2" x1="500" x2="835" y1="275" y2="275"></line><line stroke="#415466" stroke-width="2" x1="500" x2="500" y1="275" y2="80"></line>
+<line stroke="#1f6fb2" stroke-width="5" x1="535" x2="690" y1="245" y2="105"></line><line stroke="#d2782e" stroke-width="4" x1="575" x2="730" y1="245" y2="105"></line>
+<text class="svg-label" x="187" y="302">较长观测时间 → 门限约 1/Tc</text><text class="svg-label" x="548" y="302">时间减半 → 门限约 2/Tc</text>
+<rect fill="#eef5fb" height="85" rx="12" stroke="#b9d0e5" width="300" x="95" y="340"></rect><rect fill="#eef5fb" height="85" rx="12" stroke="#b9d0e5" width="300" x="510" y="340"></rect>
+<text class="svg-label" x="115" y="370">目标 IF 间隔：ΔfA</text><text class="svg-label" x="115" y="400">频率分辨门限：≈ 1/Tc</text>
+<text class="svg-label" x="530" y="370">目标 IF 间隔：2ΔfA</text><text class="svg-label" x="530" y="400">频率分辨门限：≈ 2/Tc</text>
+<text class="svg-accent" text-anchor="middle" x="450" y="452">两者同比变化，因此同一 B 下最终距离分辨率相同：dres = c / (2B)</text>
+</svg>
+<figcaption>图 4　同带宽 B 下缩短 Chirp 时长会同时增大斜率与 IF 频差，也同比放宽频率分辨门限；两种效应抵消。</figcaption>
+</figure>
 <blockquote class="callout">
 <p><strong>一句话记忆</strong>：$T_{\mathrm{c}}$ 决定“看频率有多细”，$S$ 决定“距离差被放大成多大的频差”；当 $B=ST_{\mathrm{c}}$ 固定时，两者正好互相抵消。</p>
 </blockquote>
