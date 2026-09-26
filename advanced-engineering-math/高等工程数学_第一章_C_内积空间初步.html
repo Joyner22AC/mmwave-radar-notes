@@ -1,0 +1,358 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>高等工程数学｜第一章 C：内积空间初步——长度、夹角与正交</title><script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']]},svg:{fontCache:'global'}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script><style>:root{--ink:#20303d;--muted:#627385;--line:#dce5ed;--paper:#fff;--soft:#f6f9fc;--blue:#1f6fb2;--blue2:#315f91;--orange:#c96d25;--shadow:0 12px 34px rgba(41,63,82,.08);}
+*{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;background:#f3f6f9;color:var(--ink);font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;line-height:1.82;font-size:16px}
+#progress{position:fixed;top:0;left:0;height:3px;background:var(--blue);width:0;z-index:50}
+.layout{display:grid;grid-template-columns:280px minmax(0,860px);gap:32px;max-width:1210px;margin:0 auto;padding:34px 24px 80px}
+.sidebar{position:sticky;top:22px;height:calc(100vh - 44px);overflow:auto;padding:18px 16px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.92);box-shadow:var(--shadow)}
+.brand{font-weight:700;color:#173c5c;margin:3px 8px 14px} .toc{display:flex;flex-direction:column;gap:2px} .toc a{text-decoration:none;color:#536779;border-radius:8px;padding:7px 9px;font-size:13px;line-height:1.4} .toc a:hover,.toc a.active{background:#edf4fa;color:#174e7e} .toc-sub{padding-left:22px!important;font-size:12.5px!important}
+.article{background:var(--paper);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:54px 68px;min-width:0}
+.hero{border-bottom:1px solid var(--line);padding-bottom:30px;margin-bottom:36px} .eyebrow{color:var(--blue);font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase} h1{font-size:35px;line-height:1.25;margin:10px 0 15px;color:#17344d} .lead{font-size:17px;color:#596d7f;max-width:720px;margin:0} .meta{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px} .chip{font-size:12px;padding:5px 9px;border-radius:999px;background:#edf4fa;color:#315f91;border:1px solid #d2e2ef}
+h2{font-size:25px;line-height:1.35;color:#183e5d;margin:54px 0 18px;padding-top:4px} h3{font-size:19px;line-height:1.4;color:#28516f;margin:34px 0 12px} p{margin:12px 0} strong{color:#193b56} code{font-family:"Cascadia Mono",Consolas,monospace;background:#f0f4f7;border:1px solid #e1e8ee;padding:.08em .34em;border-radius:5px;font-size:.92em}
+hr{border:0;border-top:1px solid var(--line);margin:42px 0} ul,ol{padding-left:1.55em} li{margin:.35em 0}
+blockquote.callout{margin:22px 0;padding:14px 18px;border-left:4px solid var(--blue);background:#f3f8fc;border-radius:0 10px 10px 0;color:#405669}
+table{width:100%;border-collapse:collapse;margin:20px 0 28px;font-size:14.5px} th,td{border:1px solid #dce5ed;padding:10px 12px;text-align:left;vertical-align:top} th{background:#eef5fa;color:#294f6d} tr:nth-child(even) td{background:#fbfcfd}
+.diagram{margin:28px 0 34px;padding:16px;border:1px solid var(--line);border-radius:16px;background:#fbfdff;overflow:hidden} .diagram svg{width:100%;height:auto;display:block} figcaption{text-align:center;color:#657889;font-size:13px;margin-top:10px} .svg-label{font:16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#415466} .svg-title{font:600 17px "Segoe UI","Microsoft YaHei",sans-serif;fill:#294f6d} .svg-accent{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#315f91} .svg-blue{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#1f6fb2} .svg-orange{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#c96d25}
+.formula-note{font-size:13px;color:var(--muted)} mjx-container{color:#172a3a} mjx-container[display="true"]{margin:1.35em 0!important;max-width:100%;overflow-x:auto;overflow-y:hidden;padding:.18em .25em .24em;text-align:center;scrollbar-width:thin;scrollbar-color:#c7d5e1 transparent} mjx-container[display="true"]>svg{display:inline-block;vertical-align:middle} mjx-container:not([display="true"]){font-size:1.01em}
+.source-panel{margin-top:52px;padding:22px;border:1px solid var(--line);background:#f8fafc;border-radius:14px;color:#526779;font-size:14px} .source-panel a{color:var(--blue)}
+.footer{margin-top:38px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:#7a8997;text-align:center}
+@media(max-width:980px){.layout{grid-template-columns:1fr;max-width:900px}.sidebar{position:relative;top:0;height:auto;max-height:340px}.article{padding:42px 34px}}
+@media(max-width:600px){body{font-size:15px}.layout{padding:12px 8px 50px}.sidebar{display:none}.article{padding:30px 20px;border-radius:12px}h1{font-size:28px}h2{font-size:22px}.diagram{padding:5px}mjx-container[display="true"]{font-size:.96em;margin:1.1em 0!important}}
+@media print{body{background:white;font-size:10.5pt}#progress,.sidebar{display:none!important}.layout{display:block;max-width:none;padding:0}.article{border:0;box-shadow:none;padding:0}.hero{margin-top:0}h2,h3{break-after:avoid-page}.diagram,table,blockquote,mjx-container[display="true"]{break-inside:avoid}mjx-container[display="true"]{overflow:visible}a{color:inherit;text-decoration:none}}
+
+@media(max-width:760px){table{width:100%;table-layout:fixed;font-size:.84rem}th,td{overflow-wrap:anywhere;word-break:break-word;padding:7px 6px}}</style></head><body><div id="progress"></div><div class="layout"><aside class="sidebar"><div class="brand">高等工程数学</div><nav class="toc"><a class="toc-main" href="#1-为什么线性空间还不够">1. 为什么线性空间还不够</a>
+<a class="toc-main" href="#2-实内积的四条公理">2. 实内积的四条公理</a>
+<a class="toc-main" href="#3-同一个线性空间可以有不同内积">3. 同一个线性空间可以有不同内积</a>
+<a class="toc-main" href="#4-坐标中的内积-gram-度量矩阵">4. 坐标中的内积：Gram / 度量矩阵</a>
+<a class="toc-main" href="#5-范数-从内积定义长度">5. 范数：从内积定义长度</a>
+<a class="toc-main" href="#6-cauchy-schwarz-不等式">6. Cauchy–Schwarz 不等式</a>
+<a class="toc-sub" href="#6-1-证明-减掉在-beta-方向上的分量">6.1 证明：减掉在 $\beta$ 方向上的分量</a>
+<a class="toc-sub" href="#6-2-它统一了哪些熟悉公式">6.2 它统一了哪些熟悉公式</a>
+<a class="toc-main" href="#7-三角不等式怎样从-cauchy-schwarz-得到">7. 三角不等式怎样从 Cauchy–Schwarz 得到</a>
+<a class="toc-main" href="#8-夹角-cauchy-schwarz-保证定义合法">8. 夹角：Cauchy–Schwarz 保证定义合法</a>
+<a class="toc-main" href="#9-正交与勾股关系">9. 正交与勾股关系</a>
+<a class="toc-main" href="#10-本次资料到哪里为止">10. 本次资料到哪里为止</a>
+<a class="toc-main" href="#11-一页复习框架">11. 一页复习框架</a></nav></aside><main class="article"><header class="hero"><div class="eyebrow">ADVANCED ENGINEERING MATHEMATICS · CHAPTER 01C</div><h1>第一章 C：内积空间初步——长度、夹角与正交</h1><p class="lead">在线性结构上加入几何：内积、Gram 矩阵、范数、Cauchy–Schwarz、夹角、相似性与正交。</p><div class="meta"><span class="chip">S4 pp.48–61</span><span class="chip">Inner Product · Norm</span><span class="chip">5 张教学图</span><span class="chip">Cauchy–Schwarz · Orthogonality</span></div></header><h2 id="1-为什么线性空间还不够">1. 为什么线性空间还不够</h2>
+<p>线性空间只规定“向量怎么相加、怎么数乘”。仅靠这些规则，我们还不能谈：</p>
+<ul>
+<li>一个向量有多长；</li>
+<li>两个向量夹角多大；</li>
+<li>两个方向是否正交；</li>
+<li>两个对象“相似”到什么程度。</li>
+</ul>
+<p>要加入这些几何概念，需要在线性空间上再定义一个<strong>内积</strong>。（S4 pp.48–49）</p>
+<figure class="diagram"><svg aria-label="在线性结构上叠加几何结构" role="img" viewbox="0 0 980 330"><defs><marker id="arr" markerheight="8" markerwidth="8" orient="auto" refx="7" refy="4"><path d="M0,0 L8,4 L0,8z" fill="#60788f"></path></marker></defs><rect fill="#fbfdff" height="328" rx="18" stroke="#dce6f0" width="978" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="490" y="44">在线性结构上叠加几何结构</text><rect fill="#eef5fb" height="112" rx="14" stroke="#9dbbd6" width="258.7" x="40.0" y="118"></rect><text class="svg-title" text-anchor="middle" x="169.3" y="156">线性空间</text><text class="svg-label" text-anchor="middle" x="169.3" y="190">加法 + 数乘</text><line marker-end="url(#arr)" stroke="#60788f" stroke-width="2.5" x1="303.7" x2="315.7" y1="174.0" y2="174.0"></line><rect fill="#eef5fb" height="112" rx="14" stroke="#9dbbd6" width="258.7" x="320.7" y="118"></rect><text class="svg-title" text-anchor="middle" x="450.0" y="156">内积</text><text class="svg-label" text-anchor="middle" x="450.0" y="190">〈α,β〉</text><line marker-end="url(#arr)" stroke="#60788f" stroke-width="2.5" x1="584.3" x2="596.3" y1="174.0" y2="174.0"></line><rect fill="#eef5fb" height="112" rx="14" stroke="#9dbbd6" width="258.7" x="601.3" y="118"></rect><text class="svg-title" text-anchor="middle" x="730.7" y="156">几何</text><text class="svg-label" text-anchor="middle" x="730.7" y="190">长度 · 夹角 · 正交</text><text class="svg-accent" text-anchor="middle" x="490" y="280">内积是把几何概念带入抽象向量空间的桥梁。</text></svg><figcaption>图 1　从线性空间到内积空间。教学重绘，对应 S4 pp.48–49。</figcaption></figure>
+<blockquote class="callout">
+<p><strong>结构层次</strong>：线性空间提供代数结构；内积空间在此基础上增加几何结构。后面的正交投影、最小二乘、正交变换等都依赖这一层。</p>
+</blockquote>
+<h2 id="2-实内积的四条公理">2. 实内积的四条公理</h2>
+<p>设 $V$ 是实线性空间。若对任意 $\alpha,\beta,\gamma\in V$ 都定义实数 $\langle\alpha,\beta\rangle$，并满足：</p>
+<ol>
+<li><strong>正定性</strong>
+   $$
+   \langle\alpha,\alpha\rangle\ge 0,
+   \qquad
+   \langle\alpha,\alpha\rangle=0\iff\alpha=0;
+   $$</li>
+<li><strong>对称性</strong>
+   $$
+   \langle\alpha,\beta\rangle
+   =\langle\beta,\alpha\rangle;
+   $$</li>
+<li><strong>可加性</strong>
+   $$
+   \langle\alpha+\beta,\gamma\rangle
+   =\langle\alpha,\gamma\rangle
+   +\langle\beta,\gamma\rangle;
+   $$</li>
+<li><strong>齐次性</strong>
+   $$
+   \langle k\alpha,\beta\rangle
+   =k\langle\alpha,\beta\rangle,
+   $$</li>
+</ol>
+<p>则称其为实内积，$V$ 称为欧氏空间。（S4 p.49）</p>
+<p>由对称性可得第二个变量也线性：</p>
+<p>$$
+\langle\alpha,k\beta+\gamma\rangle
+=k\langle\alpha,\beta\rangle
++\langle\alpha,\gamma\rangle.
+$$</p>
+<h2 id="3-同一个线性空间可以有不同内积">3. 同一个线性空间可以有不同内积</h2>
+<p>在 $\mathbb R^n$ 中，最熟悉的是标准内积</p>
+<p>$$
+\langle x,y\rangle=x^{\mathsf T}y
+=\sum_{i=1}^n x_i y_i.
+$$</p>
+<p>若 $A$ 是实对称正定矩阵，还可以定义</p>
+<p>$$
+\boxed{\langle x,y\rangle_A=x^{\mathsf T}Ay.}
+$$</p>
+<p>这相当于改变“长度和角度的度量规则”。（S4 p.50）</p>
+<p>在连续函数空间中，可以定义</p>
+<p>$$
+\langle f,g\rangle
+=\int_a^b f(x)g(x)\,\mathrm dx.
+$$</p>
+<p>因此向量不必是数字列；函数也可以拥有长度、夹角和正交性。</p>
+<figure class="diagram"><svg aria-label="同一空间可以选择不同内积" role="img" viewbox="0 0 980 380"><rect fill="#fbfdff" height="378" rx="18" stroke="#dce6f0" width="978" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="490" y="44">同一空间可以选择不同内积</text><rect fill="#eef5fb" height="190" rx="16" stroke="#9dbbd6" width="370" x="65" y="100"></rect><rect fill="#fff7ee" height="190" rx="16" stroke="#e4b98f" width="370" x="545" y="100"></rect><text class="svg-title" text-anchor="middle" x="250" y="140">标准内积</text><text class="svg-label" text-anchor="middle" x="250" y="182">xᵀy</text><text class="svg-accent" text-anchor="middle" x="250" y="222">普通欧氏几何</text><text class="svg-title" text-anchor="middle" x="730" y="140">加权内积</text><text class="svg-label" text-anchor="middle" x="730" y="182">xᵀAy</text><text class="svg-orange" text-anchor="middle" x="730" y="222">A 正定时改变度量</text><text class="svg-label" text-anchor="middle" x="490" y="335">同一数学结构，不同观察层次</text></svg><figcaption>图 2　不同内积对应不同的几何度量。教学重绘，对应 S4 p.50。</figcaption></figure>
+<h2 id="4-坐标中的内积-gram-度量矩阵">4. 坐标中的内积：Gram / 度量矩阵</h2>
+<p>设</p>
+<p>$$
+B_\alpha=(\alpha_1,\ldots,\alpha_n),
+\qquad
+B_\beta=(\beta_1,\ldots,\beta_m),
+$$</p>
+<p>并令 $\xi=B_\alpha x$、$\eta=B_\beta y$。由双线性性：</p>
+<p>$$
+\langle\xi,\eta\rangle
+=\sum_{i=1}^n\sum_{j=1}^m x_i y_j
+\langle\alpha_i,\beta_j\rangle.
+$$</p>
+<p>定义</p>
+<p>$$
+G_{ij}=\langle\alpha_i,\beta_j\rangle,
+$$</p>
+<p>则</p>
+<p>$$
+\boxed{
+\langle B_\alpha x,B_\beta y\rangle
+=x^{\mathsf T}Gy.
+}
+$$</p>
+<p>（S4 p.51）</p>
+<p>当两边使用同一组基时，$G$ 就是这组基的 Gram 矩阵。若基是标准正交基，则 $G=I$，内积才简化成普通点积 $x^{\mathsf T}y$。</p>
+<blockquote class="callout">
+<p><strong>易错点</strong>：坐标点积 $x^{\mathsf T}y$ 不是在任意基下都等于抽象内积；只有基与内积相适配（例如标准正交基）时才如此。</p>
+</blockquote>
+<h2 id="5-范数-从内积定义长度">5. 范数：从内积定义长度</h2>
+<p>定义</p>
+<p>$$
+\boxed{
+\|\alpha\|
+=\sqrt{\langle\alpha,\alpha\rangle}.
+}
+$$</p>
+<p>若 $\|\alpha\|=1$，则称 $\alpha$ 为单位向量。任意非零向量都可归一化：</p>
+<p>$$
+\hat\alpha=\frac{\alpha}{\|\alpha\|}.
+$$</p>
+<p>（S4 p.52）</p>
+<p>范数满足正定性、绝对齐次性</p>
+<p>$$
+\|k\alpha\|=|k|\,\|\alpha\|,
+$$</p>
+<p>以及三角不等式</p>
+<p>$$
+\|\alpha+\beta\|
+\le \|\alpha\|+\|\beta\|.
+$$</p>
+<p>但三角不等式不是凭空来的，它依赖下一条核心定理。</p>
+<h2 id="6-cauchy-schwarz-不等式">6. Cauchy–Schwarz 不等式</h2>
+<p>对任意 $\alpha,eta$：</p>
+<p>$$
+\boxed{
+|\langle\alpha,\beta\rangle|
+\le
+\|\alpha\|\,\|\beta\|.
+}
+$$</p>
+<p>等号成立当且仅当 $\alpha,eta$ 线性相关。（S4 pp.53–55）</p>
+<figure class="diagram"><svg aria-label="Cauchy–Schwarz 的证明构造" role="img" viewbox="0 0 980 330"><defs><marker id="arr" markerheight="8" markerwidth="8" orient="auto" refx="7" refy="4"><path d="M0,0 L8,4 L0,8z" fill="#60788f"></path></marker></defs><rect fill="#fbfdff" height="328" rx="18" stroke="#dce6f0" width="978" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="490" y="44">Cauchy–Schwarz 的证明构造</text><rect fill="#eef5fb" height="112" rx="14" stroke="#9dbbd6" width="258.7" x="40.0" y="118"></rect><text class="svg-title" text-anchor="middle" x="169.3" y="156">α</text><text class="svg-label" text-anchor="middle" x="169.3" y="190">待分解向量</text><line marker-end="url(#arr)" stroke="#60788f" stroke-width="2.5" x1="303.7" x2="315.7" y1="174.0" y2="174.0"></line><rect fill="#eef5fb" height="112" rx="14" stroke="#9dbbd6" width="258.7" x="320.7" y="118"></rect><text class="svg-title" text-anchor="middle" x="450.0" y="156">投影到 β</text><text class="svg-label" text-anchor="middle" x="450.0" y="190">〈α,β〉β/‖β‖²</text><line marker-end="url(#arr)" stroke="#60788f" stroke-width="2.5" x1="584.3" x2="596.3" y1="174.0" y2="174.0"></line><rect fill="#eef5fb" height="112" rx="14" stroke="#9dbbd6" width="258.7" x="601.3" y="118"></rect><text class="svg-title" text-anchor="middle" x="730.7" y="156">正交余量 ξ</text><text class="svg-label" text-anchor="middle" x="730.7" y="190">〈ξ,β〉=0</text><text class="svg-accent" text-anchor="middle" x="490" y="280">0≤‖ξ‖² 推出 |〈α,β〉|≤‖α‖‖β‖</text></svg><figcaption>图 3　Cauchy–Schwarz 证明中的正交分解。教学重绘，对应 S4 pp.53–54。</figcaption></figure>
+<h3 id="6-1-证明-减掉在-beta-方向上的分量">6.1 证明：减掉在 $\beta$ 方向上的分量</h3>
+<p>若 $\beta=0$，结论显然。设 $\beta\ne0$，构造</p>
+<p>$$
+\xi
+=
+\alpha
+-
+\frac{\langle\alpha,\beta\rangle}{\|\beta\|^2}\beta.
+$$</p>
+<p>这个选择让 $\xi$ 与 $\beta$ 正交：</p>
+<p>$$
+\langle\xi,\beta\rangle
+=
+\langle\alpha,\beta\rangle
+-
+\frac{\langle\alpha,\beta\rangle}{\|\beta\|^2}
+\langle\beta,\beta\rangle
+=0.
+$$</p>
+<p>利用正定性：</p>
+<p>$$
+0\le\|\xi\|^2
+=
+\|\alpha\|^2
+-
+\frac{|\langle\alpha,\beta\rangle|^2}{\|\beta\|^2}.
+$$</p>
+<p>于是</p>
+<p>$$
+|\langle\alpha,\beta\rangle|^2
+\le
+\|\alpha\|^2\|\beta\|^2,
+$$</p>
+<p>开平方得到 Cauchy–Schwarz。</p>
+<p>若等号成立，则 $\|\xi\|=0$，所以 $\xi=0$，即 $\alpha$ 是 $\beta$ 的倍数；反之若两者线性相关，也直接达到等号。</p>
+<h3 id="6-2-它统一了哪些熟悉公式">6.2 它统一了哪些熟悉公式</h3>
+<p>在 $\mathbb R^n$：</p>
+<p>$$
+\left|\sum_{i=1}^n x_i y_i\right|
+\le
+\sqrt{\sum_{i=1}^n x_i^2}
+\sqrt{\sum_{i=1}^n y_i^2}.
+$$</p>
+<p>在函数空间：</p>
+<p>令
+$$
+I_{fg}=\int_a^b f(x)g(x)\,\mathrm dx,
+$$
+$$
+I_f=\int_a^b f^2(x)\,\mathrm dx,
+\qquad
+I_g=\int_a^b g^2(x)\,\mathrm dx.
+$$
+则
+$$
+I_{fg}^2\le I_f I_g.
+$$</p>
+<p>（S4 p.55）</p>
+<h2 id="7-三角不等式怎样从-cauchy-schwarz-得到">7. 三角不等式怎样从 Cauchy–Schwarz 得到</h2>
+<p>展开：</p>
+<p>$$
+\begin{aligned}
+\|\alpha+\beta\|^2
+&amp;=\langle\alpha+\beta,\alpha+\beta\rangle\\
+&amp;=\|\alpha\|^2
++2\langle\alpha,\beta\rangle
++\|\beta\|^2.
+\end{aligned}
+$$</p>
+<p>由 Cauchy–Schwarz，</p>
+<p>$$
+\langle\alpha,\beta\rangle
+\le |\langle\alpha,\beta\rangle|
+\le\|\alpha\|\|\beta\|.
+$$</p>
+<p>因此</p>
+<p>$$
+\|\alpha+\beta\|^2
+\le
+(\|\alpha\|+\|\beta\|)^2,
+$$</p>
+<p>从而</p>
+<p>$$
+\boxed{
+\|\alpha+\beta\|
+\le
+\|\alpha\|+\|\beta\|.
+}
+$$</p>
+<p>（S4 p.56）</p>
+<h2 id="8-夹角-cauchy-schwarz-保证定义合法">8. 夹角：Cauchy–Schwarz 保证定义合法</h2>
+<p>对非零 $\alpha,\beta$，定义</p>
+<p>$$
+\boxed{
+\cos\theta
+=
+\frac{\langle\alpha,\beta\rangle}
+{\|\alpha\|\,\|\beta\|},
+\qquad
+0\le\theta\le\pi.
+}
+$$</p>
+<p>为什么可以这样定义？因为 Cauchy–Schwarz 保证右边一定落在 $[-1,1]$ 中。（S4 pp.57–59）</p>
+<figure class="diagram"><svg aria-label="归一化内积把相似度限制在 [−1,1]" role="img" viewbox="0 0 980 330"><defs><marker id="arr" markerheight="8" markerwidth="8" orient="auto" refx="7" refy="4"><path d="M0,0 L8,4 L0,8z" fill="#60788f"></path></marker></defs><rect fill="#fbfdff" height="328" rx="18" stroke="#dce6f0" width="978" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="490" y="44">归一化内积把相似度限制在 [−1,1]</text><rect fill="#eef5fb" height="112" rx="14" stroke="#9dbbd6" width="258.7" x="40.0" y="118"></rect><text class="svg-title" text-anchor="middle" x="169.3" y="156">cosθ≈1</text><text class="svg-label" text-anchor="middle" x="169.3" y="190">同向</text><line marker-end="url(#arr)" stroke="#60788f" stroke-width="2.5" x1="303.7" x2="315.7" y1="174.0" y2="174.0"></line><rect fill="#eef5fb" height="112" rx="14" stroke="#9dbbd6" width="258.7" x="320.7" y="118"></rect><text class="svg-title" text-anchor="middle" x="450.0" y="156">cosθ≈0</text><text class="svg-label" text-anchor="middle" x="450.0" y="190">正交</text><line marker-end="url(#arr)" stroke="#60788f" stroke-width="2.5" x1="584.3" x2="596.3" y1="174.0" y2="174.0"></line><rect fill="#eef5fb" height="112" rx="14" stroke="#9dbbd6" width="258.7" x="601.3" y="118"></rect><text class="svg-title" text-anchor="middle" x="730.7" y="156">cosθ≈−1</text><text class="svg-label" text-anchor="middle" x="730.7" y="190">反向</text><text class="svg-accent" text-anchor="middle" x="490" y="280">Cauchy–Schwarz 保证 cosθ 的定义合法。</text></svg><figcaption>图 4　夹角与归一化内积的关系。教学重绘，对应 S4 pp.57–59。</figcaption></figure>
+<p>内积因此可以理解为一种“方向相似度”：</p>
+<ul>
+<li>归一化内积接近 $1$：方向接近；</li>
+<li>接近 $0$：接近正交；</li>
+<li>接近 $-1$：方向相反。</li>
+</ul>
+<p>课件进一步把这一思想连接到相关系数：对中心化数据向量，协方差就是相应分量乘积的平均/求和结构，而相关系数本质上又做了尺度归一化。（S4 p.58）</p>
+<blockquote class="callout">
+<p><strong>补充辨析</strong>：内积大小本身同时受长度和夹角影响，所以比较“相似程度”时通常看归一化内积，而不是只看 $\langle\alpha,\beta\rangle$ 的绝对大小。</p>
+</blockquote>
+<h2 id="9-正交与勾股关系">9. 正交与勾股关系</h2>
+<p>若</p>
+<p>$$
+\langle\alpha,\beta\rangle=0,
+$$</p>
+<p>则称 $\alpha$ 与 $\beta$ 正交，记作 $\alpha\perp\beta$。（S4 p.60）</p>
+<p>此时</p>
+<p>$$
+\begin{aligned}
+\|\alpha+\beta\|^2
+&amp;=\|\alpha\|^2
++2\langle\alpha,\beta\rangle
++\|\beta\|^2\\
+&amp;=\boxed{\|\alpha\|^2+\|\beta\|^2}.
+\end{aligned}
+$$</p>
+<p>这就是抽象内积空间中的勾股定理。</p>
+<figure class="diagram"><svg aria-label="正交把交叉项消掉" role="img" viewbox="0 0 980 380"><rect fill="#fbfdff" height="378" rx="18" stroke="#dce6f0" width="978" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="490" y="44">正交把交叉项消掉</text><rect fill="#eef5fb" height="190" rx="16" stroke="#9dbbd6" width="370" x="65" y="100"></rect><rect fill="#fff7ee" height="190" rx="16" stroke="#e4b98f" width="370" x="545" y="100"></rect><text class="svg-title" text-anchor="middle" x="250" y="140">一般情况</text><text class="svg-label" text-anchor="middle" x="250" y="182">‖α+β‖²</text><text class="svg-accent" text-anchor="middle" x="250" y="222">含 2〈α,β〉</text><text class="svg-title" text-anchor="middle" x="730" y="140">α ⟂ β</text><text class="svg-label" text-anchor="middle" x="730" y="182">〈α,β〉=0</text><text class="svg-orange" text-anchor="middle" x="730" y="222">‖α+β‖²=‖α‖²+‖β‖²</text><text class="svg-label" text-anchor="middle" x="490" y="335">同一数学结构，不同观察层次</text></svg><figcaption>图 5　内积空间中的勾股关系。教学重绘，对应 S4 p.60。</figcaption></figure>
+<p>它说明“正交”不是二维几何里偶然的 90°，而是内积为零这一代数条件。只要有内积，矩阵、函数甚至更抽象的对象都可以谈正交。</p>
+<h2 id="10-本次资料到哪里为止">10. 本次资料到哪里为止</h2>
+<p>S4 p.48 给出的 §3 目录还包括：</p>
+<ul>
+<li>子空间的正交；</li>
+<li>正交变换；</li>
+<li>对称变换；</li>
+<li>酉空间；</li>
+<li>酉变换；</li>
+<li>酉对称变换。</li>
+</ul>
+<p>但当前实际 PDF 只展开到“二、正交”的开头。因此本篇在正交与勾股关系处结束，<strong>不根据目录标题自行补写后续课程正文</strong>。等后续真实课件加入项目后，再继续扩展。</p>
+<h2 id="11-一页复习框架">11. 一页复习框架</h2>
+<table>
+<thead>
+<tr>
+<th>目标</th>
+<th>概念/定理</th>
+<th>复习抓手</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>给抽象向量定义几何</td>
+<td>内积</td>
+<td>正定、对称、双线性</td>
+</tr>
+<tr>
+<td>坐标化内积</td>
+<td>Gram 矩阵</td>
+<td>坐标之间的度量矩阵</td>
+</tr>
+<tr>
+<td>定义长度</td>
+<td>范数</td>
+<td>内积的平方根</td>
+</tr>
+<tr>
+<td>控制内积大小</td>
+<td>Cauchy–Schwarz</td>
+<td>内积不超过长度乘积</td>
+</tr>
+<tr>
+<td>定义夹角</td>
+<td>归一化内积</td>
+<td>C–S 保证余弦落在合法范围</td>
+</tr>
+<tr>
+<td>定义垂直</td>
+<td>正交</td>
+<td>内积为零</td>
+</tr>
+<tr>
+<td>正交分量长度相加</td>
+<td>勾股关系</td>
+<td>交叉项消失</td>
+</tr>
+</tbody>
+</table>
+<blockquote class="callout">
+<p><strong>来源说明</strong>：本篇严格对应 S4 pp.48–61 的实际内容。Cauchy–Schwarz 的投影示意、内积层次图等为教学重绘。</p>
+</blockquote><section class="source-panel"><strong>来源追溯</strong><br>严格对应 S4 pp.48–61。S4 p.48 虽列出 §3 后续目录，但现有资料只展开到“二、正交”开头，因此本篇不虚构正交子空间、正交变换、对称变换和酉空间等后续正文。</section><div class="footer">学习笔记项目 · 高等工程数学 · ChatGPT-AgentDock / Codex 协作工作流 · 2026-09-26</div></main></div><script>const bar=document.getElementById('progress');const links=[...document.querySelectorAll('.toc a')];
+function update(){const d=document.documentElement;const m=d.scrollHeight-d.clientHeight;bar.style.width=(m?d.scrollTop/m*100:0)+'%';}
+window.addEventListener('scroll',update,{passive:true});update();
+const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+e.target.id));}})},{rootMargin:'-15% 0px -72% 0px'});
+document.querySelectorAll('h2[id],h3[id]').forEach(h=>obs.observe(h));
+</script></body></html>

@@ -1,0 +1,313 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>高等工程数学｜第一章 A：线性空间、基与子空间</title><script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']]},svg:{fontCache:'global'}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script><style>:root{--ink:#20303d;--muted:#627385;--line:#dce5ed;--paper:#fff;--soft:#f6f9fc;--blue:#1f6fb2;--blue2:#315f91;--orange:#c96d25;--shadow:0 12px 34px rgba(41,63,82,.08);}
+*{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;background:#f3f6f9;color:var(--ink);font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;line-height:1.82;font-size:16px}
+#progress{position:fixed;top:0;left:0;height:3px;background:var(--blue);width:0;z-index:50}
+.layout{display:grid;grid-template-columns:280px minmax(0,860px);gap:32px;max-width:1210px;margin:0 auto;padding:34px 24px 80px}
+.sidebar{position:sticky;top:22px;height:calc(100vh - 44px);overflow:auto;padding:18px 16px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.92);box-shadow:var(--shadow)}
+.brand{font-weight:700;color:#173c5c;margin:3px 8px 14px} .toc{display:flex;flex-direction:column;gap:2px} .toc a{text-decoration:none;color:#536779;border-radius:8px;padding:7px 9px;font-size:13px;line-height:1.4} .toc a:hover,.toc a.active{background:#edf4fa;color:#174e7e} .toc-sub{padding-left:22px!important;font-size:12.5px!important}
+.article{background:var(--paper);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:54px 68px;min-width:0}
+.hero{border-bottom:1px solid var(--line);padding-bottom:30px;margin-bottom:36px} .eyebrow{color:var(--blue);font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase} h1{font-size:35px;line-height:1.25;margin:10px 0 15px;color:#17344d} .lead{font-size:17px;color:#596d7f;max-width:720px;margin:0} .meta{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px} .chip{font-size:12px;padding:5px 9px;border-radius:999px;background:#edf4fa;color:#315f91;border:1px solid #d2e2ef}
+h2{font-size:25px;line-height:1.35;color:#183e5d;margin:54px 0 18px;padding-top:4px} h3{font-size:19px;line-height:1.4;color:#28516f;margin:34px 0 12px} p{margin:12px 0} strong{color:#193b56} code{font-family:"Cascadia Mono",Consolas,monospace;background:#f0f4f7;border:1px solid #e1e8ee;padding:.08em .34em;border-radius:5px;font-size:.92em}
+hr{border:0;border-top:1px solid var(--line);margin:42px 0} ul,ol{padding-left:1.55em} li{margin:.35em 0}
+blockquote.callout{margin:22px 0;padding:14px 18px;border-left:4px solid var(--blue);background:#f3f8fc;border-radius:0 10px 10px 0;color:#405669}
+table{width:100%;border-collapse:collapse;margin:20px 0 28px;font-size:14.5px} th,td{border:1px solid #dce5ed;padding:10px 12px;text-align:left;vertical-align:top} th{background:#eef5fa;color:#294f6d} tr:nth-child(even) td{background:#fbfcfd}
+.diagram{margin:28px 0 34px;padding:16px;border:1px solid var(--line);border-radius:16px;background:#fbfdff;overflow:hidden} .diagram svg{width:100%;height:auto;display:block} figcaption{text-align:center;color:#657889;font-size:13px;margin-top:10px} .svg-label{font:16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#415466} .svg-title{font:600 17px "Segoe UI","Microsoft YaHei",sans-serif;fill:#294f6d} .svg-accent{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#315f91} .svg-blue{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#1f6fb2} .svg-orange{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#c96d25}
+.formula-note{font-size:13px;color:var(--muted)} mjx-container{color:#172a3a} mjx-container[display="true"]{margin:1.35em 0!important;max-width:100%;overflow-x:auto;overflow-y:hidden;padding:.18em .25em .24em;text-align:center;scrollbar-width:thin;scrollbar-color:#c7d5e1 transparent} mjx-container[display="true"]>svg{display:inline-block;vertical-align:middle} mjx-container:not([display="true"]){font-size:1.01em}
+.source-panel{margin-top:52px;padding:22px;border:1px solid var(--line);background:#f8fafc;border-radius:14px;color:#526779;font-size:14px} .source-panel a{color:var(--blue)}
+.footer{margin-top:38px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:#7a8997;text-align:center}
+@media(max-width:980px){.layout{grid-template-columns:1fr;max-width:900px}.sidebar{position:relative;top:0;height:auto;max-height:340px}.article{padding:42px 34px}}
+@media(max-width:600px){body{font-size:15px}.layout{padding:12px 8px 50px}.sidebar{display:none}.article{padding:30px 20px;border-radius:12px}h1{font-size:28px}h2{font-size:22px}.diagram{padding:5px}mjx-container[display="true"]{font-size:.96em;margin:1.1em 0!important}}
+@media print{body{background:white;font-size:10.5pt}#progress,.sidebar{display:none!important}.layout{display:block;max-width:none;padding:0}.article{border:0;box-shadow:none;padding:0}.hero{margin-top:0}h2,h3{break-after:avoid-page}.diagram,table,blockquote,mjx-container[display="true"]{break-inside:avoid}mjx-container[display="true"]{overflow:visible}a{color:inherit;text-decoration:none}}
+
+@media(max-width:760px){table{width:100%;table-layout:fixed;font-size:.84rem}th,td{overflow-wrap:anywhere;word-break:break-word;padding:7px 6px}}</style></head><body><div id="progress"></div><div class="layout"><aside class="sidebar"><div class="brand">高等工程数学</div><nav class="toc"><a class="toc-main" href="#1-这一部分到底在抽象什么">1. 这一部分到底在抽象什么</a>
+<a class="toc-main" href="#2-线性空间-两个运算-八条规则">2. 线性空间：两个运算 + 八条规则</a>
+<a class="toc-sub" href="#2-1-最容易漏掉的是-封闭">2.1 最容易漏掉的是“封闭”</a>
+<a class="toc-sub" href="#2-2-零向量不是数字-0">2.2 零向量不是数字 0</a>
+<a class="toc-main" href="#3-线性组合-span-与线性相关">3. 线性组合、span 与线性相关</a>
+<a class="toc-main" href="#4-基-维数与坐标-把抽象对象编码成数字">4. 基、维数与坐标：把抽象对象编码成数字</a>
+<a class="toc-sub" href="#4-1-典型空间的维数">4.1 典型空间的维数</a>
+<a class="toc-main" href="#5-换基-向量没变-坐标变了">5. 换基：向量没变，坐标变了</a>
+<a class="toc-main" href="#6-子空间-大空间里仍然保持线性结构的部分">6. 子空间：大空间里仍然保持线性结构的部分</a>
+<a class="toc-sub" href="#6-1-零空间与列空间">6.1 零空间与列空间</a>
+<a class="toc-main" href="#7-基扩充定理-无关方向可以补成整组基">7. 基扩充定理：无关方向可以补成整组基</a>
+<a class="toc-main" href="#8-子空间的交与和-维数怎样-记账">8. 子空间的交与和：维数怎样“记账”</a>
+<a class="toc-sub" href="#8-1-为什么公式成立">8.1 为什么公式成立</a>
+<a class="toc-main" href="#9-直和-什么时候分解是唯一的">9. 直和：什么时候分解是唯一的</a>
+<a class="toc-main" href="#10-从矩阵乘法回到几何">10. 从矩阵乘法回到几何</a>
+<a class="toc-main" href="#11-一页复习框架">11. 一页复习框架</a></nav></aside><main class="article"><header class="hero"><div class="eyebrow">ADVANCED ENGINEERING MATHEMATICS · CHAPTER 01A</div><h1>第一章 A：线性空间、基与子空间</h1><p class="lead">从“什么都可以是向量”的抽象出发，建立基、坐标、换基、子空间、维数公式与直和的一条完整主线。</p><div class="meta"><span class="chip">S1 + S2 + S3</span><span class="chip">Vector Space · Basis</span><span class="chip">6 张教学图</span><span class="chip">详细证明与易错点</span></div></header><h2 id="1-这一部分到底在抽象什么">1. 这一部分到底在抽象什么</h2>
+<p>在线性代数里，我们最熟悉的“向量”是 $\mathbb R^n$ 中的列向量。但课程一开始就把对象扩展到了矩阵、多项式、函数。关键不是它们长得像不像箭头，而是：<strong>它们能否进行加法和数乘，并且这些运算遵守同一套线性规则。</strong></p>
+<figure class="diagram"><svg aria-label="从具体对象抽象出共同的线性结构" role="img" viewbox="0 0 980 330"><defs><marker id="arr" markerheight="8" markerwidth="8" orient="auto" refx="7" refy="4"><path d="M0,0 L8,4 L0,8z" fill="#60788f"></path></marker></defs><rect fill="#fbfdff" height="328" rx="18" stroke="#dce6f0" width="978" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="490" y="44">从具体对象抽象出共同的线性结构</text><rect fill="#eef5fb" height="112" rx="14" stroke="#9dbbd6" width="188.5" x="40.0" y="118"></rect><text class="svg-title" text-anchor="middle" x="134.2" y="156">Rⁿ</text><text class="svg-label" text-anchor="middle" x="134.2" y="190">数字列</text><line marker-end="url(#arr)" stroke="#60788f" stroke-width="2.5" x1="233.5" x2="245.5" y1="174.0" y2="174.0"></line><rect fill="#eef5fb" height="112" rx="14" stroke="#9dbbd6" width="188.5" x="250.5" y="118"></rect><text class="svg-title" text-anchor="middle" x="344.8" y="156">Pₙ(t)</text><text class="svg-label" text-anchor="middle" x="344.8" y="190">多项式</text><line marker-end="url(#arr)" stroke="#60788f" stroke-width="2.5" x1="444.0" x2="456.0" y1="174.0" y2="174.0"></line><rect fill="#eef5fb" height="112" rx="14" stroke="#9dbbd6" width="188.5" x="461.0" y="118"></rect><text class="svg-title" text-anchor="middle" x="555.2" y="156">C[a,b]</text><text class="svg-label" text-anchor="middle" x="555.2" y="190">函数</text><line marker-end="url(#arr)" stroke="#60788f" stroke-width="2.5" x1="654.5" x2="666.5" y1="174.0" y2="174.0"></line><rect fill="#eef5fb" height="112" rx="14" stroke="#9dbbd6" width="188.5" x="671.5" y="118"></rect><text class="svg-title" text-anchor="middle" x="765.8" y="156">V</text><text class="svg-label" text-anchor="middle" x="765.8" y="190">统一线性空间</text><text class="svg-accent" text-anchor="middle" x="490" y="280">只要“加法 + 数乘”遵守同一套规则，就能共享同一套理论。</text></svg><figcaption>图 1　线性空间的抽象过程。教学重绘，对应 S1 pp.14–21。</figcaption></figure>
+<blockquote class="callout">
+<p><strong>核心视角</strong>：线性空间研究的不是某一种具体对象，而是“可做线性组合”的共同结构。一旦一个对象集合具有这种结构，基、维数、坐标、子空间等工具就都可以迁移过去。</p>
+</blockquote>
+<p>例如，$\mathbb R^{m\times n}$、次数不超过 $n$ 的实系数多项式空间 $P_n(t)$、区间 $[a,b]$ 上的连续函数空间 $C[a,b]$ 都可以成为实线性空间。（来源：S1 pp.14–21）</p>
+<h2 id="2-线性空间-两个运算-八条规则">2. 线性空间：两个运算 + 八条规则</h2>
+<p>设 $V$ 是非空集合，$F$ 是数域。若 $V$ 上定义了向量加法，$F$ 与 $V$ 之间定义了数乘，并且运算封闭，同时对任意 $\alpha,\beta,\gamma\in V$、$k,l\in F$ 满足：</p>
+<p>$$
+\begin{aligned}
+\alpha+\beta&amp;=\beta+\alpha,\\
+(\alpha+\beta)+\gamma&amp;=\alpha+(\beta+\gamma),\\
+\alpha+0&amp;=\alpha,\\
+\alpha+(-\alpha)&amp;=0,\\
+1\alpha&amp;=\alpha,\\
+k(l\alpha)&amp;=(kl)\alpha,\\
+(k+l)\alpha&amp;=k\alpha+l\alpha,\\
+k(\alpha+\beta)&amp;=k\alpha+k\beta.
+\end{aligned}
+$$</p>
+<p>则称 $V$ 是数域 $F$ 上的线性空间。（S1 pp.16–18）</p>
+<h3 id="2-1-最容易漏掉的是-封闭">2.1 最容易漏掉的是“封闭”</h3>
+<p>判断一个集合是不是线性空间，不能只检查八条形式规则。先看：</p>
+<ul>
+<li>$\alpha,\beta\in V$ 时，是否必有 $\alpha+\beta\in V$；</li>
+<li>$k\in F,\alpha\in V$ 时，是否必有 $k\alpha\in V$。</li>
+</ul>
+<p>例如“<strong>次数恰好等于 $n$ 的多项式</strong>”通常不是线性空间：两个最高次项可能相消，和的次数下降；更直接地，数乘 $0$ 后得到零多项式，它不再满足“次数恰好为 $n$”。（S1 p.21）</p>
+<h3 id="2-2-零向量不是数字-0">2.2 零向量不是数字 0</h3>
+<p>抽象线性空间中的 $0$ 是加法单位元。它可能是零矩阵、零多项式、零函数，而不一定是一个实数。由公理可以推出零元唯一、负元唯一，并且</p>
+<p>$$
+0\alpha=0,\qquad (-1)\alpha=-\alpha,\qquad k0=0.
+$$</p>
+<p>（S1 p.23）</p>
+<h2 id="3-线性组合-span-与线性相关">3. 线性组合、span 与线性相关</h2>
+<p>给定 $\alpha_1,\ldots,\alpha_m\in V$，形如</p>
+<p>$$
+\beta=k_1\alpha_1+\cdots+k_m\alpha_m
+$$</p>
+<p>的向量称为这组向量的线性组合。所有线性组合组成的集合记为</p>
+<p>$$
+\operatorname{span}\{\alpha_1,\ldots,\alpha_m\}.
+$$</p>
+<p>它回答的是：<strong>这组向量究竟能够生成多大的空间？</strong></p>
+<p>若存在不全为零的 $k_i$ 使</p>
+<p>$$
+k_1\alpha_1+\cdots+k_m\alpha_m=0,
+$$</p>
+<p>则向量组线性相关；反之，只有 $k_1=\cdots=k_m=0$ 才能得到零向量，则线性无关。（S1 pp.24–26）</p>
+<blockquote class="callout">
+<p><strong>记忆方式</strong>：相关 = 至少有一个向量是“多余信息”；无关 = 每个方向都贡献了新的自由度。</p>
+</blockquote>
+<p>由此立刻得到：线性无关组的任意部分组仍无关；一个包含相关部分组的大向量组一定相关；单个非零向量无关，而单个零向量相关。</p>
+<h2 id="4-基-维数与坐标-把抽象对象编码成数字">4. 基、维数与坐标：把抽象对象编码成数字</h2>
+<p>一组向量 $B_\alpha=(\alpha_1,\ldots,\alpha_n)$ 若同时满足：</p>
+<ol>
+<li>$\alpha_1,ldots,\alpha_n$ 线性无关；</li>
+<li>它们张成整个 $V$；</li>
+</ol>
+<p>则称它们构成 $V$ 的一组基。有限维空间中，任意基含有相同个数的向量，这个数就是 $\dim V$。（S1 pp.27–30）</p>
+<figure class="diagram"><svg aria-label="基把抽象向量编码成唯一坐标" role="img" viewbox="0 0 980 330"><defs><marker id="arr" markerheight="8" markerwidth="8" orient="auto" refx="7" refy="4"><path d="M0,0 L8,4 L0,8z" fill="#60788f"></path></marker></defs><rect fill="#fbfdff" height="328" rx="18" stroke="#dce6f0" width="978" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="490" y="44">基把抽象向量编码成唯一坐标</text><rect fill="#eef5fb" height="112" rx="14" stroke="#9dbbd6" width="258.7" x="40.0" y="118"></rect><text class="svg-title" text-anchor="middle" x="169.3" y="156">抽象向量 ξ</text><text class="svg-label" text-anchor="middle" x="169.3" y="190">空间 V 中的对象</text><line marker-end="url(#arr)" stroke="#60788f" stroke-width="2.5" x1="303.7" x2="315.7" y1="174.0" y2="174.0"></line><rect fill="#eef5fb" height="112" rx="14" stroke="#9dbbd6" width="258.7" x="320.7" y="118"></rect><text class="svg-title" text-anchor="middle" x="450.0" y="156">选择基 B</text><text class="svg-label" text-anchor="middle" x="450.0" y="190">建立坐标尺</text><line marker-end="url(#arr)" stroke="#60788f" stroke-width="2.5" x1="584.3" x2="596.3" y1="174.0" y2="174.0"></line><rect fill="#eef5fb" height="112" rx="14" stroke="#9dbbd6" width="258.7" x="601.3" y="118"></rect><text class="svg-title" text-anchor="middle" x="730.7" y="156">坐标 x</text><text class="svg-label" text-anchor="middle" x="730.7" y="190">ξ = Bx</text><text class="svg-accent" text-anchor="middle" x="490" y="280">换基改变坐标，不改变向量本身。</text></svg><figcaption>图 2　基与坐标的关系。教学重绘，对应 S1 pp.27–32。</figcaption></figure>
+<p>对于任意 $\xi\in V$，存在唯一坐标列 $x$ 使</p>
+<p>$$
+\boxed{\xi=B_\alpha x
+= x_1\alpha_1+\cdots+x_n\alpha_n.}
+$$</p>
+<p>“唯一”来自线性无关：若 $B_\alpha x=B_\alpha y$，则 $B_\alpha(x-y)=0$，所以 $x=y$。</p>
+<h3 id="4-1-典型空间的维数">4.1 典型空间的维数</h3>
+<ul>
+<li>$\dim\mathbb R^n=n$；</li>
+<li>$\dim P_n(t)=n+1$，可取基 $\{1,t,\ldots,t^n\}$；</li>
+<li>$\dim\mathbb R^{m\times n}=mn$；</li>
+<li>所有次数有限但不设统一上界的多项式空间是无穷维的。</li>
+</ul>
+<p>（S1 p.28）</p>
+<h2 id="5-换基-向量没变-坐标变了">5. 换基：向量没变，坐标变了</h2>
+<p>设同一个 $n$ 维空间有两组基</p>
+<p>$$
+B_\alpha=(\alpha_1,\ldots,\alpha_n),\qquad
+B_\beta=(\beta_1,\ldots,\beta_n).
+$$</p>
+<p>把每个 $\beta_j$ 用 $B_\alpha$ 表示，并把坐标列依次排成矩阵 $P$，得到</p>
+<p>$$
+\boxed{B_\beta=B_\alpha P.}
+$$</p>
+<p>$P$ 就是从基 $B_\alpha$ 到基 $B_\beta$ 的过渡矩阵。（S1 pp.33–37；S2 pp.2–6）</p>
+<figure class="diagram"><svg aria-label="换基：基向右变，坐标逆向补偿" role="img" viewbox="0 0 980 380"><rect fill="#fbfdff" height="378" rx="18" stroke="#dce6f0" width="978" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="490" y="44">换基：基向右变，坐标逆向补偿</text><rect fill="#eef5fb" height="190" rx="16" stroke="#9dbbd6" width="370" x="65" y="100"></rect><rect fill="#fff7ee" height="190" rx="16" stroke="#e4b98f" width="370" x="545" y="100"></rect><text class="svg-title" text-anchor="middle" x="250" y="140">基向量</text><text class="svg-label" text-anchor="middle" x="250" y="182">Bβ = Bα P</text><text class="svg-accent" text-anchor="middle" x="250" y="222">P 描述新基</text><text class="svg-title" text-anchor="middle" x="730" y="140">同一向量坐标</text><text class="svg-label" text-anchor="middle" x="730" y="182">x = P y</text><text class="svg-orange" text-anchor="middle" x="730" y="222">y = P⁻¹x</text><text class="svg-label" text-anchor="middle" x="490" y="335">同一数学结构，不同观察层次</text></svg><figcaption>图 3　过渡矩阵与坐标变换方向。教学重绘，对应 S1 pp.33–37。</figcaption></figure>
+<p>为什么 $P$ 一定可逆？因为 $B_\beta$ 是基。如果 $Px=0$ 存在非零解，那么</p>
+<p>$$
+B_\beta x=B_\alpha Px=0,
+$$</p>
+<p>这会说明 $B_\beta$ 的列向量线性相关，与“它是一组基”矛盾。</p>
+<p>若同一向量 $\xi$ 在两组基下的坐标分别为 $x,y$：</p>
+<p>$$
+\xi=B_\alpha x=B_\beta y=B_\alpha Py,
+$$</p>
+<p>于是</p>
+<p>$$
+\boxed{x=Py,\qquad y=P^{-1}x.}
+$$</p>
+<blockquote class="callout">
+<p><strong>高频易错点</strong>：$B_\beta=B_\alpha P$ 与坐标关系 $x=Py$ 的方向看起来“反了”。原因是基向量向右变换，而同一个几何向量的坐标必须做逆向补偿。</p>
+</blockquote>
+<h2 id="6-子空间-大空间里仍然保持线性结构的部分">6. 子空间：大空间里仍然保持线性结构的部分</h2>
+<p>非空集合 $W\subseteq V$ 若对 $V$ 中原有的加法和数乘仍构成线性空间，就称为 $V$ 的子空间。（S1 pp.38–43）</p>
+<p>实用判别只需检查封闭性：</p>
+<p>$$
+\alpha,\beta\in W,\ k,l\in F
+\quad\Longrightarrow\quad
+k\alpha+l\beta\in W.
+$$</p>
+<p>这一个条件把“加法封闭 + 数乘封闭”合在了一起。</p>
+<h3 id="6-1-零空间与列空间">6.1 零空间与列空间</h3>
+<p>对 $A\in\mathbb R^{m\times n}$：</p>
+<p>$$
+N(A)=\{x\in\mathbb R^n:Ax=0\}
+$$</p>
+<p>是 $\mathbb R^n$ 的子空间；而</p>
+<p>$$
+R(A)=\{Ax:x\in\mathbb R^n\}
+=\operatorname{span}\{A_1,\ldots,A_n\}
+$$</p>
+<p>是 $\mathbb R^m$ 的子空间。（S1 pp.39–41）</p>
+<figure class="diagram"><svg aria-label="矩阵 A 的两个基本子空间" role="img" viewbox="0 0 980 380"><rect fill="#fbfdff" height="378" rx="18" stroke="#dce6f0" width="978" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="490" y="44">矩阵 A 的两个基本子空间</text><rect fill="#eef5fb" height="190" rx="16" stroke="#9dbbd6" width="370" x="65" y="100"></rect><rect fill="#fff7ee" height="190" rx="16" stroke="#e4b98f" width="370" x="545" y="100"></rect><text class="svg-title" text-anchor="middle" x="250" y="140">零空间 N(A)</text><text class="svg-label" text-anchor="middle" x="250" y="182">Ax = 0</text><text class="svg-accent" text-anchor="middle" x="250" y="222">被 A 压到零</text><text class="svg-title" text-anchor="middle" x="730" y="140">列空间 R(A)</text><text class="svg-label" text-anchor="middle" x="730" y="182">y = Ax</text><text class="svg-orange" text-anchor="middle" x="730" y="222">A 能到达的输出</text><text class="svg-label" text-anchor="middle" x="490" y="335">同一数学结构，不同观察层次</text></svg><figcaption>图 4　零空间与列空间。教学重绘，对应 S1 pp.39–41。</figcaption></figure>
+<p>其中</p>
+<p>$$
+\begin{aligned}
+\dim R(A)&amp;=\operatorname{rank}A,\\
+\dim N(A)&amp;=n-\operatorname{rank}A.
+\end{aligned}
+$$</p>
+<p>这已经预告了后面线性变换的“秩—零度定理”。</p>
+<h2 id="7-基扩充定理-无关方向可以补成整组基">7. 基扩充定理：无关方向可以补成整组基</h2>
+<p>若 $\alpha_1,\ldots,\alpha_r$ 是 $n$ 维空间 $V$ 中的一组线性无关向量，则可以继续找到 $\alpha_{r+1},\ldots,\alpha_n$，使</p>
+<p>$$
+\alpha_1,\ldots,\alpha_r,\alpha_{r+1},\ldots,\alpha_n
+$$</p>
+<p>成为 $V$ 的一组基。（S1 p.42；S2 pp.11/16）</p>
+<p>证明思想很直接：若现有向量还没有张成 $V$，就在它们的 span 外取一个新向量；这个新向量加入后仍线性无关。有限维意味着这个过程最多进行到 $n$ 个向量。</p>
+<p>这个定理是后面<strong>维数公式、补空间、秩—零度定理</strong>证明的共同工具。</p>
+<h2 id="8-子空间的交与和-维数怎样-记账">8. 子空间的交与和：维数怎样“记账”</h2>
+<p>定义</p>
+<p>$$
+W_1\cap W_2=\{\xi:\xi\in W_1\text{ 且 }\xi\in W_2\},
+$$</p>
+<p>$$
+W_1+W_2=\{\xi_1+\xi_2:\xi_1\in W_1,\xi_2\in W_2\}.
+$$</p>
+<p>注意 $W_1+W_2$ 不是集合并 $W_1\cup W_2$。（S2 pp.12–18）</p>
+<p>最重要的维数公式是</p>
+<p>$$
+\boxed{
+\begin{aligned}
+\dim(W_1+W_2)
+&amp;=\dim W_1+\dim W_2\\
+&amp;\quad-\dim(W_1\cap W_2).
+\end{aligned}}
+$$</p>
+<figure class="diagram"><svg aria-label="子空间维数公式：重叠部分只能算一次" role="img" viewbox="0 0 980 330"><defs><marker id="arr" markerheight="8" markerwidth="8" orient="auto" refx="7" refy="4"><path d="M0,0 L8,4 L0,8z" fill="#60788f"></path></marker></defs><rect fill="#fbfdff" height="328" rx="18" stroke="#dce6f0" width="978" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="490" y="44">子空间维数公式：重叠部分只能算一次</text><rect fill="#eef5fb" height="112" rx="14" stroke="#9dbbd6" width="258.7" x="40.0" y="118"></rect><text class="svg-title" text-anchor="middle" x="169.3" y="156">W₁</text><text class="svg-label" text-anchor="middle" x="169.3" y="190">dim W₁</text><line marker-end="url(#arr)" stroke="#60788f" stroke-width="2.5" x1="303.7" x2="315.7" y1="174.0" y2="174.0"></line><rect fill="#eef5fb" height="112" rx="14" stroke="#9dbbd6" width="258.7" x="320.7" y="118"></rect><text class="svg-title" text-anchor="middle" x="450.0" y="156">交 W₁∩W₂</text><text class="svg-label" text-anchor="middle" x="450.0" y="190">共同方向</text><line marker-end="url(#arr)" stroke="#60788f" stroke-width="2.5" x1="584.3" x2="596.3" y1="174.0" y2="174.0"></line><rect fill="#eef5fb" height="112" rx="14" stroke="#9dbbd6" width="258.7" x="601.3" y="118"></rect><text class="svg-title" text-anchor="middle" x="730.7" y="156">W₁+W₂</text><text class="svg-label" text-anchor="middle" x="730.7" y="190">合并后的方向</text><text class="svg-accent" text-anchor="middle" x="490" y="280">dim(W₁+W₂)=dimW₁+dimW₂−dim(W₁∩W₂)</text></svg><figcaption>图 5　和空间、交空间与维数记账。教学重绘，对应 S2 pp.18–21。</figcaption></figure>
+<h3 id="8-1-为什么公式成立">8.1 为什么公式成立</h3>
+<p>设 $W_1\cap W_2$ 的一组基为 $\xi_1,\ldots,\xi_m$。分别把它扩充成</p>
+<p>$$
+W_1=\operatorname{span}\{\xi_1,\ldots,\xi_m,\alpha_1,\ldots,\alpha_{n_1-m}\},
+$$</p>
+<p>$$
+W_2=\operatorname{span}\{\xi_1,\ldots,\xi_m,\beta_1,\ldots,\beta_{n_2-m}\}.
+$$</p>
+<p>可以证明把这三组向量合在一起正好构成 $W_1+W_2$ 的一组基，因此</p>
+<p>$$
+\begin{aligned}
+\dim(W_1+W_2)
+&amp;=m+(n_1-m)+(n_2-m)\\
+&amp;=n_1+n_2-m.
+\end{aligned}
+$$</p>
+<p>移项就得到维数公式。（S2 pp.19–21）</p>
+<p>几何上，在 $\mathbb R^3$ 中两个不同且不平行的过原点平面，各自维数为 2；交线维数为 1；它们的和是整个 $\mathbb R^3$，维数为 3，于是 $2+2=1+3$。（S2 p.18）</p>
+<h2 id="9-直和-什么时候分解是唯一的">9. 直和：什么时候分解是唯一的</h2>
+<p>一般 $\xi\in W_1+W_2$ 可以写成 $\xi=\xi_1+\xi_2$，但这种写法未必唯一。若每个 $\xi$ 都只有唯一分解，则记</p>
+<p>$$
+W_1+W_2=W_1\oplus W_2.
+$$</p>
+<p>（S2 pp.25–32）</p>
+<figure class="diagram"><svg aria-label="直和 = 唯一分解" role="img" viewbox="0 0 980 380"><rect fill="#fbfdff" height="378" rx="18" stroke="#dce6f0" width="978" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="490" y="44">直和 = 唯一分解</text><rect fill="#eef5fb" height="190" rx="16" stroke="#9dbbd6" width="370" x="65" y="100"></rect><rect fill="#fff7ee" height="190" rx="16" stroke="#e4b98f" width="370" x="545" y="100"></rect><text class="svg-title" text-anchor="middle" x="250" y="140">普通和 W₁+W₂</text><text class="svg-label" text-anchor="middle" x="250" y="182">交空间可能非零</text><text class="svg-accent" text-anchor="middle" x="250" y="222">分解可能不唯一</text><text class="svg-title" text-anchor="middle" x="730" y="140">直和 W₁⊕W₂</text><text class="svg-label" text-anchor="middle" x="730" y="182">W₁∩W₂={0}</text><text class="svg-orange" text-anchor="middle" x="730" y="222">每个向量唯一分解</text><text class="svg-label" text-anchor="middle" x="490" y="335">同一数学结构，不同观察层次</text></svg><figcaption>图 6　普通和与直和。教学重绘，对应 S2 pp.25–32。</figcaption></figure>
+<p>以下条件等价：</p>
+<p>$$
+\boxed{
+\begin{aligned}
+W_1\oplus W_2
+&amp;\Longleftrightarrow W_1\cap W_2=\{0\},\\
+&amp;\Longleftrightarrow \dim(W_1+W_2)\\
+&amp;\qquad=\dim W_1+\dim W_2.
+\end{aligned}}
+$$</p>
+<p>还等价于：若 $0=\xi_1+\xi_2$ 且 $\xi_i\in W_i$，则必有 $\xi_1=\xi_2=0$。</p>
+<p>为什么“零交”会保证唯一？若</p>
+<p>$$
+\xi=\xi_1+\xi_2=\eta_1+\eta_2,
+$$</p>
+<p>则</p>
+<p>$$
+\xi_1-\eta_1=-(\xi_2-\eta_2).
+$$</p>
+<p>左边属于 $W_1$，右边属于 $W_2$，所以这个共同向量属于交空间。若交空间只有 $0$，就只能有 $\xi_1=\eta_1$、$\xi_2=\eta_2$。</p>
+<p>基扩充定理还说明：有限维空间的任一子空间 $W$ 都存在补空间 $U$，使</p>
+<p>$$
+V=W\oplus U.
+$$</p>
+<h2 id="10-从矩阵乘法回到几何">10. 从矩阵乘法回到几何</h2>
+<p>S1 最后用二维图形提醒：矩阵不只是“数字表格”，它代表线性变换。对点/向量 $x$，$Ax$ 可以对应缩放、旋转、剪切等几何操作。（S1 pp.44–47）</p>
+<p>三类初等行变换矩阵也可以从几何上理解：</p>
+<ul>
+<li>交换两个坐标分量：改变坐标轴对应关系；</li>
+<li>某个坐标乘非零常数：沿某方向拉伸、压缩或反向；</li>
+<li>一个坐标加上另一个坐标的倍数：剪切。</li>
+</ul>
+<p>这正是下一份笔记“线性变换与矩阵表示”的入口。</p>
+<h2 id="11-一页复习框架">11. 一页复习框架</h2>
+<table>
+<thead>
+<tr>
+<th>问题</th>
+<th>对应概念</th>
+<th>复习抓手</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>什么对象可以统一研究？</td>
+<td>线性空间</td>
+<td>封闭 + 八条公理</td>
+</tr>
+<tr>
+<td>一组向量能生成什么？</td>
+<td>span</td>
+<td>全部线性组合</td>
+</tr>
+<tr>
+<td>有没有冗余方向？</td>
+<td>线性相关/无关</td>
+<td>零组合的系数是否唯一为零</td>
+</tr>
+<tr>
+<td>怎样给抽象向量编号？</td>
+<td>基与坐标</td>
+<td>基是坐标尺</td>
+</tr>
+<tr>
+<td>换一组基怎么办？</td>
+<td>过渡矩阵</td>
+<td>基正向变、坐标逆向补偿</td>
+</tr>
+<tr>
+<td>矩阵的两大基本子空间？</td>
+<td>零空间/列空间</td>
+<td>被压到零 / 能到达的输出</td>
+</tr>
+<tr>
+<td>两个子空间合起来多大？</td>
+<td>维数公式</td>
+<td>相加后减去重叠维数</td>
+</tr>
+<tr>
+<td>何时分解唯一？</td>
+<td>直和</td>
+<td>交空间只有零向量</td>
+</tr>
+</tbody>
+</table>
+<blockquote class="callout">
+<p><strong>来源说明</strong>：本篇以 S1 pp.13–47 与 S2 pp.2–33 为主线；S3 是第 2 次课的课堂节选/重复版本，用于核验过渡矩阵、子空间、维数公式与直和。教学示意图为重绘，不是原课件实验图。</p>
+</blockquote><section class="source-panel"><strong>来源追溯</strong><br>主线：S1 pp.13–47；S2 pp.2–33；S3 为第2次课课堂节选/重复版本。原 PDF 几乎无正文文本层，工作阶段采用 OCR + 页面结构核验；矩阵/公式按同页语义与统一符号重建。</section><div class="footer">学习笔记项目 · 高等工程数学 · ChatGPT-AgentDock / Codex 协作工作流 · 2026-09-26</div></main></div><script>const bar=document.getElementById('progress');const links=[...document.querySelectorAll('.toc a')];
+function update(){const d=document.documentElement;const m=d.scrollHeight-d.clientHeight;bar.style.width=(m?d.scrollTop/m*100:0)+'%';}
+window.addEventListener('scroll',update,{passive:true});update();
+const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+e.target.id));}})},{rootMargin:'-15% 0px -72% 0px'});
+document.querySelectorAll('h2[id],h3[id]').forEach(h=>obs.observe(h));
+</script></body></html>

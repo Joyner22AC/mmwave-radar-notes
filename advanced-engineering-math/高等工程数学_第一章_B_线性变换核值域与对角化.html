@@ -1,0 +1,324 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>高等工程数学｜第一章 B：线性变换、核值域与对角化</title><script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']]},svg:{fontCache:'global'}};</script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script><style>:root{--ink:#20303d;--muted:#627385;--line:#dce5ed;--paper:#fff;--soft:#f6f9fc;--blue:#1f6fb2;--blue2:#315f91;--orange:#c96d25;--shadow:0 12px 34px rgba(41,63,82,.08);}
+*{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;background:#f3f6f9;color:var(--ink);font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;line-height:1.82;font-size:16px}
+#progress{position:fixed;top:0;left:0;height:3px;background:var(--blue);width:0;z-index:50}
+.layout{display:grid;grid-template-columns:280px minmax(0,860px);gap:32px;max-width:1210px;margin:0 auto;padding:34px 24px 80px}
+.sidebar{position:sticky;top:22px;height:calc(100vh - 44px);overflow:auto;padding:18px 16px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.92);box-shadow:var(--shadow)}
+.brand{font-weight:700;color:#173c5c;margin:3px 8px 14px} .toc{display:flex;flex-direction:column;gap:2px} .toc a{text-decoration:none;color:#536779;border-radius:8px;padding:7px 9px;font-size:13px;line-height:1.4} .toc a:hover,.toc a.active{background:#edf4fa;color:#174e7e} .toc-sub{padding-left:22px!important;font-size:12.5px!important}
+.article{background:var(--paper);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:54px 68px;min-width:0}
+.hero{border-bottom:1px solid var(--line);padding-bottom:30px;margin-bottom:36px} .eyebrow{color:var(--blue);font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase} h1{font-size:35px;line-height:1.25;margin:10px 0 15px;color:#17344d} .lead{font-size:17px;color:#596d7f;max-width:720px;margin:0} .meta{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px} .chip{font-size:12px;padding:5px 9px;border-radius:999px;background:#edf4fa;color:#315f91;border:1px solid #d2e2ef}
+h2{font-size:25px;line-height:1.35;color:#183e5d;margin:54px 0 18px;padding-top:4px} h3{font-size:19px;line-height:1.4;color:#28516f;margin:34px 0 12px} p{margin:12px 0} strong{color:#193b56} code{font-family:"Cascadia Mono",Consolas,monospace;background:#f0f4f7;border:1px solid #e1e8ee;padding:.08em .34em;border-radius:5px;font-size:.92em}
+hr{border:0;border-top:1px solid var(--line);margin:42px 0} ul,ol{padding-left:1.55em} li{margin:.35em 0}
+blockquote.callout{margin:22px 0;padding:14px 18px;border-left:4px solid var(--blue);background:#f3f8fc;border-radius:0 10px 10px 0;color:#405669}
+table{width:100%;border-collapse:collapse;margin:20px 0 28px;font-size:14.5px} th,td{border:1px solid #dce5ed;padding:10px 12px;text-align:left;vertical-align:top} th{background:#eef5fa;color:#294f6d} tr:nth-child(even) td{background:#fbfcfd}
+.diagram{margin:28px 0 34px;padding:16px;border:1px solid var(--line);border-radius:16px;background:#fbfdff;overflow:hidden} .diagram svg{width:100%;height:auto;display:block} figcaption{text-align:center;color:#657889;font-size:13px;margin-top:10px} .svg-label{font:16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#415466} .svg-title{font:600 17px "Segoe UI","Microsoft YaHei",sans-serif;fill:#294f6d} .svg-accent{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#315f91} .svg-blue{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#1f6fb2} .svg-orange{font:600 16px "Segoe UI","Microsoft YaHei",sans-serif;fill:#c96d25}
+.formula-note{font-size:13px;color:var(--muted)} mjx-container{color:#172a3a} mjx-container[display="true"]{margin:1.35em 0!important;max-width:100%;overflow-x:auto;overflow-y:hidden;padding:.18em .25em .24em;text-align:center;scrollbar-width:thin;scrollbar-color:#c7d5e1 transparent} mjx-container[display="true"]>svg{display:inline-block;vertical-align:middle} mjx-container:not([display="true"]){font-size:1.01em}
+.source-panel{margin-top:52px;padding:22px;border:1px solid var(--line);background:#f8fafc;border-radius:14px;color:#526779;font-size:14px} .source-panel a{color:var(--blue)}
+.footer{margin-top:38px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:#7a8997;text-align:center}
+@media(max-width:980px){.layout{grid-template-columns:1fr;max-width:900px}.sidebar{position:relative;top:0;height:auto;max-height:340px}.article{padding:42px 34px}}
+@media(max-width:600px){body{font-size:15px}.layout{padding:12px 8px 50px}.sidebar{display:none}.article{padding:30px 20px;border-radius:12px}h1{font-size:28px}h2{font-size:22px}.diagram{padding:5px}mjx-container[display="true"]{font-size:.96em;margin:1.1em 0!important}}
+@media print{body{background:white;font-size:10.5pt}#progress,.sidebar{display:none!important}.layout{display:block;max-width:none;padding:0}.article{border:0;box-shadow:none;padding:0}.hero{margin-top:0}h2,h3{break-after:avoid-page}.diagram,table,blockquote,mjx-container[display="true"]{break-inside:avoid}mjx-container[display="true"]{overflow:visible}a{color:inherit;text-decoration:none}}
+
+@media(max-width:760px){table{width:100%;table-layout:fixed;font-size:.84rem}th,td{overflow-wrap:anywhere;word-break:break-word;padding:7px 6px}}</style></head><body><div id="progress"></div><div class="layout"><aside class="sidebar"><div class="brand">高等工程数学</div><nav class="toc"><a class="toc-main" href="#1-从-空间-走向-空间之间的作用">1. 从“空间”走向“空间之间的作用”</a>
+<a class="toc-sub" href="#1-1-相关性一定被保留-无关性不一定">1.1 相关性一定被保留，无关性不一定</a>
+<a class="toc-main" href="#2-线性变换怎样变成矩阵">2. 线性变换怎样变成矩阵</a>
+<a class="toc-sub" href="#2-1-微分算子的矩阵">2.1 微分算子的矩阵</a>
+<a class="toc-main" href="#3-为什么-任意矩阵-都对应唯一线性变换">3. 为什么“任意矩阵”都对应唯一线性变换</a>
+<a class="toc-main" href="#4-换基以后-为什么矩阵会变">4. 换基以后，为什么矩阵会变</a>
+<a class="toc-sub" href="#4-1-自同态为什么变成相似">4.1 自同态为什么变成相似</a>
+<a class="toc-main" href="#5-核和值域-一个变换-丢了多少-留下多少">5. 核和值域：一个变换“丢了多少、留下多少”</a>
+<a class="toc-sub" href="#5-1-秩-零度定理">5.1 秩—零度定理</a>
+<a class="toc-sub" href="#5-2-证明为什么值得掌握">5.2 证明为什么值得掌握</a>
+<a class="toc-main" href="#6-不变子空间-为什么可以把大问题拆成块">6. 不变子空间：为什么可以把大问题拆成块</a>
+<a class="toc-main" href="#7-特征值与特征向量-一维不变方向">7. 特征值与特征向量：一维不变方向</a>
+<a class="toc-sub" href="#7-1-特征多项式为什么与基无关">7.1 特征多项式为什么与基无关</a>
+<a class="toc-main" href="#8-特征子空间与可对角化">8. 特征子空间与可对角化</a>
+<a class="toc-sub" href="#8-1-为什么对角化这么有价值">8.1 为什么对角化这么有价值</a>
+<a class="toc-main" href="#9-三个最容易混淆的关系">9. 三个最容易混淆的关系</a></nav></aside><main class="article"><header class="hero"><div class="eyebrow">ADVANCED ENGINEERING MATHEMATICS · CHAPTER 01B</div><h1>第一章 B：线性变换、核值域与对角化</h1><p class="lead">把抽象线性映射坐标化为矩阵，串起换基、相似、核和值域、秩—零度、不变子空间、特征理论与可对角化。</p><div class="meta"><span class="chip">S2 + S4</span><span class="chip">Linear Map · Matrix</span><span class="chip">7 张教学图</span><span class="chip">Rank-Nullity · Eigen</span></div></header><h2 id="1-从-空间-走向-空间之间的作用">1. 从“空间”走向“空间之间的作用”</h2>
+<p>线性空间告诉我们什么对象可以做线性组合；线性变换则研究：<strong>怎样在不破坏线性结构的前提下，把一个空间中的向量映到另一个空间。</strong></p>
+<p>设 $V,W$ 是同一数域 $F$ 上的线性空间。映射 $T:V\to W$ 若满足</p>
+<p>$$
+T(\alpha+\beta)=T\alpha+T\beta,
+\qquad
+T(k\alpha)=kT\alpha,
+$$</p>
+<p>就称为线性变换。（S2 pp.34–37）</p>
+<p>两条条件可以合成：</p>
+<p>$$
+\boxed{
+\begin{aligned}
+&amp;T(k_1\alpha_1+\cdots+k_r\alpha_r)\\
+&amp;\qquad=k_1T\alpha_1+\cdots+k_rT\alpha_r.
+\end{aligned}}
+$$</p>
+<figure class="diagram"><svg aria-label="线性变换保持线性组合" role="img" viewbox="0 0 980 330"><defs><marker id="arr" markerheight="8" markerwidth="8" orient="auto" refx="7" refy="4"><path d="M0,0 L8,4 L0,8z" fill="#60788f"></path></marker></defs><rect fill="#fbfdff" height="328" rx="18" stroke="#dce6f0" width="978" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="490" y="44">线性变换保持线性组合</text><rect fill="#eef5fb" height="112" rx="14" stroke="#9dbbd6" width="258.7" x="40.0" y="118"></rect><text class="svg-title" text-anchor="middle" x="169.3" y="156">输入</text><text class="svg-label" text-anchor="middle" x="169.3" y="190">k₁α+k₂β</text><line marker-end="url(#arr)" stroke="#60788f" stroke-width="2.5" x1="303.7" x2="315.7" y1="174.0" y2="174.0"></line><rect fill="#eef5fb" height="112" rx="14" stroke="#9dbbd6" width="258.7" x="320.7" y="118"></rect><text class="svg-title" text-anchor="middle" x="450.0" y="156">线性变换 T</text><text class="svg-label" text-anchor="middle" x="450.0" y="190">保持加法/数乘</text><line marker-end="url(#arr)" stroke="#60788f" stroke-width="2.5" x1="584.3" x2="596.3" y1="174.0" y2="174.0"></line><rect fill="#eef5fb" height="112" rx="14" stroke="#9dbbd6" width="258.7" x="601.3" y="118"></rect><text class="svg-title" text-anchor="middle" x="730.7" y="156">输出</text><text class="svg-label" text-anchor="middle" x="730.7" y="190">k₁Tα+k₂Tβ</text><text class="svg-accent" text-anchor="middle" x="490" y="280">知道 T 对一组基的作用，就知道 T 对整个空间的作用。</text></svg><figcaption>图 1　线性变换的核心性质。教学重绘，对应 S2 pp.34–37。</figcaption></figure>
+<p>这句话很重要：<strong>线性变换完全由它对一组基的作用决定。</strong></p>
+<p>典型例子包括多项式微分、矩阵乘法 $x\mapsto Ax$、单位变换与零变换。（S2 p.36）</p>
+<h3 id="1-1-相关性一定被保留-无关性不一定">1.1 相关性一定被保留，无关性不一定</h3>
+<p>若 $\alpha_1,ldots,\alpha_r$ 线性相关，则存在不全为零的 $k_i$ 使 $\sum k_i\alpha_i=0$。作用 $T$ 后：</p>
+<p>$$
+\sum_i k_iT\alpha_i=T0=0,
+$$</p>
+<p>所以像向量仍相关。</p>
+<p>但线性无关组经过 $T$ 后不一定无关：如果 $T$ 把某个非零向量压到 0，独立方向就会丢失。这个“丢失的方向”正是后面的核 $N(T)$。（S2 pp.37–38）</p>
+<h2 id="2-线性变换怎样变成矩阵">2. 线性变换怎样变成矩阵</h2>
+<p>设</p>
+<p>$$
+B_\alpha=(\alpha_1,\ldots,\alpha_n)
+$$</p>
+<p>是 $V$ 的基，</p>
+<p>$$
+B_\beta=(\beta_1,\ldots,\beta_m)
+$$</p>
+<p>是 $W$ 的基。把每个 $T\alpha_j$ 在 $B_\beta$ 下的坐标作为第 $j$ 列，得到矩阵 $A\in F^{m\times n}$：</p>
+<p>$$
+\boxed{TB_\alpha=B_\beta A.}
+$$</p>
+<p>这就是 $T$ 在基偶 $(B_\alpha,B_\beta)$ 下的矩阵表示。（S2 pp.39–45）</p>
+<figure class="diagram"><svg aria-label="选定基后：抽象线性变换变成矩阵" role="img" viewbox="0 0 980 330"><defs><marker id="arr" markerheight="8" markerwidth="8" orient="auto" refx="7" refy="4"><path d="M0,0 L8,4 L0,8z" fill="#60788f"></path></marker></defs><rect fill="#fbfdff" height="328" rx="18" stroke="#dce6f0" width="978" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="490" y="44">选定基后：抽象线性变换变成矩阵</text><rect fill="#eef5fb" height="112" rx="14" stroke="#9dbbd6" width="258.7" x="40.0" y="118"></rect><text class="svg-title" text-anchor="middle" x="169.3" y="156">V 中坐标 x</text><text class="svg-label" text-anchor="middle" x="169.3" y="190">ξ = Bαx</text><line marker-end="url(#arr)" stroke="#60788f" stroke-width="2.5" x1="303.7" x2="315.7" y1="174.0" y2="174.0"></line><rect fill="#eef5fb" height="112" rx="14" stroke="#9dbbd6" width="258.7" x="320.7" y="118"></rect><text class="svg-title" text-anchor="middle" x="450.0" y="156">矩阵 A</text><text class="svg-label" text-anchor="middle" x="450.0" y="190">TBα = BβA</text><line marker-end="url(#arr)" stroke="#60788f" stroke-width="2.5" x1="584.3" x2="596.3" y1="174.0" y2="174.0"></line><rect fill="#eef5fb" height="112" rx="14" stroke="#9dbbd6" width="258.7" x="601.3" y="118"></rect><text class="svg-title" text-anchor="middle" x="730.7" y="156">W 中坐标 y</text><text class="svg-label" text-anchor="middle" x="730.7" y="190">y = Ax</text><text class="svg-accent" text-anchor="middle" x="490" y="280">矩阵 A 是线性变换在给定基偶下的坐标表达。</text></svg><figcaption>图 2　线性变换的矩阵表示。教学重绘，对应 S2 pp.39–45。</figcaption></figure>
+<p>若 $\xi=B_\alpha x$，则</p>
+<p>$$
+T\xi
+=T(B_\alpha x)
+=(TB_\alpha)x
+=B_\beta Ax.
+$$</p>
+<p>所以像 $T\xi$ 在 $B_\beta$ 下的坐标就是</p>
+<p>$$
+\boxed{y=Ax.}
+$$</p>
+<p>这说明“抽象线性变换”和“矩阵乘法”不是两个问题：<strong>选定基以后，它们是同一个结构的两种语言。</strong></p>
+<h3 id="2-1-微分算子的矩阵">2.1 微分算子的矩阵</h3>
+<p>对 $T:P_n(t)\to P_{n-1}(t)$，$Tp=p'$。取定义域基</p>
+<p>$$
+(1,t,t^2,\ldots,t^n)
+$$</p>
+<p>和值域基</p>
+<p>$$
+(1,t,t^2,\ldots,t^{n-1}),
+$$</p>
+<p>由于</p>
+<p>$$
+\begin{aligned}
+T1&amp;=0, &amp; Tt&amp;=1,\\
+Tt^2&amp;=2t, &amp; Tt^n&amp;=nt^{n-1}.
+\end{aligned}
+$$</p>
+<p>矩阵的各列就直接由这些像的坐标组成。（S2 pp.41–42）</p>
+<h2 id="3-为什么-任意矩阵-都对应唯一线性变换">3. 为什么“任意矩阵”都对应唯一线性变换</h2>
+<p>反过来，给定两组基和任意 $A\in F^{m\times n}$，定义</p>
+<p>$$
+\xi=B_\alpha x
+\quad\Longmapsto\quad
+T\xi=B_\beta Ax.
+$$</p>
+<p>因为基坐标 $x$ 唯一，所以这个定义没有歧义；矩阵乘法的线性性又保证 $T$ 是线性变换。并且由标准基坐标 $e_j$ 可验证 $T\alpha_j$ 正好等于 $B_\beta A$ 的第 $j$ 列，因此其表示矩阵就是 $A$。（S2 pp.46–51；S4 pp.3–8）</p>
+<blockquote class="callout">
+<p><strong>结论</strong>：一旦基被固定，研究有限维线性变换就可以转化为研究矩阵。</p>
+</blockquote>
+<h2 id="4-换基以后-为什么矩阵会变">4. 换基以后，为什么矩阵会变</h2>
+<p>同一个 $T$ 没有变，但如果输入空间和输出空间的基变了，表示矩阵会变化。</p>
+<p>设旧基为 $(B_\alpha,B_\beta)$，矩阵为 $A$：</p>
+<p>$$
+TB_\alpha=B_\beta A.
+$$</p>
+<p>新基满足</p>
+<p>$$
+B_{\alpha'}=B_\alpha P,
+\qquad
+B_{\beta'}=B_\beta Q.
+$$</p>
+<p>若新矩阵为 $A'$，则</p>
+<p>$$
+TB_{\alpha'}
+=TB_\alpha P
+=B_\beta AP
+=B_{\beta'}Q^{-1}AP.
+$$</p>
+<p>因此</p>
+<p>$$
+\boxed{A'=Q^{-1}AP.}
+$$</p>
+<p>（S2 pp.52–57；S4 pp.9–14）</p>
+<figure class="diagram"><svg aria-label="一般换基与相似变换" role="img" viewbox="0 0 980 380"><rect fill="#fbfdff" height="378" rx="18" stroke="#dce6f0" width="978" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="490" y="44">一般换基与相似变换</text><rect fill="#eef5fb" height="190" rx="16" stroke="#9dbbd6" width="370" x="65" y="100"></rect><rect fill="#fff7ee" height="190" rx="16" stroke="#e4b98f" width="370" x="545" y="100"></rect><text class="svg-title" text-anchor="middle" x="250" y="140">V→W</text><text class="svg-label" text-anchor="middle" x="250" y="182">A′ = Q⁻¹AP</text><text class="svg-accent" text-anchor="middle" x="250" y="222">两端可分别换基</text><text class="svg-title" text-anchor="middle" x="730" y="140">V→V</text><text class="svg-label" text-anchor="middle" x="730" y="182">A′ = P⁻¹AP</text><text class="svg-orange" text-anchor="middle" x="730" y="222">同一算子换坐标</text><text class="svg-label" text-anchor="middle" x="490" y="335">同一数学结构，不同观察层次</text></svg><figcaption>图 3　矩阵等价与矩阵相似。教学重绘，对应 S2 pp.52–57。</figcaption></figure>
+<p>这叫<strong>矩阵等价</strong>：定义域和陪域可以分别换基，所以左、右出现两个不同的可逆矩阵。</p>
+<h3 id="4-1-自同态为什么变成相似">4.1 自同态为什么变成相似</h3>
+<p>若 $T:V\to V$，输入输出是同一个空间，并且两边统一换同一组基，那么 $Q=P$：</p>
+<p>$$
+\boxed{A'=P^{-1}AP.}
+$$</p>
+<p>这就是矩阵相似。相似矩阵代表<strong>同一个线性算子在不同坐标系下的样子</strong>。</p>
+<blockquote class="callout">
+<p><strong>易错点</strong>：一般 $V\to W$ 的线性映射换基是 $Q^{-1}AP$；只有同一个空间到自身、且两端使用同一换基时才退化为相似变换 $P^{-1}AP$。</p>
+</blockquote>
+<h2 id="5-核和值域-一个变换-丢了多少-留下多少">5. 核和值域：一个变换“丢了多少、留下多少”</h2>
+<p>定义</p>
+<p>$$
+N(T)=\{\xi\in V:T\xi=0\},
+$$</p>
+<p>$$
+R(T)=\{T\xi:\xi\in V\}.
+$$</p>
+<p>$N(T)$ 称为核（零空间），$R(T)$ 称为值域（像空间）。它们都是子空间。（S2 pp.60–61；S4 pp.17–27）</p>
+<p>若 $T$ 在某组基下的矩阵是 $A$，则</p>
+<p>$$
+\begin{aligned}
+\dim N(T)&amp;=\dim N(A),\\
+\dim R(T)&amp;=\operatorname{rank}A.
+\end{aligned}
+$$</p>
+<p>所以</p>
+<p>$$
+\operatorname{rank}T=\operatorname{rank}A.
+$$</p>
+<figure class="diagram"><svg aria-label="核和值域：丢失方向 vs 保留方向" role="img" viewbox="0 0 980 380"><rect fill="#fbfdff" height="378" rx="18" stroke="#dce6f0" width="978" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="490" y="44">核和值域：丢失方向 vs 保留方向</text><rect fill="#eef5fb" height="190" rx="16" stroke="#9dbbd6" width="370" x="65" y="100"></rect><rect fill="#fff7ee" height="190" rx="16" stroke="#e4b98f" width="370" x="545" y="100"></rect><text class="svg-title" text-anchor="middle" x="250" y="140">核 N(T)</text><text class="svg-label" text-anchor="middle" x="250" y="182">Tξ = 0</text><text class="svg-accent" text-anchor="middle" x="250" y="222">被压扁的自由度</text><text class="svg-title" text-anchor="middle" x="730" y="140">值域 R(T)</text><text class="svg-label" text-anchor="middle" x="730" y="182">η = Tξ</text><text class="svg-orange" text-anchor="middle" x="730" y="222">真正传到输出</text><text class="svg-label" text-anchor="middle" x="490" y="335">同一数学结构，不同观察层次</text></svg><figcaption>图 4　线性变换的核和值域。教学重绘，对应 S4 pp.17–27。</figcaption></figure>
+<h3 id="5-1-秩-零度定理">5.1 秩—零度定理</h3>
+<p>若 $\dim V=n$，则</p>
+<p>$$
+\boxed{
+\operatorname{nullity}T+\operatorname{rank}T=n.
+}
+$$</p>
+<p>（S4 pp.18–24）</p>
+<h3 id="5-2-证明为什么值得掌握">5.2 证明为什么值得掌握</h3>
+<p>设 $N(T)$ 的一组基为</p>
+<p>$$
+\alpha_1,\ldots,\alpha_k.
+$$</p>
+<p>利用基扩充定理把它补成 $V$ 的基：</p>
+<p>$$
+\alpha_1,\ldots,\alpha_k,
+\alpha_{k+1},\ldots,\alpha_n.
+$$</p>
+<p>前 $k$ 个基向量都被 $T$ 送到 0。可以证明</p>
+<p>$$
+T\alpha_{k+1},\ldots,T\alpha_n
+$$</p>
+<p>恰好构成 $R(T)$ 的一组基。</p>
+<ul>
+<li><strong>张成性</strong>：任意 $\xi=\sum b_i\alpha_i$，作用 $T$ 后前 $k$ 项消失，只剩 $\sum_{i=k+1}^n b_iT\alpha_i$；</li>
+<li><strong>无关性</strong>：若 $\sum_{i=k+1}^n b_iT\alpha_i=0$，则 $\sum_{i=k+1}^n b_i\alpha_i\in N(T)$。但它同时只含补出来的基向量，与 $N(T)$ 的基无重叠，因此所有 $b_i=0$。</li>
+</ul>
+<p>于是</p>
+<p>$$
+\operatorname{rank}T=n-k,
+$$</p>
+<p>而 $k=\operatorname{nullity}T$。</p>
+<figure class="diagram"><svg aria-label="秩—零度：定义域自由度守恒" role="img" viewbox="0 0 980 330"><defs><marker id="arr" markerheight="8" markerwidth="8" orient="auto" refx="7" refy="4"><path d="M0,0 L8,4 L0,8z" fill="#60788f"></path></marker></defs><rect fill="#fbfdff" height="328" rx="18" stroke="#dce6f0" width="978" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="490" y="44">秩—零度：定义域自由度守恒</text><rect fill="#eef5fb" height="112" rx="14" stroke="#9dbbd6" width="258.7" x="40.0" y="118"></rect><text class="svg-title" text-anchor="middle" x="169.3" y="156">dim V = n</text><text class="svg-label" text-anchor="middle" x="169.3" y="190">总自由度</text><line marker-end="url(#arr)" stroke="#60788f" stroke-width="2.5" x1="303.7" x2="315.7" y1="174.0" y2="174.0"></line><rect fill="#eef5fb" height="112" rx="14" stroke="#9dbbd6" width="258.7" x="320.7" y="118"></rect><text class="svg-title" text-anchor="middle" x="450.0" y="156">nullity T</text><text class="svg-label" text-anchor="middle" x="450.0" y="190">被压到 0</text><line marker-end="url(#arr)" stroke="#60788f" stroke-width="2.5" x1="584.3" x2="596.3" y1="174.0" y2="174.0"></line><rect fill="#eef5fb" height="112" rx="14" stroke="#9dbbd6" width="258.7" x="601.3" y="118"></rect><text class="svg-title" text-anchor="middle" x="730.7" y="156">rank T</text><text class="svg-label" text-anchor="middle" x="730.7" y="190">输出有效方向</text><text class="svg-accent" text-anchor="middle" x="490" y="280">nullity(T) + rank(T) = dim(V)</text></svg><figcaption>图 5　秩—零度定理的自由度解释。教学重绘，对应 S4 pp.18–24。</figcaption></figure>
+<blockquote class="callout">
+<p><strong>信息视角</strong>：定义域的 $n$ 个独立方向，被分成“被压扁到 0 的方向”和“真正传到输出中的方向”。两部分维数之和仍是 $n$。</p>
+</blockquote>
+<h2 id="6-不变子空间-为什么可以把大问题拆成块">6. 不变子空间：为什么可以把大问题拆成块</h2>
+<p>对自同态 $T:V\to V$，若子空间 $W$ 满足</p>
+<p>$$
+T(W)\subseteq W,
+$$</p>
+<p>则称 $W$ 是 $T$ 的不变子空间。（S4 pp.29–34）</p>
+<p>核和值域都是典型不变子空间：$T\xi=0$ 的向量再作用一次仍是 0；而值域中的向量本来就是某个 $T\eta$，再作用得到 $T(T\eta)$，仍属于值域。</p>
+<p>若</p>
+<p>$$
+V=W_1\oplus\cdots\oplus W_s
+$$</p>
+<p>且每个 $W_i$ 都对 $T$ 不变，选取与这些子空间适配的基后，$T$ 的矩阵就会成为分块对角形式：</p>
+<p>$$
+A=
+\begin{bmatrix}
+A_1&amp;&amp;0\\
+&amp;\ddots&amp;\\
+0&amp;&amp;A_s
+\end{bmatrix}.
+$$</p>
+<p>这解释了“分块化简”的本质：不是凭技巧把矩阵变漂亮，而是找到算子内部彼此独立的不变部分。</p>
+<h2 id="7-特征值与特征向量-一维不变方向">7. 特征值与特征向量：一维不变方向</h2>
+<p>若存在非零 $\xi$ 与标量 $\lambda$ 使</p>
+<p>$$
+\boxed{T\xi=\lambda\xi,}
+$$</p>
+<p>则 $\lambda$ 是 $T$ 的特征值，$\xi$ 是对应特征向量。（S4 pp.35–41）</p>
+<figure class="diagram"><svg aria-label="特征向量：方向不变，只做缩放" role="img" viewbox="0 0 980 330"><defs><marker id="arr" markerheight="8" markerwidth="8" orient="auto" refx="7" refy="4"><path d="M0,0 L8,4 L0,8z" fill="#60788f"></path></marker></defs><rect fill="#fbfdff" height="328" rx="18" stroke="#dce6f0" width="978" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="490" y="44">特征向量：方向不变，只做缩放</text><rect fill="#eef5fb" height="112" rx="14" stroke="#9dbbd6" width="258.7" x="40.0" y="118"></rect><text class="svg-title" text-anchor="middle" x="169.3" y="156">ξ</text><text class="svg-label" text-anchor="middle" x="169.3" y="190">非零方向</text><line marker-end="url(#arr)" stroke="#60788f" stroke-width="2.5" x1="303.7" x2="315.7" y1="174.0" y2="174.0"></line><rect fill="#eef5fb" height="112" rx="14" stroke="#9dbbd6" width="258.7" x="320.7" y="118"></rect><text class="svg-title" text-anchor="middle" x="450.0" y="156">T</text><text class="svg-label" text-anchor="middle" x="450.0" y="190">线性算子</text><line marker-end="url(#arr)" stroke="#60788f" stroke-width="2.5" x1="584.3" x2="596.3" y1="174.0" y2="174.0"></line><rect fill="#eef5fb" height="112" rx="14" stroke="#9dbbd6" width="258.7" x="601.3" y="118"></rect><text class="svg-title" text-anchor="middle" x="730.7" y="156">λξ</text><text class="svg-label" text-anchor="middle" x="730.7" y="190">仍在同一直线上</text><text class="svg-accent" text-anchor="middle" x="490" y="280">Tξ = λξ</text></svg><figcaption>图 6　特征向量是一维不变方向。教学重绘，对应 S4 pp.35–41。</figcaption></figure>
+<p>取任意基 $B$，设 $TB=BA$，并令 $\xi=Bx$。则</p>
+<p>$$
+T\xi=T(Bx)=BAx,
+$$</p>
+<p>另一方面</p>
+<p>$$
+\lambda\xi=B(\lambda x).
+$$</p>
+<p>因为 $B$ 是基，</p>
+<p>$$
+\boxed{Ax=\lambda x.}
+$$</p>
+<p>所以抽象算子的特征问题完全转化为表示矩阵的特征问题。</p>
+<h3 id="7-1-特征多项式为什么与基无关">7.1 特征多项式为什么与基无关</h3>
+<p>不同基下的表示矩阵相似：$A'=P^{-1}AP$。因此</p>
+<p>$$
+\begin{aligned}
+\det(\lambda I-A')
+&amp;=\det\!\bigl(P^{-1}(\lambda I-A)P\bigr)\\
+&amp;=\det(\lambda I-A).
+\end{aligned}
+$$</p>
+<p>所以特征多项式、特征值及其代数重数是线性变换本身的性质，不依赖坐标系。（S4 p.37）</p>
+<h2 id="8-特征子空间与可对角化">8. 特征子空间与可对角化</h2>
+<p>对特征值 $\lambda$，定义</p>
+<p>$$
+V_\lambda
+=\{\xi:T\xi=\lambda\xi\}
+=N(T-\lambda I).
+$$</p>
+<p>它是 $T$ 的不变子空间。其维数称为该特征值的<strong>几何重数</strong>；特征多项式中 $(t-\lambda)$ 的次数是<strong>代数重数</strong>。（S4 pp.42–44）</p>
+<p>几何重数不超过代数重数。</p>
+<figure class="diagram"><svg aria-label="可对角化 = 找到一整组特征方向" role="img" viewbox="0 0 980 330"><defs><marker id="arr" markerheight="8" markerwidth="8" orient="auto" refx="7" refy="4"><path d="M0,0 L8,4 L0,8z" fill="#60788f"></path></marker></defs><rect fill="#fbfdff" height="328" rx="18" stroke="#dce6f0" width="978" x="1" y="1"></rect><text class="svg-title" text-anchor="middle" x="490" y="44">可对角化 = 找到一整组特征方向</text><rect fill="#eef5fb" height="112" rx="14" stroke="#9dbbd6" width="258.7" x="40.0" y="118"></rect><text class="svg-title" text-anchor="middle" x="169.3" y="156">特征子空间</text><text class="svg-label" text-anchor="middle" x="169.3" y="190">Vλ₁,…,Vλs</text><line marker-end="url(#arr)" stroke="#60788f" stroke-width="2.5" x1="303.7" x2="315.7" y1="174.0" y2="174.0"></line><rect fill="#eef5fb" height="112" rx="14" stroke="#9dbbd6" width="258.7" x="320.7" y="118"></rect><text class="svg-title" text-anchor="middle" x="450.0" y="156">特征向量基</text><text class="svg-label" text-anchor="middle" x="450.0" y="190">n 个独立方向</text><line marker-end="url(#arr)" stroke="#60788f" stroke-width="2.5" x1="584.3" x2="596.3" y1="174.0" y2="174.0"></line><rect fill="#eef5fb" height="112" rx="14" stroke="#9dbbd6" width="258.7" x="601.3" y="118"></rect><text class="svg-title" text-anchor="middle" x="730.7" y="156">对角矩阵 D</text><text class="svg-label" text-anchor="middle" x="730.7" y="190">各方向独立缩放</text><text class="svg-accent" text-anchor="middle" x="490" y="280">复杂耦合 → 特征基下的独立一维缩放。</text></svg><figcaption>图 7　对角化的结构含义。教学重绘，对应 S4 pp.42–47。</figcaption></figure>
+<p>$T$ 可对角化的核心条件是：</p>
+<p>$$
+\boxed{V\text{ 存在一组完全由特征向量组成的基}.}
+$$</p>
+<p>等价地，如果不同特征值为 $\lambda_1,\ldots,\lambda_s$，则</p>
+<p>$$
+V=V_{\lambda_1}\oplus\cdots\oplus V_{\lambda_s},
+$$</p>
+<p>也等价于每个特征值的几何重数都达到其代数重数。特别地，若 $n$ 维空间上的 $T$ 有 $n$ 个互不相同的特征值，则必可对角化。（S4 p.44）</p>
+<h3 id="8-1-为什么对角化这么有价值">8.1 为什么对角化这么有价值</h3>
+<p>若在特征向量基下</p>
+<p>$$
+[T]_B=D=\operatorname{diag}(\lambda_1,\ldots,\lambda_n),
+$$</p>
+<p>那么作用 $T$ 只是在各特征方向上分别乘 $\lambda_i$。复杂的耦合运算被拆成彼此独立的一维缩放。这也是后续矩阵函数、微分方程、动力系统分析的基础。</p>
+<h2 id="9-三个最容易混淆的关系">9. 三个最容易混淆的关系</h2>
+<table>
+<thead>
+<tr>
+<th>概念</th>
+<th>对象</th>
+<th>公式</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>过渡矩阵</td>
+<td>同一空间的两组基</td>
+<td>$B_\beta=B_\alpha P$</td>
+<td>基怎么换</td>
+</tr>
+<tr>
+<td>矩阵等价</td>
+<td>$V\to W$ 的同一线性映射</td>
+<td>$A'=Q^{-1}AP$</td>
+<td>输入、输出可分别换基</td>
+</tr>
+<tr>
+<td>矩阵相似</td>
+<td>$V\to V$ 的同一算子</td>
+<td>$A'=P^{-1}AP$</td>
+<td>同一算子换坐标系</td>
+</tr>
+</tbody>
+</table>
+<blockquote class="callout">
+<p><strong>来源说明</strong>：本篇以 S2 pp.34–61 和 S4 pp.2–47 为主线。矩阵表示、秩—零度、不变子空间和对角化的教学示意图为重绘；不把 OCR 中损坏的矩阵数字当作可靠原始数据。</p>
+</blockquote><section class="source-panel"><strong>来源追溯</strong><br>主线：S2 pp.34–61；S4 pp.2–47。重复内容合并而不重复抄写；OCR 损坏的具体矩阵数字不作为可靠原始数据，核心公式由课程语义与前后页一致性重建。</section><div class="footer">学习笔记项目 · 高等工程数学 · ChatGPT-AgentDock / Codex 协作工作流 · 2026-09-26</div></main></div><script>const bar=document.getElementById('progress');const links=[...document.querySelectorAll('.toc a')];
+function update(){const d=document.documentElement;const m=d.scrollHeight-d.clientHeight;bar.style.width=(m?d.scrollTop/m*100:0)+'%';}
+window.addEventListener('scroll',update,{passive:true});update();
+const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+e.target.id));}})},{rootMargin:'-15% 0px -72% 0px'});
+document.querySelectorAll('h2[id],h3[id]').forEach(h=>obs.observe(h));
+</script></body></html>
