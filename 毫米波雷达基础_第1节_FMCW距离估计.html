@@ -71,15 +71,18 @@ table{width:100%;border-collapse:collapse;margin:20px 0 28px;font-size:14.5px} t
 <a class="toc-sub" href="#易错点-5-目标回波仍然是几十-ghz-为什么-adc-不需要几十-ghz-采样">易错点 5：目标回波仍然是几十 GHz，为什么 ADC 不需要几十 GHz 采样？</a>
 <a class="toc-sub" href="#自检题">自检题</a>
 <a class="toc-main" href="#10-本节小结">10. 本节小结</a>
-<a class="toc-main" href="#来源">来源</a></nav></aside>
+<a class="toc-main" href="#来源">来源</a>
+<a class="toc-main" href="#11-交互实验-亲手走一遍-发射-chirp-回波-if-adc-range-fft-测距">11. 交互实验：亲手走一遍“发射 Chirp → 回波 → IF → ADC → Range FFT → 测距”</a>
+<a class="toc-sub" href="#11-1-看懂实验里的三个-分辨率-间隔">11.1 看懂实验里的三个“分辨率/间隔”</a>
+<a class="toc-sub" href="#11-2-推荐你实际拖动的顺序">11.2 推荐你实际拖动的顺序</a></nav></aside>
 <main class="article">
 <header class="hero">
 <div class="eyebrow">毫米波雷达基础 · Lesson 01</div>
 <h1>FMCW 雷达与距离估计</h1>
 <p class="lead">从 Chirp、传播时延和 Mixer 出发，完整理解“距离如何被编码成 IF 频率”，再推导 Range FFT、距离分辨率与最大测距的核心关系。</p>
-<div class="meta"><span class="chip">TI Module 1 核验</span><span class="chip">公式详细推导</span><span class="chip">5 张教学示意图</span><span class="chip">可打印 HTML</span></div>
+<div class="meta"><span class="chip">TI Module 1 核验</span><span class="chip">公式详细推导</span><span class="chip">5 张教学示意图</span><span class="chip">FMCW 交互实验</span><span class="chip">可打印 HTML</span></div>
 </header>
-<blockquote class="callout">
+<blockquote>
 <p>对应视频：Bilibili《毫米波雷达基础知识》P1“1、毫米波雷达简介：FMCW雷达”；权威核验来源为 TI 官方 <em>Intro to mmWave Sensing: FMCW Radars — Module 1: Range Estimation</em> 及其演示文稿。</p>
 </blockquote>
 <h3 id="本节学习目标">本节学习目标</h3>
@@ -166,7 +169,7 @@ $$</p>
 \omega_{\mathrm{IF}}=\omega_1-\omega_2
 $$</p>
 <p>因此 mixer 把几十 GHz 的两个射频信号之间很小的差，搬移成 ADC/DSP 更容易处理的低频 IF 信号。</p>
-<blockquote class="callout">
+<blockquote>
 <p><strong>补充理解</strong>：实际射频 mixer、I/Q 解调、滤波链路会比这个模型更复杂，但“保留差频”是理解本节距离估计的核心。</p>
 </blockquote>
 <h3 id="3-3-为什么静止目标会产生恒定-if-频率">3.3 为什么静止目标会产生恒定 IF 频率</h3>
@@ -409,7 +412,7 @@ $$</p>
 </svg>
 <figcaption>图 4　同带宽 B 下缩短 Chirp 时长会同时增大斜率与 IF 频差，也同比放宽频率分辨门限；两种效应抵消。</figcaption>
 </figure>
-<blockquote class="callout">
+<blockquote>
 <p><strong>一句话记忆</strong>：$T_{\mathrm{c}}$ 决定“看频率有多细”，$S$ 决定“距离差被放大成多大的频差”；当 $B=ST_{\mathrm{c}}$ 固定时，两者正好互相抵消。</p>
 </blockquote>
 <hr/>
@@ -620,12 +623,75 @@ $$</p>
 <li>Texas Instruments: <em>Introduction to mmWave Sensing: FMCW Radars</em> 演示文稿，Module 1 对应前 18 页。</li>
 <li>Texas Instruments: <em>The fundamentals of millimeter wave radar sensors</em>，用于背景补充。</li>
 </ol>
+<hr/>
+<h2 id="11-交互实验-亲手走一遍-发射-chirp-回波-if-adc-range-fft-测距">11. 交互实验：亲手走一遍“发射 Chirp → 回波 → IF → ADC → Range FFT → 测距”</h2>
+<p>前面的公式如果只停留在纸面上，很容易把“带宽”“Chirp 时长”“斜率”“采样率”“FFT 点数”和“补零”混在一起。下面这个小实验把整条链路做成可调参数的实时仿真。</p>
+<p>你可以重点做四组实验：</p>
+<ol>
+<li><strong>只改目标距离</strong>：观察往返时延、IF 频率和 FFT 峰如何同步移动；</li>
+<li><strong>保持带宽不变，只改 Chirp 时长</strong>：观察斜率与 IF 频率变化，但理想物理距离分辨率仍保持不变；</li>
+<li><strong>打开第二目标并逐渐拉近两个目标</strong>：观察两峰何时开始难以分开；</li>
+<li><strong>只改“补零倍数”</strong>：观察距离轴采样栅格变密、峰位置读数更细，但物理分辨率并没有因此变好。</li>
+</ol>
+<blockquote>
+<p><strong>实验模型说明</strong>：为了把静止目标测距主线讲清楚，程序使用理想线性 Chirp、静止点目标和复数 I/Q IF 采样；忽略天线、路径损耗、多普勒、相位噪声和模拟滤波器等工程细节。ADC 样本覆盖一个完整 Chirp，FFT 前使用 Hann 窗降低频谱泄漏。这里的“补零”只是对已有样本尾部补 0 后再做更长 FFT。</p>
+</blockquote>
+<section class="fmcw-lab" id="fmcw-interactive-lab">
+<style>
+.fmcw-lab{margin:30px 0;padding:22px;border:1px solid #cbdbe8;border-radius:18px;background:linear-gradient(180deg,#f8fbfe,#fff);box-shadow:0 12px 34px rgba(35,62,85,.07)}
+.fmcw-lab *{box-sizing:border-box}.fmcw-lab h3{margin-top:0}.lab-flow{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px;margin:16px 0 20px}.lab-step{padding:10px 6px;border:1px solid #cbdbe8;border-radius:10px;background:#fff;text-align:center;font-size:12px;font-weight:700}.lab-step b{display:block;color:#1f6fb2;font-size:11px;margin-bottom:3px}
+.lab-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 18px;padding:16px;border-radius:14px;background:#eef5fb}.lab-control label{display:flex;justify-content:space-between;gap:10px;font-size:13px;font-weight:650}.lab-control input[type=range]{width:100%;margin-top:7px}.lab-control select{width:100%;margin-top:7px;padding:7px;border:1px solid #b8cad9;border-radius:8px;background:#fff}.lab-toggle{display:flex;align-items:center;gap:8px;font-size:13px}
+.lab-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:14px 0}.lab-stat{padding:11px;border:1px solid #d9e4ec;border-radius:11px;background:#fff}.lab-stat span{display:block;color:#667b8d;font-size:11px}.lab-stat strong{display:block;margin-top:3px;font-size:15px}.lab-warning{display:none;margin:12px 0;padding:10px 12px;border-left:4px solid #d2782e;background:#fff6ec;border-radius:8px;font-size:13px;line-height:1.55}
+.lab-plots{display:grid;grid-template-columns:1fr;gap:14px}.lab-plot{padding:12px;border:1px solid #d9e4ec;border-radius:12px;background:#fff}.lab-plot h4{margin:0 0 7px;font-size:14px}.lab-plot p{margin:4px 0 8px;font-size:12px;color:#607284}.lab-canvas{display:block;width:100%;height:260px;border-radius:8px;background:#fbfdff}.lab-readout{margin-top:14px;padding:14px;border-radius:12px;background:#f5f8fb;font-size:13px;line-height:1.7}.lab-readout code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#fff;padding:2px 5px;border-radius:5px}
+@media(max-width:760px){.fmcw-lab{padding:14px}.lab-flow{grid-template-columns:repeat(2,minmax(0,1fr))}.lab-controls{grid-template-columns:1fr}.lab-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.lab-canvas{height:220px}}
+</style>
+<h3>FMCW Range Lab · 参数可调测距实验</h3>
+<p>拖动参数后，下面三张图会立即重算。流程条对应真实算法的信息流，不是预先画好的动画。</p>
+<div class="lab-flow">
+<div class="lab-step"><b>① TX</b>线性 Chirp</div><div class="lab-step"><b>② 传播</b>延迟 τ</div><div class="lab-step"><b>③ RX</b>延迟 Chirp</div><div class="lab-step"><b>④ Mixer</b>得到 IF</div><div class="lab-step"><b>⑤ ADC</b>I/Q 采样</div><div class="lab-step"><b>⑥ FFT</b>可选补零</div><div class="lab-step"><b>⑦ Range</b>峰值测距</div>
+</div>
+<div class="lab-controls">
+<div class="lab-control"><label><span>扫频带宽 B</span><output id="lab-b-v"></output></label><input id="lab-b" type="range" min="0.5" max="4" step="0.1" value="4"></div>
+<div class="lab-control"><label><span>Chirp 时长 T<sub>c</sub></span><output id="lab-t-v"></output></label><input id="lab-t" type="range" min="20" max="100" step="5" value="40"></div>
+<div class="lab-control"><label><span>目标 1 距离 d₁</span><output id="lab-r1-v"></output></label><input id="lab-r1" type="range" min="0.5" max="40" step="0.01" value="8"></div>
+<div class="lab-control"><label><span>复数 I/Q 采样率 F<sub>s</sub></span><output id="lab-fs-v"></output></label><input id="lab-fs" type="range" min="5" max="50" step="1" value="25"></div>
+<div class="lab-control"><label><span>FFT 补零倍数</span><output id="lab-zp-v"></output></label><select id="lab-zp"><option value="1">1×（仅补到最近 2 次幂）</option><option value="2">2×</option><option value="4" selected>4×</option><option value="8">8×</option></select></div>
+<div class="lab-control"><label class="lab-toggle"><input id="lab-two" type="checkbox">启用第二个目标，观察距离分辨率</label><label style="margin-top:8px"><span>目标 2 距离 d₂</span><output id="lab-r2-v"></output></label><input id="lab-r2" type="range" min="0.5" max="40" step="0.01" value="8.08" disabled></div>
+</div>
+<div class="lab-stats">
+<div class="lab-stat"><span>Chirp slope S</span><strong id="lab-s"></strong></div>
+<div class="lab-stat"><span>目标 1 往返时延 τ₁</span><strong id="lab-tau"></strong></div>
+<div class="lab-stat"><span>目标 1 IF 频率</span><strong id="lab-fb"></strong></div>
+<div class="lab-stat"><span>理想物理距离分辨率</span><strong id="lab-res"></strong></div>
+<div class="lab-stat"><span>实际 ADC 样本数</span><strong id="lab-n"></strong></div>
+<div class="lab-stat"><span>FFT 点数 NFFT</span><strong id="lab-nfft"></strong></div>
+<div class="lab-stat"><span>补零后距离栅格</span><strong id="lab-grid"></strong></div>
+<div class="lab-stat"><span>正 IF 无混叠距离上限</span><strong id="lab-rmax"></strong></div>
+</div>
+<div class="lab-warning" id="lab-warning"></div>
+<div class="lab-plots">
+<div class="lab-plot"><h4>① 发射与回波：频率—时间图</h4><p>蓝线为 TX，橙线为延迟后的 RX；标注的频差就是拍频。由于真实 τ 通常只有 ns 量级，横向延迟相对 μs 级 Chirp 很小。</p><canvas class="lab-canvas" id="lab-chirp"></canvas></div>
+<div class="lab-plot"><h4>② Mixer + ADC：采样到的复数 IF</h4><p>图中画 I 分量。距离越远或斜率越大，IF 振荡越快。</p><canvas class="lab-canvas" id="lab-if"></canvas></div>
+<div class="lab-plot"><h4>③ Range FFT：频谱峰映射到距离</h4><p>虚线是真实目标距离；实线是 FFT 幅度。改变补零倍数时重点看横轴栅格和峰值读数，而不是物理分辨率。</p><canvas class="lab-canvas" id="lab-fft"></canvas></div>
+</div>
+<div class="lab-readout" id="lab-readout"></div>
+</section>
+<h3 id="11-1-看懂实验里的三个-分辨率-间隔">11.1 看懂实验里的三个“分辨率/间隔”</h3>
+<p>这个实验特意同时显示三个很容易混淆的量：</p>
+<ul>
+<li><strong>物理距离分辨率</strong>：$d_{mathrm{res}}=c/(2B)$。它由真实有效带宽决定；</li>
+<li><strong>原始 FFT 栅格间隔</strong>：由实际采样时长决定；完整观测一个 Chirp 时，它与上述尺度同阶；</li>
+<li><strong>补零后的距离栅格间隔</strong>：FFT 点数增大后会变小，所以频谱曲线和峰值读数更细。</li>
+</ul>
+<p>关键是：<strong>补零只是在频域中插值得更密，不会制造新的观测信息。</strong>如果两个真实目标已经近到超过原始观测所能分辨的程度，把 1× 改成 8× 补零并不会神奇地把一个物理上不可分辨的峰变成两个可靠目标。</p>
+<h3 id="11-2-推荐你实际拖动的顺序">11.2 推荐你实际拖动的顺序</h3>
+<p>先使用默认参数，顺着顶部流程条从左到右看一遍；然后固定 $B$，只改变 $T_{mathrm{c}}$；再固定 $B$ 和 $T_{mathrm{c}}$，改变目标距离；最后保持所有物理参数不变，只切换 1× / 2× / 4× / 8× 补零。这样最容易把“真实系统参数改变”与“FFT 显示栅格改变”区分开。</p>
 <section class="source-panel">
 <strong>来源追溯</strong><br>
 主线资料：Bilibili《毫米波雷达基础知识》P1（BV1du4m1g7bv），并以 Texas Instruments 官方 <em>Intro to mmWave Sensing: FMCW Radars — Module 1: Range Estimation</em> 及本地保存的官方演示文稿第 1–18 页进行核验。Mixer 恒等式、FFT bin 与物理分辨率区别、Nyquist/有效采样时间等属于教学补充，不冒充原视频逐字内容。<br><br>
-<a href="references/ti_fmcw_slides.pdf">打开项目内 TI 官方配套讲义 PDF</a>
+<a href="../../work/20260920-mmwave-basics-lesson01/extracted/ti_fmcw_slides.pdf">打开项目内 TI 官方配套讲义 PDF</a>
 </section>
-<div class="footer">学习笔记项目 · ChatGPT-AgentDock / Codex 协作产物 · 2026-09-21 重建 HTML 版</div>
+<div class="footer">学习笔记项目 · ChatGPT-AgentDock / Codex 协作产物 · 2026-09-28 加入 FMCW Range Lab</div>
 </main></div>
 <script>const bar=document.getElementById('progress');const links=[...document.querySelectorAll('.toc a')];
 function update(){const d=document.documentElement;const m=d.scrollHeight-d.clientHeight;bar.style.width=(m?d.scrollTop/m*100:0)+'%';}
@@ -633,4 +699,38 @@ window.addEventListener('scroll',update,{passive:true});update();
 const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+e.target.id));}})},{rootMargin:'-15% 0px -72% 0px'});
 document.querySelectorAll('h2[id],h3[id]').forEach(h=>obs.observe(h));
 </script>
+<script>(()=>{"use strict";
+const $=id=>document.getElementById(id), C=299792458;
+const ids=["lab-b","lab-t","lab-r1","lab-fs","lab-zp","lab-two","lab-r2"];
+if(!$("fmcw-interactive-lab")) return;
+function nextPow2(n){let p=1;while(p<n)p<<=1;return p}
+function fft(re,im){const n=re.length;for(let i=1,j=0;i<n;i++){let b=n>>1;for(;j&b;b>>=1)j^=b;j^=b;if(i<j){[re[i],re[j]]=[re[j],re[i]];[im[i],im[j]]=[im[j],im[i]]}}for(let len=2;len<=n;len<<=1){const ang=-2*Math.PI/len,wr0=Math.cos(ang),wi0=Math.sin(ang);for(let i=0;i<n;i+=len){let wr=1,wi=0;for(let j=0;j<len/2;j++){const u=i+j,v=u+len/2,tr=wr*re[v]-wi*im[v],ti=wr*im[v]+wi*re[v];re[v]=re[u]-tr;im[v]=im[u]-ti;re[u]+=tr;im[u]+=ti;const nw=wr*wr0-wi*wi0;wi=wr*wi0+wi*wr0;wr=nw}}}}
+function prep(canvas){const dpr=Math.min(devicePixelRatio||1,2),rect=canvas.getBoundingClientRect();canvas.width=Math.max(300,Math.round(rect.width*dpr));canvas.height=Math.round(rect.height*dpr);const g=canvas.getContext("2d");g.setTransform(dpr,0,0,dpr,0,0);return{g,w:rect.width,h:rect.height}}
+function axes(g,w,h,xlab,ylab){g.clearRect(0,0,w,h);g.strokeStyle="#9fb0bf";g.lineWidth=1;g.beginPath();g.moveTo(48,12);g.lineTo(48,h-34);g.lineTo(w-10,h-34);g.stroke();g.fillStyle="#617486";g.font="12px system-ui";g.fillText(ylab,8,18);g.fillText(xlab,w-62,h-10)}
+function line(g,pts,color,width=2){g.strokeStyle=color;g.lineWidth=width;g.beginPath();pts.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.stroke()}
+function fmt(x,d=2){return Number(x).toFixed(d)}
+function update(){
+ const B=+$("lab-b").value*1e9,T=+$("lab-t").value*1e-6,r1=+$("lab-r1").value,Fs=+$("lab-fs").value*1e6,zp=+$("lab-zp").value,two=$("lab-two").checked,r2=+$("lab-r2").value;
+ $("lab-r2").disabled=!two;
+ const S=B/T,tau=2*r1/C,fb=S*tau,n=Math.max(32,Math.round(Fs*T)),base=nextPow2(n),nfft=base*zp,res=C/(2*B),grid=C*(Fs/nfft)/(2*S),rmax=C*Fs/(4*S);
+ $("lab-b-v").textContent=fmt(B/1e9,1)+" GHz";$("lab-t-v").textContent=fmt(T*1e6,0)+" μs";$("lab-r1-v").textContent=fmt(r1,1)+" m";$("lab-r2-v").textContent=fmt(r2,2)+" m";$("lab-fs-v").textContent=fmt(Fs/1e6,0)+" MHz";$("lab-zp-v").textContent=zp+"×";
+ $("lab-s").textContent=fmt(S/1e12,1)+" MHz/μs";$("lab-tau").textContent=fmt(tau*1e9,2)+" ns";$("lab-fb").textContent=fmt(fb/1e6,3)+" MHz";$("lab-res").textContent=fmt(res*100,2)+" cm";$("lab-n").textContent=n;$("lab-nfft").textContent=nfft;$("lab-grid").textContent=fmt(grid*100,3)+" cm";$("lab-rmax").textContent=fmt(rmax,1)+" m";
+ const warn=[]; if(fb>=Fs/2) warn.push("目标 1 的 IF 已超过 Fs/2，发生频率混叠；FFT 峰会折回错误距离。"); if(two&&2*S*r2/C>=Fs/2) warn.push("目标 2 的 IF 也超过 Fs/2 正频率无混叠范围。"); if(two&&Math.abs(r2-r1)<res) warn.push("两个目标间距 "+fmt(Math.abs(r2-r1)*100,1)+" cm 小于理想分辨率 "+fmt(res*100,1)+" cm；即使增加补零，也不应把更密的 FFT 栅格误认为获得了新的物理分辨能力。");
+ $("lab-warning").style.display=warn.length?"block":"none";$("lab-warning").textContent=warn.join(" ");
+ // Chirp plot
+ {const {g,w,h}=prep($("lab-chirp"));axes(g,w,h,"时间 / μs","相对频率");const L=48,R=w-12,Top=18,Bot=h-34,tx=[],rx=[];for(let i=0;i<=120;i++){const t=T*i/120,x=L+(R-L)*i/120,yt=Bot-(Bot-Top)*(t/T);tx.push([x,yt]);const fr=S*Math.max(0,t-tau),yr=Bot-(Bot-Top)*(fr/B);rx.push([x,yr])}line(g,tx,"#1f6fb2",2.4);line(g,rx,"#d2782e",2.2);g.fillStyle="#1f6fb2";g.fillText("TX",w-80,28);g.fillStyle="#d2782e";g.fillText("RX",w-48,28);g.fillStyle="#44596b";g.fillText("τ₁="+fmt(tau*1e9,2)+" ns",58,h-12);g.fillText("fIF₁="+fmt(fb/1e6,3)+" MHz",150,h-12)}
+ // samples and IF plot
+ const re=new Array(nfft).fill(0),im=new Array(nfft).fill(0),sig=[];
+ const targets=two?[[r1,1],[r2,.8]]:[[r1,1]];
+ for(let i=0;i<n;i++){const t=i/Fs,wnd=n>1?.5-.5*Math.cos(2*Math.PI*i/(n-1)):1;let rr=0,ii=0;for(const [r,a] of targets){const f=2*S*r/C,ph=2*Math.PI*f*t;rr+=a*Math.cos(ph);ii+=a*Math.sin(ph)}sig.push(rr);re[i]=rr*wnd;im[i]=ii*wnd}
+ {const {g,w,h}=prep($("lab-if"));axes(g,w,h,"时间 / μs","I");const L=48,R=w-12,Top=18,Bot=h-34,mid=(Top+Bot)/2,amp=(Bot-Top)*.42/(two?1.8:1);const show=Math.min(n,220),pts=[];for(let i=0;i<show;i++)pts.push([L+(R-L)*i/(show-1),mid-amp*sig[i]]);line(g,pts,"#1f6fb2",1.6);g.fillStyle="#617486";g.fillText("前 "+show+" 个 ADC 样本",58,h-12)}
+ fft(re,im);
+ let mags=[],mx=1e-12,peakK=0;const half=Math.floor(nfft/2);for(let k=0;k<half;k++){const m=Math.hypot(re[k],im[k]);mags[k]=m;if(m>mx){mx=m;peakK=k}}
+ const peakF=peakK*Fs/nfft,peakR=C*peakF/(2*S),viewMax=Math.min(rmax,Math.max(12,r1*1.7,two?r2*1.7:0)),kmax=Math.min(half-1,Math.ceil((2*S*viewMax/C)*nfft/Fs));
+ {const {g,w,h}=prep($("lab-fft"));axes(g,w,h,"距离 / m","归一化幅度");const L=48,R=w-12,Top=18,Bot=h-34,pts=[];for(let k=0;k<=kmax;k++){const rr=C*(k*Fs/nfft)/(2*S),x=L+(R-L)*rr/viewMax,y=Bot-(Bot-Top)*mags[k]/mx;pts.push([x,y])}line(g,pts,"#1f6fb2",2);g.setLineDash([5,4]);for(const [r] of targets){if(r<=viewMax){const x=L+(R-L)*r/viewMax;g.strokeStyle="#d2782e";g.beginPath();g.moveTo(x,Top);g.lineTo(x,Bot);g.stroke();g.fillStyle="#d2782e";g.fillText(fmt(r,2)+" m",Math.min(x+4,R-48),Top+12)}}g.setLineDash([]);g.fillStyle="#617486";g.fillText("0",44,h-12);g.fillText(fmt(viewMax,1)+" m",w-64,h-12)}
+ const rawGrid=C*(Fs/base)/(2*S);
+ $("lab-readout").innerHTML="<strong>当前算法读数：</strong> 主峰位于约 <code>"+fmt(peakF/1e6,4)+" MHz</code>，按 <code>d = c fIF / (2S)</code> 换算得到 <strong>"+fmt(peakR,3)+" m</strong>。实际 ADC 数据只有 <strong>"+n+"</strong> 个样本；为使用 radix-2 FFT，先扩到 "+base+" 点，再按你选择的 "+zp+"× 得到 "+nfft+" 点 FFT。未额外补零时的距离栅格约 <strong>"+fmt(rawGrid*100,3)+" cm</strong>，当前补零后约 <strong>"+fmt(grid*100,3)+" cm</strong>，但物理距离分辨率始终是 <strong>"+fmt(res*100,2)+" cm</strong>。";
+}
+ids.forEach(id=>$(id).addEventListener("input",update));window.addEventListener("resize",()=>requestAnimationFrame(update));update();
+})();</script>
 </body></html>
